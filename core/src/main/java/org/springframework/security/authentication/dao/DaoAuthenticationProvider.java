@@ -91,13 +91,17 @@ public class DaoAuthenticationProvider extends AbstractUserDetailsAuthentication
 			throws AuthenticationException {
 		prepareTimingAttackProtection();
 		try {
+			// 获取 UserDetailsService
 			UserDetails loadedUser = this.getUserDetailsService().loadUserByUsername(username);
+
+			// 绝对不能返回 null，这是违背接口契约的
 			if (loadedUser == null) {
 				throw new InternalAuthenticationServiceException(
 						"UserDetailsService returned null, which is an interface contract violation");
 			}
 			return loadedUser;
 		} catch (UsernameNotFoundException ex) {
+			// 即使用户没找到，也会将发来的密码与现有的密码进行匹配
 			mitigateAgainstTimingAttack(authentication);
 			throw ex;
 		} catch (InternalAuthenticationServiceException ex) {

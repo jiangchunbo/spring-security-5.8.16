@@ -103,6 +103,10 @@ allprojects {
 		apply plugin: 'io.spring.javaformat'
 		apply plugin: 'checkstyle'
 
+		tasks.withType(Javadoc) {
+			enabled = false
+		}
+
 		pluginManager.withPlugin("io.spring.convention.checkstyle", { plugin ->
 			configure(plugin) {
 				dependencies {

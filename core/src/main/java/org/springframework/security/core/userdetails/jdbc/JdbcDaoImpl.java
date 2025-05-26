@@ -181,12 +181,15 @@ public class JdbcDaoImpl extends JdbcDaoSupport implements UserDetailsService, M
 
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+		// 从数据库查询
 		List<UserDetails> users = loadUsersByUsername(username);
 		if (users.size() == 0) {
 			this.logger.debug("Query returned no results for user '" + username + "'");
 			throw new UsernameNotFoundException(this.messages.getMessage("JdbcDaoImpl.notFound",
 					new Object[] { username }, "Username {0} not found"));
 		}
+
+		// 取第 1 个
 		UserDetails user = users.get(0); // contains no GrantedAuthority[]
 		Set<GrantedAuthority> dbAuthsSet = new HashSet<>();
 		if (this.enableAuthorities) {
@@ -202,6 +205,8 @@ public class JdbcDaoImpl extends JdbcDaoSupport implements UserDetailsService, M
 			throw new UsernameNotFoundException(this.messages.getMessage("JdbcDaoImpl.noAuthority",
 					new Object[] { username }, "User {0} has no GrantedAuthority"));
 		}
+
+		// Spring Security 这里是从数据库取出 UserDetails 又创建了一个新的 UserDetails
 		return createUserDetails(username, user, dbAuths);
 	}
 

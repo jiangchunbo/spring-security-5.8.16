@@ -71,12 +71,17 @@ public abstract class AbstractAuthenticationToken implements Authentication, Cre
 		if (this.getPrincipal() instanceof UserDetails) {
 			return ((UserDetails) this.getPrincipal()).getUsername();
 		}
+
+		// 如果是一个认证通过的 principal
 		if (this.getPrincipal() instanceof AuthenticatedPrincipal) {
 			return ((AuthenticatedPrincipal) this.getPrincipal()).getName();
 		}
 		if (this.getPrincipal() instanceof Principal) {
 			return ((Principal) this.getPrincipal()).getName();
 		}
+
+		// 如果上面的类型都不是，那么就获取 principal 转换为字符串
+		// UsernamePasswordAuthenticationToken principal 是用户名
 		return (this.getPrincipal() == null) ? "" : this.getPrincipal().toString();
 	}
 
