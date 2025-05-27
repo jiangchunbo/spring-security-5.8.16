@@ -67,9 +67,12 @@ public class SecurityContextLogoutHandler implements LogoutHandler {
 	@Override
 	public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
 		Assert.notNull(request, "HttpServletRequest required");
+
+		// 是否需要失效 Session
 		if (this.invalidateHttpSession) {
 			HttpSession session = request.getSession(false);
 			if (session != null) {
+				// 令 Session 失效
 				session.invalidate();
 				if (this.logger.isDebugEnabled()) {
 					this.logger.debug(LogMessage.format("Invalidated session %s", session.getId()));

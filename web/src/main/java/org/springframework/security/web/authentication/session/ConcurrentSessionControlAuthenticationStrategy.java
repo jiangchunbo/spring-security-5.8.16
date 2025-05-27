@@ -94,18 +94,31 @@ public class ConcurrentSessionControlAuthenticationStrategy
 	@Override
 	public void onAuthentication(Authentication authentication, HttpServletRequest request,
 			HttpServletResponse response) {
+		// 获得这个用户最大允许的会话。其实这里就是取配的一个固定值，看起来传入了一个 authentication 实际上没有用。
 		int allowedSessions = getMaximumSessionsForThisUser(authentication);
+
+		// 如果是 -1，则不管
 		if (allowedSessions == -1) {
 			// We permit unlimited logins
 			return;
 		}
+
+		// 从 Session 注册表，获取目前所有 Session
+		// 但是，不包含过期的会话
 		List<SessionInformation> sessions = this.sessionRegistry.getAllSessions(authentication.getPrincipal(), false);
+
+		// 获取数量
 		int sessionCount = sessions.size();
+
+		// 如果当前数量小于 allowedSessions，即使再 + 1，也没达到最大值，所以没有关系
 		if (sessionCount < allowedSessions) {
 			// They haven't got too many login sessions running at present
 			return;
 		}
+
+		// 如果已经达到最大值
 		if (sessionCount == allowedSessions) {
+			// 获取 SessionId 比对是不是已经存在了，可能使用相同的 SessionId 登录
 			HttpSession session = request.getSession(false);
 			if (session != null) {
 				// Only permit it though if this request is associated with one of the
@@ -119,6 +132,8 @@ public class ConcurrentSessionControlAuthenticationStrategy
 			// If the session is null, a new one will be created by the parent class,
 			// exceeding the allowed number
 		}
+
+
 		allowableSessionsExceeded(sessions, allowedSessions, this.sessionRegistry);
 	}
 
@@ -144,14 +159,20 @@ public class ConcurrentSessionControlAuthenticationStrategy
 	 */
 	protected void allowableSessionsExceeded(List<SessionInformation> sessions, int allowableSessions,
 			SessionRegistry registry) throws SessionAuthenticationException {
+		// 如果 exceptionIfMaximumExceeded ，意味着达到最大会话数就会抛出异常，无法登录
 		if (this.exceptionIfMaximumExceeded || (sessions == null)) {
 			throw new SessionAuthenticationException(
 					this.messages.getMessage("ConcurrentSessionControlAuthenticationStrategy.exceededAllowed",
 							new Object[] { allowableSessions }, "Maximum sessions of {0} for this principal exceeded"));
 		}
 		// Determine least recently used sessions, and mark them for invalidation
+		// 按照最后一次访问，排序，最后一个就是最新访问的。会话
 		sessions.sort(Comparator.comparing(SessionInformation::getLastRequest));
+
+		// 溢出了多少个 Session
 		int maximumSessionsExceededBy = sessions.size() - allowableSessions + 1;
+
+		// 取出旧的几个，调用他们的过期方法
 		List<SessionInformation> sessionsToBeExpired = sessions.subList(0, maximumSessionsExceededBy);
 		for (SessionInformation session : sessionsToBeExpired) {
 			session.expireNow();

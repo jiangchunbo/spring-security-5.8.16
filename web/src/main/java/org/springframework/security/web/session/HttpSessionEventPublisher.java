@@ -83,6 +83,8 @@ public class HttpSessionEventPublisher implements HttpSessionListener, HttpSessi
 	private void extracted(HttpSession session, ApplicationEvent e) {
 		Log log = LogFactory.getLog(LOGGER_NAME);
 		log.debug(LogMessage.format("Publishing event: %s", e));
+
+		// 发布 Spring 事件
 		getContext(session.getServletContext()).publishEvent(e);
 	}
 

@@ -231,12 +231,15 @@ public abstract class AbstractAuthenticationProcessingFilter extends GenericFilt
 			return;
 		}
 		try {
-			// 尝试登录，这个方式是子类实现
+			// 尝试登录，并得到一个 Authentication。 attemptAuthentication 由子类实现
+			// 典型的就是 UsernamePasswordAuthenticationFilter
 			Authentication authenticationResult = attemptAuthentication(request, response);
 			if (authenticationResult == null) {
 				// return immediately as subclass has indicated that it hasn't completed
 				return;
 			}
+
+			// 认证成功
 			this.sessionStrategy.onAuthentication(authenticationResult, request, response);
 			// Authentication success
 			if (this.continueChainBeforeSuccessfulAuthentication) {

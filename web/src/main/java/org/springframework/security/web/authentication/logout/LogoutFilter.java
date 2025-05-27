@@ -95,11 +95,15 @@ public class LogoutFilter extends GenericFilterBean {
 
 	private void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
 			throws IOException, ServletException {
+		// 检查是不是 logout 请求
 		if (requiresLogout(request, response)) {
+			// 从 context 拿 authentication
 			Authentication auth = this.securityContextHolderStrategy.getContext().getAuthentication();
 			if (this.logger.isDebugEnabled()) {
 				this.logger.debug(LogMessage.format("Logging out [%s]", auth));
 			}
+
+			// 调用 logout handler 进行注销。其中包括了 Session 的无效化
 			this.handler.logout(request, response, auth);
 			this.logoutSuccessHandler.onLogoutSuccess(request, response, auth);
 			return;

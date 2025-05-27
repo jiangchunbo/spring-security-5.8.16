@@ -75,12 +75,14 @@ public class SessionRegistryImpl implements SessionRegistry, ApplicationListener
 
 	@Override
 	public List<SessionInformation> getAllSessions(Object principal, boolean includeExpiredSessions) {
+		// 该用户用过的 Session
 		Set<String> sessionsUsedByPrincipal = this.principals.get(principal);
 		if (sessionsUsedByPrincipal == null) {
 			return Collections.emptyList();
 		}
 		List<SessionInformation> list = new ArrayList<>(sessionsUsedByPrincipal.size());
 		for (String sessionId : sessionsUsedByPrincipal) {
+			// SessionId 存在，但是 Session 已经不存在了
 			SessionInformation sessionInformation = getSessionInformation(sessionId);
 			if (sessionInformation == null) {
 				continue;
@@ -98,6 +100,9 @@ public class SessionRegistryImpl implements SessionRegistry, ApplicationListener
 		return this.sessionIds.get(sessionId);
 	}
 
+	/**
+	 * 监听与 Servlet 容器有关的 Session 事件，例如：创建、销毁、更改
+	 */
 	@Override
 	public void onApplicationEvent(AbstractSessionEvent event) {
 		if (event instanceof SessionDestroyedEvent) {
@@ -149,17 +154,27 @@ public class SessionRegistryImpl implements SessionRegistry, ApplicationListener
 	@Override
 	public void removeSessionInformation(String sessionId) {
 		Assert.hasText(sessionId, "SessionId required as per interface contract");
+
+		// 检查缓存有没有
 		SessionInformation info = getSessionInformation(sessionId);
+		// 缓存没有，直接返回
 		if (info == null) {
 			return;
 		}
+
 		if (this.logger.isTraceEnabled()) {
 			this.logger.debug("Removing session " + sessionId + " from set of registered sessions");
 		}
+
+		// 从 Map 中 remove
 		this.sessionIds.remove(sessionId);
+
+		// 该用户使用了哪些 SessionId，找出来那个 Set，然后从中 remove 会话
 		this.principals.computeIfPresent(info.getPrincipal(), (key, sessionsUsedByPrincipal) -> {
 			this.logger
 				.debug(LogMessage.format("Removing session %s from principal's set of registered sessions", sessionId));
+
+			// 从集合中删除 SessionId
 			sessionsUsedByPrincipal.remove(sessionId);
 			if (sessionsUsedByPrincipal.isEmpty()) {
 				// No need to keep object in principals Map anymore
