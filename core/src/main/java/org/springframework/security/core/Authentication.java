@@ -40,7 +40,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
  * context.setAuthentication(anAuthentication);
  * SecurityContextHolder.setContext(context);
  * </pre>
- *
+ * <p>
  * Note that unless the <tt>Authentication</tt> has the <tt>authenticated</tt> property
  * set to <tt>true</tt>, it will still be authenticated by any security interceptor (for
  * method or web invocations) which encounters it.
@@ -61,6 +61,7 @@ public interface Authentication extends Principal, Serializable {
 	 * do not affect the state of the Authentication object, or use an unmodifiable
 	 * instance.
 	 * </p>
+	 *
 	 * @return the authorities granted to the principal, or an empty collection if the
 	 * token has not been authenticated. Never null.
 	 */
@@ -70,6 +71,7 @@ public interface Authentication extends Principal, Serializable {
 	 * The credentials that prove the principal is correct. This is usually a password,
 	 * but could be anything relevant to the <code>AuthenticationManager</code>. Callers
 	 * are expected to populate the credentials.
+	 *
 	 * @return the credentials that prove the identity of the <code>Principal</code>
 	 */
 	Object getCredentials();
@@ -77,6 +79,7 @@ public interface Authentication extends Principal, Serializable {
 	/**
 	 * Stores additional details about the authentication request. These might be an IP
 	 * address, certificate serial number etc.
+	 *
 	 * @return additional details about the authentication request, or <code>null</code>
 	 * if not used
 	 */
@@ -86,11 +89,21 @@ public interface Authentication extends Principal, Serializable {
 	 * The identity of the principal being authenticated. In the case of an authentication
 	 * request with username and password, this would be the username. Callers are
 	 * expected to populate the principal for an authentication request.
+	 *
+	 * <p>
+	 * 被认证主体地身份。在使用用户名和密码进行身份验证请求的情况下，这个身份将是用户名。
+	 * 调用者需要为身份验证请求提供填充该主体信息。
+	 *
 	 * <p>
 	 * The <tt>AuthenticationManager</tt> implementation will often return an
 	 * <tt>Authentication</tt> containing richer information as the principal for use by
 	 * the application. Many of the authentication providers will create a
 	 * {@code UserDetails} object as the principal.
+	 *
+	 * <p>
+	 * AuthenticationManager 的实现通常会返回一个包含更多信息的 Authentication 对象作为主题供应用使用。
+	 * 许多 AuthenticationProvider 会创建一个
+	 *
 	 * @return the <code>Principal</code> being authenticated or the authenticated
 	 * principal after authentication.
 	 */
@@ -110,6 +123,7 @@ public interface Authentication extends Principal, Serializable {
 	 * about returning <code>true</code> from this method unless they are either
 	 * immutable, or have some way of ensuring the properties have not been changed since
 	 * original creation.
+	 *
 	 * @return true if the token has been authenticated and the
 	 * <code>AbstractSecurityInterceptor</code> does not need to present the token to the
 	 * <code>AuthenticationManager</code> again for re-authentication.
@@ -125,12 +139,13 @@ public interface Authentication extends Principal, Serializable {
 	 * an invocation with a <code>true</code> parameter (which would indicate the
 	 * authentication token is trusted - a potential security risk) the implementation
 	 * should throw an {@link IllegalArgumentException}.
+	 *
 	 * @param isAuthenticated <code>true</code> if the token should be trusted (which may
-	 * result in an exception) or <code>false</code> if the token should not be trusted
+	 *                        result in an exception) or <code>false</code> if the token should not be trusted
 	 * @throws IllegalArgumentException if an attempt to make the authentication token
-	 * trusted (by passing <code>true</code> as the argument) is rejected due to the
-	 * implementation being immutable or implementing its own alternative approach to
-	 * {@link #isAuthenticated()}
+	 *                                  trusted (by passing <code>true</code> as the argument) is rejected due to the
+	 *                                  implementation being immutable or implementing its own alternative approach to
+	 *                                  {@link #isAuthenticated()}
 	 */
 	void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException;
 

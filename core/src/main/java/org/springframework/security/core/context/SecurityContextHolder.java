@@ -78,11 +78,14 @@ public class SecurityContextHolder {
 	}
 
 	private static void initializeStrategy() {
+		// MODE_PRE_INITIALIZED
 		if (MODE_PRE_INITIALIZED.equals(strategyName)) {
 			Assert.state(strategy != null, "When using " + MODE_PRE_INITIALIZED
 					+ ", setContextHolderStrategy must be called with the fully constructed strategy");
 			return;
 		}
+
+		// 没有设置策略 -> MODE_THREADLOCAL
 		if (!StringUtils.hasText(strategyName)) {
 			// Set default
 			strategyName = MODE_THREADLOCAL;
