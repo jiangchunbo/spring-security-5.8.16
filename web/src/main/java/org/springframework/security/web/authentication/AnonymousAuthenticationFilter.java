@@ -94,7 +94,11 @@ public class AnonymousAuthenticationFilter extends GenericFilterBean implements 
 	@Override
 	public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
 			throws IOException, ServletException {
+		// 获得延迟的 Context，实际上是一个 lambda，调用其方法就立即执行 getContext
 		Supplier<SecurityContext> deferredContext = this.securityContextHolderStrategy.getDeferredContext();
+
+		// 设置 Supplier<SecurityContext>，其中会调用 get() 方法立即加载
+		// 其中，如果检测到没有认证信息，会创建一个认证通过的，匿名用户安全上下文
 		this.securityContextHolderStrategy
 			.setDeferredContext(defaultWithAnonymous((HttpServletRequest) req, deferredContext));
 		chain.doFilter(req, res);
@@ -103,21 +107,31 @@ public class AnonymousAuthenticationFilter extends GenericFilterBean implements 
 	private Supplier<SecurityContext> defaultWithAnonymous(HttpServletRequest request,
 			Supplier<SecurityContext> currentDeferredContext) {
 		return SingletonSupplier.of(() -> {
+			// 从 lambda 中加载 SecurityContext
 			SecurityContext currentContext = currentDeferredContext.get();
+			// 私有方法。如果没有认证信息，就创建一个匿名的。
 			return defaultWithAnonymous(request, currentContext);
 		});
 	}
 
 	private SecurityContext defaultWithAnonymous(HttpServletRequest request, SecurityContext currentContext) {
+		// 获得安全上下文中的 Authentication
 		Authentication currentAuthentication = currentContext.getAuthentication();
+
+		// 如果里面没有认证之后的信息
 		if (currentAuthentication == null) {
+			// 那么创建一个匿名的信息
 			Authentication anonymous = createAuthentication(request);
+
+			// 日志，不用看
 			if (this.logger.isTraceEnabled()) {
 				this.logger.trace(LogMessage.of(() -> "Set SecurityContextHolder to " + anonymous));
 			}
 			else {
 				this.logger.debug("Set SecurityContextHolder to anonymous SecurityContext");
 			}
+
+			// 创建一个空的 Context，然后设置这个匿名的信息
 			SecurityContext anonymousContext = this.securityContextHolderStrategy.createEmptyContext();
 			anonymousContext.setAuthentication(anonymous);
 			return anonymousContext;

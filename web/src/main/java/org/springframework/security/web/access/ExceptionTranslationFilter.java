@@ -131,15 +131,22 @@ public class ExceptionTranslationFilter extends GenericFilterBean implements Mes
 		catch (Exception ex) {
 			// Try to extract a SpringSecurityException from the stacktrace
 			Throwable[] causeChain = this.throwableAnalyzer.determineCauseChain(ex);
+
+			// 获得第一个 Throwable AuthenticationException
 			RuntimeException securityException = (AuthenticationException) this.throwableAnalyzer
 				.getFirstThrowableOfType(AuthenticationException.class, causeChain);
+
+			// 获得第一个 Throwable AccessDeniedException
 			if (securityException == null) {
 				securityException = (AccessDeniedException) this.throwableAnalyzer
 					.getFirstThrowableOfType(AccessDeniedException.class, causeChain);
 			}
+
+			// 如果还是没有异常，那么就直接抛出
 			if (securityException == null) {
 				rethrow(ex);
 			}
+
 			if (response.isCommitted()) {
 				throw new ServletException("Unable to handle the Spring Security Exception "
 						+ "because the response is already committed.", ex);

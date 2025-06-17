@@ -84,11 +84,14 @@ public abstract class AbstractAuthenticationTargetUrlRequestHandler {
 	 */
 	protected void handle(HttpServletRequest request, HttpServletResponse response, Authentication authentication)
 			throws IOException, ServletException {
+		// 从请求中拿到 targetUrl
 		String targetUrl = determineTargetUrl(request, response, authentication);
 		if (response.isCommitted()) {
 			this.logger.debug(LogMessage.format("Did not redirect to %s since response already committed.", targetUrl));
 			return;
 		}
+
+		// 重定向到这个位置
 		this.redirectStrategy.sendRedirect(request, response, targetUrl);
 	}
 
@@ -110,6 +113,8 @@ public abstract class AbstractAuthenticationTargetUrlRequestHandler {
 		}
 		// Check for the parameter and use that if available
 		String targetUrl = null;
+
+		// 获取请求的参数 targetUrl
 		if (this.targetUrlParameter != null) {
 			targetUrl = request.getParameter(this.targetUrlParameter);
 			if (StringUtils.hasText(targetUrl)) {

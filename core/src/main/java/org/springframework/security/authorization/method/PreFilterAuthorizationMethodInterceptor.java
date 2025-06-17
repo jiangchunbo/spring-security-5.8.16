@@ -60,6 +60,7 @@ public final class PreFilterAuthorizationMethodInterceptor
 	 * parameters
 	 */
 	public PreFilterAuthorizationMethodInterceptor() {
+		// 切点，必须具有 @PreFilter 的方法
 		this.pointcut = AuthorizationMethodPointcuts.forAnnotations(PreFilter.class);
 	}
 

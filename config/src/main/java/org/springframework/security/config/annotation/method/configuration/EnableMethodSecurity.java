@@ -41,7 +41,7 @@ import org.springframework.security.access.prepost.PreFilter;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented
-@Import(MethodSecuritySelector.class)
+@Import(MethodSecuritySelector.class) // 注意这个
 @Configuration
 public @interface EnableMethodSecurity {
 
@@ -49,6 +49,7 @@ public @interface EnableMethodSecurity {
 	 * Determines if Spring Security's {@link PreAuthorize}, {@link PostAuthorize},
 	 * {@link PreFilter}, and {@link PostFilter} annotations should be enabled. Default is
 	 * true.
+	 *
 	 * @return true if pre/post annotations should be enabled false otherwise
 	 */
 	boolean prePostEnabled() default true;
@@ -56,12 +57,14 @@ public @interface EnableMethodSecurity {
 	/**
 	 * Determines if Spring Security's {@link Secured} annotation should be enabled.
 	 * Default is false.
+	 *
 	 * @return true if {@link Secured} annotation should be enabled false otherwise
 	 */
 	boolean securedEnabled() default false;
 
 	/**
 	 * Determines if JSR-250 annotations should be enabled. Default is false.
+	 *
 	 * @return true if JSR-250 should be enabled false otherwise
 	 */
 	boolean jsr250Enabled() default false;
@@ -77,6 +80,7 @@ public @interface EnableMethodSecurity {
 	 * {@code @Transactional} annotation will be upgraded to subclass proxying at the same
 	 * time. This approach has no negative impact in practice unless one is explicitly
 	 * expecting one type of proxy vs another, e.g. in tests.
+	 *
 	 * @return true if subclass-based (CGLIB) proxies are to be created
 	 */
 	boolean proxyTargetClass() default false;
@@ -84,8 +88,9 @@ public @interface EnableMethodSecurity {
 	/**
 	 * Indicate how security advice should be applied. The default is
 	 * {@link AdviceMode#PROXY}.
-	 * @see AdviceMode
+	 *
 	 * @return the {@link AdviceMode} to use
+	 * @see AdviceMode
 	 */
 	AdviceMode mode() default AdviceMode.PROXY;
 

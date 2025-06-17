@@ -80,6 +80,9 @@ final class PrePostMethodSecurityConfiguration {
 		this.postAuthorizeAuthorizaitonMethodInterceptor.setAuthorizationEventPublisher(publisher);
 	}
 
+	/**
+	 * AOP 之中的方法拦截器，执行一些逻辑
+	 */
 	@Bean
 	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 	MethodInterceptor preFilterAuthorizationMethodInterceptor() {

@@ -51,8 +51,10 @@ public class UsernamePasswordAuthenticationFilter extends AbstractAuthentication
 
 	public static final String SPRING_SECURITY_FORM_PASSWORD_KEY = "password";
 
-	private static final AntPathRequestMatcher DEFAULT_ANT_PATH_REQUEST_MATCHER = new AntPathRequestMatcher("/login",
-			"POST");
+	/**
+	 * 一个常量，也是一个接口的实现类 —— RequestMatcher，也就是匹配 POST /login
+	 */
+	private static final AntPathRequestMatcher DEFAULT_ANT_PATH_REQUEST_MATCHER = new AntPathRequestMatcher("/login", "POST");
 
 	private String usernameParameter = SPRING_SECURITY_FORM_USERNAME_KEY;
 

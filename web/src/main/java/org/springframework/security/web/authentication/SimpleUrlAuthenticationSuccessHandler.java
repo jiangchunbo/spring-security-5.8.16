@@ -59,7 +59,10 @@ public class SimpleUrlAuthenticationSuccessHandler extends AbstractAuthenticatio
 	@Override
 	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
 			Authentication authentication) throws IOException, ServletException {
+		// 其实就是发出重定向
 		handle(request, response, authentication);
+
+		// 清除
 		clearAuthenticationAttributes(request);
 	}
 

@@ -221,17 +221,23 @@ public abstract class AbstractAuthenticationProcessingFilter extends GenericFilt
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
 			throws IOException, ServletException {
+		// 只是强转了一下参数而已
+		// 强转为 Http 类型的 ServletRequest 和 ServletResponse
 		doFilter((HttpServletRequest) request, (HttpServletResponse) response, chain);
 	}
 
 	private void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
 			throws IOException, ServletException {
+
+		// 如果不需要登录，那么很好，直接下一步
 		if (!requiresAuthentication(request, response)) {
 			chain.doFilter(request, response);
 			return;
 		}
+
 		try {
-			// 尝试登录，并得到一个 Authentication。 attemptAuthentication 由子类实现
+			// 尝试登录 得到一个 Authentication 实现类
+			// attemptAuthentication 由子类实现
 			// 典型的就是 UsernamePasswordAuthenticationFilter
 			Authentication authenticationResult = attemptAuthentication(request, response);
 			if (authenticationResult == null) {
@@ -241,16 +247,26 @@ public abstract class AbstractAuthenticationProcessingFilter extends GenericFilt
 
 			// 认证成功
 			this.sessionStrategy.onAuthentication(authenticationResult, request, response);
+
 			// Authentication success
+			// 在调用 successfulAuthentication 之前是否继续 chain
+			// 如果不继续，就是直接调用成功认证的处理逻辑
 			if (this.continueChainBeforeSuccessfulAuthentication) {
 				chain.doFilter(request, response);
 			}
+
+			// 成功认证之后
 			successfulAuthentication(request, response, chain, authenticationResult);
+
 		} catch (InternalAuthenticationServiceException failed) {
+			// 你可以抛出 InternalAuthenticationServiceException 内部认证服务异常
+
 			this.logger.error("An internal error occurred while trying to authenticate the user.", failed);
 			unsuccessfulAuthentication(request, response, failed);
 		} catch (AuthenticationException ex) {
 			// Authentication failed
+			// 您也可以抛出一个 AuthenticationException 实现类
+
 			unsuccessfulAuthentication(request, response, ex);
 		}
 	}
@@ -269,12 +285,14 @@ public abstract class AbstractAuthenticationProcessingFilter extends GenericFilt
 	 * <code>false</code> otherwise.
 	 */
 	protected boolean requiresAuthentication(HttpServletRequest request, HttpServletResponse response) {
+		// 对于 UsernamePassword 认证方式，默认情况就是请求匹配 POST /login 就认为需要登录
 		if (this.requiresAuthenticationRequestMatcher.matches(request)) {
 			return true;
 		}
+
+		// 日志
 		if (this.logger.isTraceEnabled()) {
-			this.logger
-					.trace(LogMessage.format("Did not match request to %s", this.requiresAuthenticationRequestMatcher));
+			this.logger.trace(LogMessage.format("Did not match request to %s", this.requiresAuthenticationRequestMatcher));
 		}
 		return false;
 	}
@@ -327,17 +345,33 @@ public abstract class AbstractAuthenticationProcessingFilter extends GenericFilt
 	 */
 	protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
 			Authentication authResult) throws IOException, ServletException {
+		// >>> 成功认证
+
+		// 创建一个空的 Context
 		SecurityContext context = this.securityContextHolderStrategy.createEmptyContext();
+		// 设置 Authentication 认证之后的对象
 		context.setAuthentication(authResult);
+
+		// 把 Context 存起来，一般就是存储到 ThreadLocal 里面
+		// 但是 Spring Security 还不是存储的一个简单的 value
+		// 存储的是一个 lambda，返回值是 context
 		this.securityContextHolderStrategy.setContext(context);
+
+		// 把 Context 存到仓库
 		this.securityContextRepository.saveContext(context, request, response);
 		if (this.logger.isDebugEnabled()) {
 			this.logger.debug(LogMessage.format("Set SecurityContextHolder to %s", authResult));
 		}
+
+		// 记住我
 		this.rememberMeServices.loginSuccess(request, response, authResult);
+
+		// 事件发布，发布一个交互式认证成功的事件
 		if (this.eventPublisher != null) {
 			this.eventPublisher.publishEvent(new InteractiveAuthenticationSuccessEvent(authResult, this.getClass()));
 		}
+
+		// 成功处理器，处理认证成功
 		this.successHandler.onAuthenticationSuccess(request, response, authResult);
 	}
 

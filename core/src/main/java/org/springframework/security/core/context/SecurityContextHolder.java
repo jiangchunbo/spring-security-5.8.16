@@ -62,6 +62,9 @@ public class SecurityContextHolder {
 
 	public static final String SYSTEM_PROPERTY = "spring.security.strategy";
 
+	/**
+	 * 类加载的时候就会执行，从系统属性 spring.security.strategy 中获取策略的名称
+	 */
 	private static String strategyName = System.getProperty(SYSTEM_PROPERTY);
 
 	private static SecurityContextHolderStrategy strategy;
@@ -69,16 +72,25 @@ public class SecurityContextHolder {
 	private static int initializeCount = 0;
 
 	static {
+		// 在 static 块中初始化
 		initialize();
 	}
 
 	private static void initialize() {
+		// 调用私有方法
 		initializeStrategy();
+		// 记录初始化的次数
 		initializeCount++;
 	}
 
 	private static void initializeStrategy() {
 		// MODE_PRE_INITIALIZED
+
+		// 这个逻辑是做什么的呢，其实要看 setContextHolderStrategy 方法
+		// 如果你主动调用设置了策略，那么 setContextHolderStrategy 就会设置为 MODE_PRE_INITIALIZED
+		// 意思就是说你自己预先初始化好了，这里就会直接退出
+
+		// 从系统属性 spring.security.strategy 中获取，如果等于 MODE_PRE_INITIALIZED
 		if (MODE_PRE_INITIALIZED.equals(strategyName)) {
 			Assert.state(strategy != null, "When using " + MODE_PRE_INITIALIZED
 					+ ", setContextHolderStrategy must be called with the fully constructed strategy");
@@ -90,7 +102,11 @@ public class SecurityContextHolder {
 			// Set default
 			strategyName = MODE_THREADLOCAL;
 		}
+
+
+		// 下面根据 strategyName 不同的名字，创建不同的 ContextHolder 策略
 		if (strategyName.equals(MODE_THREADLOCAL)) {
+			// ThreadLocal
 			strategy = new ThreadLocalSecurityContextHolderStrategy();
 			return;
 		}
@@ -212,6 +228,8 @@ public class SecurityContextHolder {
 		Assert.notNull(strategy, "securityContextHolderStrategy cannot be null");
 		SecurityContextHolder.strategyName = MODE_PRE_INITIALIZED;
 		SecurityContextHolder.strategy = strategy;
+
+		// 初始化，其实只是 initialize 次数 + 1
 		initialize();
 	}
 
