@@ -60,6 +60,7 @@ public class UsernamePasswordAuthenticationToken extends AbstractAuthenticationT
 	 * <code>AuthenticationProvider</code> implementations that are satisfied with
 	 * producing a trusted (i.e. {@link #isAuthenticated()} = <code>true</code>)
 	 * authentication token.
+	 *
 	 * @param principal
 	 * @param credentials
 	 * @param authorities
@@ -75,10 +76,12 @@ public class UsernamePasswordAuthenticationToken extends AbstractAuthenticationT
 	/**
 	 * This factory method can be safely used by any code that wishes to create a
 	 * unauthenticated <code>UsernamePasswordAuthenticationToken</code>.
+	 * <p>
+	 * 这是一个工厂方法，可以创建一个未认证的 UsernamePasswordAuthenticationToken
+	 *
 	 * @param principal
 	 * @param credentials
 	 * @return UsernamePasswordAuthenticationToken with false isAuthenticated() result
-	 *
 	 * @since 5.7
 	 */
 	public static UsernamePasswordAuthenticationToken unauthenticated(Object principal, Object credentials) {
@@ -88,10 +91,10 @@ public class UsernamePasswordAuthenticationToken extends AbstractAuthenticationT
 	/**
 	 * This factory method can be safely used by any code that wishes to create a
 	 * authenticated <code>UsernamePasswordAuthenticationToken</code>.
+	 *
 	 * @param principal
 	 * @param credentials
 	 * @return UsernamePasswordAuthenticationToken with true isAuthenticated() result
-	 *
 	 * @since 5.7
 	 */
 	public static UsernamePasswordAuthenticationToken authenticated(Object principal, Object credentials,
