@@ -29,6 +29,8 @@ import org.springframework.util.function.SingletonSupplier;
 /**
  * Strategy used for persisting a {@link SecurityContext} between requests.
  * <p>
+ * 这是一种用于持久化 SecurityContext 的策略
+ * <p>
  * Used by {@link SecurityContextPersistenceFilter} to obtain the context which should be
  * used for the current thread of execution and to store the context once it has been
  * removed from thread-local storage and the request has completed.
@@ -37,10 +39,10 @@ import org.springframework.util.function.SingletonSupplier;
  * <tt>HttpSession</tt> will be used to store the context.
  *
  * @author Luke Taylor
- * @since 3.0
  * @see SecurityContextPersistenceFilter
  * @see HttpSessionSecurityContextRepository
  * @see SaveContextOnUpdateOrErrorResponseWrapper
+ * @since 3.0
  */
 public interface SecurityContextRepository {
 
@@ -59,8 +61,9 @@ public interface SecurityContextRepository {
 	 * guarantees that the context is persisted when an error or redirect occurs.
 	 * Implementations may allow passing in the original request response to allow
 	 * explicit saves.
+	 *
 	 * @param requestResponseHolder holder for the current request and response for which
-	 * the context should be loaded.
+	 *                              the context should be loaded.
 	 * @return The security context which should be used for the current request, never
 	 * null.
 	 * @deprecated Use {@link #loadDeferredContext(HttpServletRequest)} instead.
@@ -72,8 +75,9 @@ public interface SecurityContextRepository {
 	 * Obtains the security context for the supplied request. For an unauthenticated user,
 	 * an empty context implementation should be returned. This method should not return
 	 * null.
+	 *
 	 * @param request the {@link HttpServletRequest} to load the {@link SecurityContext}
-	 * from
+	 *                from
 	 * @return a {@link Supplier} that returns the {@link SecurityContext} which cannot be
 	 * null.
 	 * @since 5.7
@@ -88,8 +92,9 @@ public interface SecurityContextRepository {
 	/**
 	 * Defers loading the {@link SecurityContext} using the {@link HttpServletRequest}
 	 * until it is needed by the application.
+	 *
 	 * @param request the {@link HttpServletRequest} to load the {@link SecurityContext}
-	 * from
+	 *                from
 	 * @return a {@link DeferredSecurityContext} that returns the {@link SecurityContext}
 	 * which cannot be null
 	 * @since 5.8
@@ -102,7 +107,8 @@ public interface SecurityContextRepository {
 
 	/**
 	 * Stores the security context on completion of a request.
-	 * @param context the non-null context which was obtained from the holder.
+	 *
+	 * @param context  the non-null context which was obtained from the holder.
 	 * @param request
 	 * @param response
 	 */
@@ -111,6 +117,7 @@ public interface SecurityContextRepository {
 	/**
 	 * Allows the repository to be queried as to whether it contains a security context
 	 * for the current request.
+	 *
 	 * @param request the current request
 	 * @return true if a context is found for the request, false otherwise
 	 */

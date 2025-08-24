@@ -82,21 +82,30 @@ public class SessionManagementFilter extends GenericFilterBean {
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
 			throws IOException, ServletException {
+		// 只是类型转换而已
 		doFilter((HttpServletRequest) request, (HttpServletResponse) response, chain);
 	}
 
 	private void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
 			throws IOException, ServletException {
+		// 看起来是像只执行 1 次的逻辑
 		if (request.getAttribute(FILTER_APPLIED) != null) {
 			chain.doFilter(request, response);
 			return;
 		}
+
+		// 设置属性，标记已经执行过
 		request.setAttribute(FILTER_APPLIED, Boolean.TRUE);
+
+		//
 		if (!this.securityContextRepository.containsContext(request)) {
+
+			// 获取认证信息
 			Authentication authentication = this.securityContextHolderStrategy.getContext().getAuthentication();
 			if (authentication != null && !this.trustResolver.isAnonymous(authentication)) {
 				// The user has been authenticated during the current request, so call the
 				// session strategy
+				// 用户已经在当前请求中认证过了，因此调用 session 策略
 				try {
 					this.sessionAuthenticationStrategy.onAuthentication(authentication, request, response);
 				}

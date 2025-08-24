@@ -92,6 +92,8 @@ public final class RequestAttributeSecurityContextRepository implements Security
 
 	@Override
 	public void saveContext(SecurityContext context, HttpServletRequest request, HttpServletResponse response) {
+		// 这种策略将 Context 设置到 request 属性中
+		// 似乎不能持久化吧
 		request.setAttribute(this.requestAttributeName, context);
 	}
 

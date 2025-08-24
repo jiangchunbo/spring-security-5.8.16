@@ -207,8 +207,12 @@ public class FilterChainProxy extends GenericFilterBean {
 
 	private void doFilterInternal(ServletRequest request, ServletResponse response, FilterChain chain)
 			throws IOException, ServletException {
+		// 包装 request response
 		FirewalledRequest firewallRequest = this.firewall.getFirewalledRequest((HttpServletRequest) request);
 		HttpServletResponse firewallResponse = this.firewall.getFirewalledResponse((HttpServletResponse) response);
+
+		// FilterChainProxy 里面许多 FilterChain
+		// 如果匹配本次请求，那么就返回对应 FilterChain 所有 Filter，也就是 Filters
 		List<Filter> filters = getFilters(firewallRequest);
 		if (filters == null || filters.size() == 0) {
 			if (logger.isTraceEnabled()) {

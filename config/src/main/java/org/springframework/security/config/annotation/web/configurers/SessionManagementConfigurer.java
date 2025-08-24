@@ -366,6 +366,7 @@ public final class SessionManagementConfigurer<H extends HttpSecurityBuilder<H>>
 
 	@Override
 	public void configure(H http) {
+		// 创建一个 SessionManagementFilter
 		SessionManagementFilter sessionManagementFilter = createSessionManagementFilter(http);
 		if (sessionManagementFilter != null) {
 			http.addFilter(sessionManagementFilter);
