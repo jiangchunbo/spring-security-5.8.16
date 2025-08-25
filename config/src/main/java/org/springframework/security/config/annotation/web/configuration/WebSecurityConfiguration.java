@@ -60,9 +60,9 @@ import org.springframework.util.Assert;
  *
  * @author Rob Winch
  * @author Keesun Baik
- * @since 3.2
  * @see EnableWebSecurity
  * @see WebSecurity
+ * @since 3.2
  */
 @Configuration(proxyBeanMethods = false)
 public class WebSecurityConfiguration implements ImportAware, BeanClassLoaderAware {
@@ -95,6 +95,9 @@ public class WebSecurityConfiguration implements ImportAware, BeanClassLoaderAwa
 
 	/**
 	 * Creates the Spring Security Filter Chain
+	 * <p>
+	 * Spring Security 核心过滤器，可以将请求引导到自己的 FilterChain 中
+	 *
 	 * @return the {@link Filter} that represents the security filter chain
 	 * @throws Exception
 	 */
@@ -106,8 +109,8 @@ public class WebSecurityConfiguration implements ImportAware, BeanClassLoaderAwa
 				"Found WebSecurityConfigurerAdapter as well as SecurityFilterChain. Please select just one.");
 		if (!hasConfigurers && !hasFilterChain) {
 			WebSecurityConfigurerAdapter adapter = this.objectObjectPostProcessor
-				.postProcess(new WebSecurityConfigurerAdapter() {
-				});
+					.postProcess(new WebSecurityConfigurerAdapter() {
+					});
 			this.webSecurity.apply(adapter);
 		}
 		for (SecurityFilterChain securityFilterChain : this.securityFilterChains) {
@@ -128,6 +131,7 @@ public class WebSecurityConfiguration implements ImportAware, BeanClassLoaderAwa
 	/**
 	 * Creates the {@link WebInvocationPrivilegeEvaluator} that is necessary to evaluate
 	 * privileges for a given web URI
+	 *
 	 * @return the {@link WebInvocationPrivilegeEvaluator}
 	 */
 	@Bean
@@ -139,11 +143,12 @@ public class WebSecurityConfiguration implements ImportAware, BeanClassLoaderAwa
 	/**
 	 * Sets the {@code <SecurityConfigurer<FilterChainProxy, WebSecurityBuilder>}
 	 * instances used to create the web configuration.
+	 *
 	 * @param objectPostProcessor the {@link ObjectPostProcessor} used to create a
-	 * {@link WebSecurity} instance
-	 * @param beanFactory the bean factory to use to retrieve the relevant
-	 * {@code <SecurityConfigurer<FilterChainProxy, WebSecurityBuilder>} instances used to
-	 * create the web configuration
+	 *                            {@link WebSecurity} instance
+	 * @param beanFactory         the bean factory to use to retrieve the relevant
+	 *                            {@code <SecurityConfigurer<FilterChainProxy, WebSecurityBuilder>} instances used to
+	 *                            create the web configuration
 	 * @throws Exception
 	 */
 	@Autowired(required = false)
@@ -155,7 +160,7 @@ public class WebSecurityConfiguration implements ImportAware, BeanClassLoaderAwa
 		}
 		List<SecurityConfigurer<Filter, WebSecurity>> webSecurityConfigurers = new AutowiredWebSecurityConfigurersIgnoreParents(
 				beanFactory)
-			.getWebSecurityConfigurers();
+				.getWebSecurityConfigurers();
 		webSecurityConfigurers.sort(AnnotationAwareOrderComparator.INSTANCE);
 		Integer previousOrder = null;
 		Object previousConfig = null;
@@ -192,7 +197,7 @@ public class WebSecurityConfiguration implements ImportAware, BeanClassLoaderAwa
 	@Override
 	public void setImportMetadata(AnnotationMetadata importMetadata) {
 		Map<String, Object> enableWebSecurityAttrMap = importMetadata
-			.getAnnotationAttributes(EnableWebSecurity.class.getName());
+				.getAnnotationAttributes(EnableWebSecurity.class.getName());
 		AnnotationAttributes enableWebSecurityAttrs = AnnotationAttributes.fromMap(enableWebSecurityAttrMap);
 		this.debugEnabled = enableWebSecurityAttrs.getBoolean("debug");
 		if (this.webSecurity != null) {

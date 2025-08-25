@@ -45,6 +45,7 @@ public final class NullSecurityContextRepository implements SecurityContextRepos
 
 	@Override
 	public void saveContext(SecurityContext context, HttpServletRequest request, HttpServletResponse response) {
+		// Null 实现不存储 SecurityContext
 	}
 
 	/**

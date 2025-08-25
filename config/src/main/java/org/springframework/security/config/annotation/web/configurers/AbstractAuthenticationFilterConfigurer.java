@@ -268,27 +268,41 @@ public abstract class AbstractAuthenticationFilterConfigurer<B extends HttpSecur
 		return new AndRequestMatcher(Arrays.asList(notXRequestedWith, mediaMatcher));
 	}
 
+	/**
+	 * 这个类名字叫 AbstractAuthenticationFilterConfigurer，它应该是用于认证过滤器配置的，支持的配置器有限
+	 */
 	@Override
 	public void configure(B http) throws Exception {
+		// 端口映射器？
 		PortMapper portMapper = http.getSharedObject(PortMapper.class);
 		if (portMapper != null) {
 			this.authenticationEntryPoint.setPortMapper(portMapper);
 		}
+
+		// 请求缓存
 		RequestCache requestCache = http.getSharedObject(RequestCache.class);
 		if (requestCache != null) {
 			this.defaultSuccessHandler.setRequestCache(requestCache);
 		}
+
+		// 认证管理器
 		this.authFilter.setAuthenticationManager(http.getSharedObject(AuthenticationManager.class));
+
+		// 认证成功处理器、认证失败处理器
 		this.authFilter.setAuthenticationSuccessHandler(this.successHandler);
 		this.authFilter.setAuthenticationFailureHandler(this.failureHandler);
 		if (this.authenticationDetailsSource != null) {
 			this.authFilter.setAuthenticationDetailsSource(this.authenticationDetailsSource);
 		}
+
+		// 获取认证成功是 会话策略 逻辑
 		SessionAuthenticationStrategy sessionAuthenticationStrategy = http
 			.getSharedObject(SessionAuthenticationStrategy.class);
 		if (sessionAuthenticationStrategy != null) {
 			this.authFilter.setSessionAuthenticationStrategy(sessionAuthenticationStrategy);
 		}
+
+		// 记住我？暂时不知道做什么
 		RememberMeServices rememberMeServices = http.getSharedObject(RememberMeServices.class);
 		if (rememberMeServices != null) {
 			this.authFilter.setRememberMeServices(rememberMeServices);

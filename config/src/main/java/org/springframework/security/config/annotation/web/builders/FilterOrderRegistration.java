@@ -69,11 +69,16 @@ final class FilterOrderRegistration {
 	private final Map<String, Integer> filterToOrder = new HashMap<>();
 
 	FilterOrderRegistration() {
+		// 初始值 100 步长 100
 		Step order = new Step(INITIAL_ORDER, ORDER_STEP);
+
+		// 设置各种 Filter 的 order 值
 		put(DisableEncodeUrlFilter.class, order.next());
 		put(ForceEagerSessionCreationFilter.class, order.next());
 		put(ChannelProcessingFilter.class, order.next());
+
 		order.next(); // gh-8105
+
 		put(WebAsyncManagerIntegrationFilter.class, order.next());
 		put(SecurityContextHolderFilter.class, order.next());
 		put(SecurityContextPersistenceFilter.class, order.next());

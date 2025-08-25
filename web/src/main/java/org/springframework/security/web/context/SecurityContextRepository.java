@@ -107,6 +107,8 @@ public interface SecurityContextRepository {
 
 	/**
 	 * Stores the security context on completion of a request.
+	 * <p>
+	 * 当请求完成时，存储 Security Context
 	 *
 	 * @param context  the non-null context which was obtained from the holder.
 	 * @param request

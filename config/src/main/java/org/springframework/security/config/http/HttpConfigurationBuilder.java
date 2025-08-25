@@ -87,6 +87,8 @@ import org.springframework.util.xml.DomUtils;
 /**
  * Stateful class which helps HttpSecurityBDP to create the configuration for the
  * &lt;http&gt; element.
+ * <p>
+ * 用于帮助 HttpSecurityBDP 创建 &lt;http&gt; 元素配置的有状态类
  *
  * @author Luke Taylor
  * @author Rob Winch
@@ -212,6 +214,9 @@ class HttpConfigurationBuilder {
 
 	private boolean addAllAuth;
 
+	/**
+	 * 构造器，与 XML 解析有关
+	 */
 	HttpConfigurationBuilder(Element element, boolean addAllAuth, ParserContext pc, BeanReference portMapper,
 			BeanReference portResolver, BeanReference authenticationManager) {
 		this.httpElt = element;
@@ -253,6 +258,9 @@ class HttpConfigurationBuilder {
 		}
 	}
 
+	/**
+	 * 从一个字符串中解析出来 SessionCreationPolicy
+	 */
 	private SessionCreationPolicy createPolicy(String createSession) {
 		if ("ifRequired".equals(createSession)) {
 			return SessionCreationPolicy.IF_REQUIRED;
@@ -317,8 +325,7 @@ class HttpConfigurationBuilder {
 		createSecurityContextRepository();
 		if (isExplicitSave()) {
 			createSecurityContextHolderFilter();
-		}
-		else {
+		} else {
 			createSecurityContextPersistenceFilter();
 		}
 	}
@@ -359,7 +366,7 @@ class HttpConfigurationBuilder {
 			return;
 		}
 		this.holderStrategyRef = BeanDefinitionBuilder.rootBeanDefinition(SecurityContextHolderStrategyFactory.class)
-			.getBeanDefinition();
+				.getBeanDefinition();
 	}
 
 	private void createSecurityContextRepository() {
@@ -368,8 +375,7 @@ class HttpConfigurationBuilder {
 			BeanDefinitionBuilder contextRepo;
 			if (this.sessionPolicy == SessionCreationPolicy.STATELESS) {
 				contextRepo = BeanDefinitionBuilder.rootBeanDefinition(NullSecurityContextRepository.class);
-			}
-			else {
+			} else {
 				contextRepo = BeanDefinitionBuilder.rootBeanDefinition(HttpSessionSecurityContextRepository.class);
 				switch (this.sessionPolicy) {
 					case ALWAYS:
@@ -418,9 +424,9 @@ class HttpConfigurationBuilder {
 		if (sessionMgmtElt != null) {
 			if (this.sessionPolicy == SessionCreationPolicy.STATELESS) {
 				this.pc.getReaderContext()
-					.error(Elements.SESSION_MANAGEMENT + "  cannot be used" + " in combination with "
-							+ ATT_CREATE_SESSION + "='" + SessionCreationPolicy.STATELESS + "'",
-							this.pc.extractSource(sessionMgmtElt));
+						.error(Elements.SESSION_MANAGEMENT + "  cannot be used" + " in combination with "
+										+ ATT_CREATE_SESSION + "='" + SessionCreationPolicy.STATELESS + "'",
+								this.pc.extractSource(sessionMgmtElt));
 			}
 			sessionFixationAttribute = sessionMgmtElt.getAttribute(ATT_SESSION_FIXATION_PROTECTION);
 			invalidSessionUrl = sessionMgmtElt.getAttribute(ATT_INVALID_SESSION_URL);
@@ -431,14 +437,14 @@ class HttpConfigurationBuilder {
 			sessionControlEnabled = sessionCtrlElt != null;
 			if (StringUtils.hasText(invalidSessionUrl) && StringUtils.hasText(invalidSessionStrategyRef)) {
 				this.pc.getReaderContext()
-					.error(ATT_INVALID_SESSION_URL + " attribute cannot be used in combination with" + " the "
-							+ ATT_INVALID_SESSION_STRATEGY_REF + " attribute.", sessionMgmtElt);
+						.error(ATT_INVALID_SESSION_URL + " attribute cannot be used in combination with" + " the "
+								+ ATT_INVALID_SESSION_STRATEGY_REF + " attribute.", sessionMgmtElt);
 			}
 			if (sessionControlEnabled) {
 				if (StringUtils.hasText(sessionAuthStratRef)) {
 					this.pc.getReaderContext()
-						.error(ATT_SESSION_AUTH_STRATEGY_REF + " attribute cannot be used" + " in combination with <"
-								+ Elements.CONCURRENT_SESSIONS + ">", this.pc.extractSource(sessionCtrlElt));
+							.error(ATT_SESSION_AUTH_STRATEGY_REF + " attribute cannot be used" + " in combination with <"
+									+ Elements.CONCURRENT_SESSIONS + ">", this.pc.extractSource(sessionCtrlElt));
 				}
 				createConcurrencyControlFilterAndSessionRegistry(sessionCtrlElt);
 			}
@@ -446,11 +452,10 @@ class HttpConfigurationBuilder {
 
 		if (!StringUtils.hasText(sessionFixationAttribute)) {
 			sessionFixationAttribute = OPT_CHANGE_SESSION_ID;
-		}
-		else if (StringUtils.hasText(sessionAuthStratRef)) {
+		} else if (StringUtils.hasText(sessionAuthStratRef)) {
 			this.pc.getReaderContext()
-				.error(ATT_SESSION_FIXATION_PROTECTION + " attribute cannot be used" + " in combination with "
-						+ ATT_SESSION_AUTH_STRATEGY_REF, this.pc.extractSource(sessionMgmtElt));
+					.error(ATT_SESSION_FIXATION_PROTECTION + " attribute cannot be used" + " in combination with "
+							+ ATT_SESSION_AUTH_STRATEGY_REF, this.pc.extractSource(sessionMgmtElt));
 		}
 
 		if (this.sessionPolicy == SessionCreationPolicy.STATELESS) {
@@ -458,7 +463,7 @@ class HttpConfigurationBuilder {
 			return;
 		}
 		boolean sessionFixationProtectionRequired = !sessionFixationAttribute
-			.equals(OPT_SESSION_FIXATION_NO_PROTECTION);
+				.equals(OPT_SESSION_FIXATION_NO_PROTECTION);
 		ManagedList<BeanMetadataElement> delegateSessionStrategies = new ManagedList<>();
 		BeanDefinitionBuilder concurrentSessionStrategy;
 		BeanDefinitionBuilder sessionFixationStrategy = null;
@@ -469,11 +474,11 @@ class HttpConfigurationBuilder {
 		if (sessionControlEnabled) {
 			Assert.state(this.sessionRegistryRef != null, "No sessionRegistryRef found");
 			concurrentSessionStrategy = BeanDefinitionBuilder
-				.rootBeanDefinition(ConcurrentSessionControlAuthenticationStrategy.class);
+					.rootBeanDefinition(ConcurrentSessionControlAuthenticationStrategy.class);
 			concurrentSessionStrategy.addConstructorArgValue(this.sessionRegistryRef);
 			String maxSessions = this.pc.getReaderContext()
-				.getEnvironment()
-				.resolvePlaceholders(sessionCtrlElt.getAttribute("max-sessions"));
+					.getEnvironment()
+					.resolvePlaceholders(sessionCtrlElt.getAttribute("max-sessions"));
 			if (StringUtils.hasText(maxSessions)) {
 				concurrentSessionStrategy.addPropertyValue("maximumSessions", maxSessions);
 			}
@@ -487,11 +492,10 @@ class HttpConfigurationBuilder {
 		if (sessionFixationProtectionRequired || StringUtils.hasText(invalidSessionUrl)) {
 			if (useChangeSessionId) {
 				sessionFixationStrategy = BeanDefinitionBuilder
-					.rootBeanDefinition(ChangeSessionIdAuthenticationStrategy.class);
-			}
-			else {
+						.rootBeanDefinition(ChangeSessionIdAuthenticationStrategy.class);
+			} else {
 				sessionFixationStrategy = BeanDefinitionBuilder
-					.rootBeanDefinition(SessionFixationProtectionStrategy.class);
+						.rootBeanDefinition(SessionFixationProtectionStrategy.class);
 			}
 			delegateSessionStrategies.add(sessionFixationStrategy.getBeanDefinition());
 		}
@@ -500,7 +504,7 @@ class HttpConfigurationBuilder {
 		}
 		if (sessionControlEnabled) {
 			registerSessionStrategy = BeanDefinitionBuilder
-				.rootBeanDefinition(RegisterSessionAuthenticationStrategy.class);
+					.rootBeanDefinition(RegisterSessionAuthenticationStrategy.class);
 			registerSessionStrategy.addConstructorArgValue(this.sessionRegistryRef);
 			delegateSessionStrategies.add(registerSessionStrategy.getBeanDefinition());
 		}
@@ -509,7 +513,7 @@ class HttpConfigurationBuilder {
 			return;
 		}
 		BeanDefinitionBuilder sessionMgmtFilter = BeanDefinitionBuilder
-			.rootBeanDefinition(SessionManagementFilter.class);
+				.rootBeanDefinition(SessionManagementFilter.class);
 		RootBeanDefinition failureHandler = new RootBeanDefinition(SimpleUrlAuthenticationFailureHandler.class);
 		if (StringUtils.hasText(errorUrl)) {
 			failureHandler.getPropertyValues().addPropertyValue("defaultFailureUrl", errorUrl);
@@ -525,7 +529,7 @@ class HttpConfigurationBuilder {
 		}
 		if (!delegateSessionStrategies.isEmpty()) {
 			BeanDefinitionBuilder sessionStrategy = BeanDefinitionBuilder
-				.rootBeanDefinition(CompositeSessionAuthenticationStrategy.class);
+					.rootBeanDefinition(CompositeSessionAuthenticationStrategy.class);
 			BeanDefinition strategyBean = sessionStrategy.getBeanDefinition();
 			sessionStrategy.addConstructorArgValue(delegateSessionStrategies);
 			sessionAuthStratRef = this.pc.getReaderContext().generateBeanName(strategyBean);
@@ -533,12 +537,11 @@ class HttpConfigurationBuilder {
 		}
 		if (StringUtils.hasText(invalidSessionUrl)) {
 			BeanDefinitionBuilder invalidSessionBldr = BeanDefinitionBuilder
-				.rootBeanDefinition(SimpleRedirectInvalidSessionStrategy.class);
+					.rootBeanDefinition(SimpleRedirectInvalidSessionStrategy.class);
 			invalidSessionBldr.addConstructorArgValue(invalidSessionUrl);
 			this.invalidSession = invalidSessionBldr.getBeanDefinition();
 			sessionMgmtFilter.addPropertyValue("invalidSessionStrategy", this.invalidSession);
-		}
-		else if (StringUtils.hasText(invalidSessionStrategyRef)) {
+		} else if (StringUtils.hasText(invalidSessionStrategyRef)) {
 			sessionMgmtFilter.addPropertyReference("invalidSessionStrategy", invalidSessionStrategyRef);
 		}
 		sessionMgmtFilter.addConstructorArgReference(sessionAuthStratRef);
@@ -575,16 +578,15 @@ class HttpConfigurationBuilder {
 		String expiredSessionStrategyRef = element.getAttribute(ATT_EXPIRED_SESSION_STRATEGY_REF);
 		if (StringUtils.hasText(expiryUrl) && StringUtils.hasText(expiredSessionStrategyRef)) {
 			this.pc.getReaderContext()
-				.error("Cannot use 'expired-url' attribute and 'expired-session-strategy-ref'" + " attribute together.",
-						source);
+					.error("Cannot use 'expired-url' attribute and 'expired-session-strategy-ref'" + " attribute together.",
+							source);
 		}
 		if (StringUtils.hasText(expiryUrl)) {
 			BeanDefinitionBuilder expiredSessionBldr = BeanDefinitionBuilder
-				.rootBeanDefinition(SimpleRedirectSessionInformationExpiredStrategy.class);
+					.rootBeanDefinition(SimpleRedirectSessionInformationExpiredStrategy.class);
 			expiredSessionBldr.addConstructorArgValue(expiryUrl);
 			filterBuilder.addConstructorArgValue(expiredSessionBldr.getBeanDefinition());
-		}
-		else if (StringUtils.hasText(expiredSessionStrategyRef)) {
+		} else if (StringUtils.hasText(expiredSessionStrategyRef)) {
 			filterBuilder.addConstructorArgReference(expiredSessionStrategyRef);
 		}
 		this.pc.popAndRegisterContainingComponent();
@@ -622,8 +624,8 @@ class HttpConfigurationBuilder {
 		}
 		if ("true".equals(provideJaasApi)) {
 			this.jaasApiFilter = BeanDefinitionBuilder.rootBeanDefinition(JaasApiIntegrationFilter.class)
-				.addPropertyValue("securityContextHolderStrategy", this.holderStrategyRef)
-				.getBeanDefinition();
+					.addPropertyValue("securityContextHolderStrategy", this.holderStrategyRef)
+					.getBeanDefinition();
 		}
 	}
 
@@ -634,10 +636,10 @@ class HttpConfigurationBuilder {
 		}
 		RootBeanDefinition channelFilter = new RootBeanDefinition(ChannelProcessingFilter.class);
 		BeanDefinitionBuilder metadataSourceBldr = BeanDefinitionBuilder
-			.rootBeanDefinition(DefaultFilterInvocationSecurityMetadataSource.class);
+				.rootBeanDefinition(DefaultFilterInvocationSecurityMetadataSource.class);
 		metadataSourceBldr.addConstructorArgValue(channelRequestMap);
 		channelFilter.getPropertyValues()
-			.addPropertyValue("securityMetadataSource", metadataSourceBldr.getBeanDefinition());
+				.addPropertyValue("securityMetadataSource", metadataSourceBldr.getBeanDefinition());
 		RootBeanDefinition channelDecisionManager = new RootBeanDefinition(ChannelDecisionManagerImpl.class);
 		ManagedList<RootBeanDefinition> channelProcessors = new ManagedList<>(3);
 		RootBeanDefinition secureChannelProcessor = new RootBeanDefinition(SecureChannelProcessor.class);
@@ -690,20 +692,18 @@ class HttpConfigurationBuilder {
 		Element requestCacheElt = DomUtils.getChildElementByTagName(this.httpElt, Elements.REQUEST_CACHE);
 		if (requestCacheElt != null) {
 			this.requestCache = new RuntimeBeanReference(requestCacheElt.getAttribute(ATT_REF));
-		}
-		else {
+		} else {
 			BeanDefinitionBuilder requestCacheBldr;
 			if (this.sessionPolicy == SessionCreationPolicy.STATELESS) {
 				requestCacheBldr = BeanDefinitionBuilder.rootBeanDefinition(NullRequestCache.class);
-			}
-			else {
+			} else {
 				requestCacheBldr = BeanDefinitionBuilder.rootBeanDefinition(HttpSessionRequestCache.class);
 				requestCacheBldr.addPropertyValue("createSessionAllowed",
 						this.sessionPolicy == SessionCreationPolicy.IF_REQUIRED);
 				requestCacheBldr.addPropertyValue("portResolver", this.portResolver);
 				if (this.csrfFilter != null) {
 					BeanDefinitionBuilder requestCacheMatcherBldr = BeanDefinitionBuilder
-						.rootBeanDefinition(AntPathRequestMatcher.class);
+							.rootBeanDefinition(AntPathRequestMatcher.class);
 					requestCacheMatcherBldr.addConstructorArgValue("/**");
 					requestCacheMatcherBldr.addConstructorArgValue("GET");
 					requestCacheBldr.addPropertyValue("requestMatcher", requestCacheMatcherBldr.getBeanDefinition());
@@ -740,9 +740,9 @@ class HttpConfigurationBuilder {
 		// use with
 		// taglibs etc.
 		BeanDefinition wipe = BeanDefinitionBuilder
-			.rootBeanDefinition(AuthorizationManagerWebInvocationPrivilegeEvaluator.class)
-			.addConstructorArgReference(authorizationFilterParser.getAuthorizationManagerRef())
-			.getBeanDefinition();
+				.rootBeanDefinition(AuthorizationManagerWebInvocationPrivilegeEvaluator.class)
+				.addConstructorArgReference(authorizationFilterParser.getAuthorizationManagerRef())
+				.getBeanDefinition();
 		this.pc.registerBeanComponent(
 				new BeanComponentDefinition(wipe, this.pc.getReaderContext().generateBeanName(wipe)));
 		this.fsi = new RuntimeBeanReference(fsiId);
@@ -751,19 +751,18 @@ class HttpConfigurationBuilder {
 	private void createFilterSecurityInterceptor(BeanReference authManager) {
 		boolean useExpressions = FilterInvocationSecurityMetadataSourceParser.isUseExpressions(this.httpElt);
 		RootBeanDefinition securityMds = FilterInvocationSecurityMetadataSourceParser
-			.createSecurityMetadataSource(this.interceptUrls, this.addAllAuth, this.httpElt, this.pc);
+				.createSecurityMetadataSource(this.interceptUrls, this.addAllAuth, this.httpElt, this.pc);
 		RootBeanDefinition accessDecisionMgr;
 		ManagedList<BeanDefinition> voters = new ManagedList<>(2);
 		if (useExpressions) {
 			BeanDefinitionBuilder expressionVoter = BeanDefinitionBuilder.rootBeanDefinition(WebExpressionVoter.class);
 			// Read the expression handler from the FISMS
 			RuntimeBeanReference expressionHandler = (RuntimeBeanReference) securityMds.getConstructorArgumentValues()
-				.getArgumentValue(1, RuntimeBeanReference.class)
-				.getValue();
+					.getArgumentValue(1, RuntimeBeanReference.class)
+					.getValue();
 			expressionVoter.addPropertyValue("expressionHandler", expressionHandler);
 			voters.add(expressionVoter.getBeanDefinition());
-		}
-		else {
+		} else {
 			voters.add(GrantedAuthorityDefaultsParserUtils.registerWithDefaultRolePrefix(this.pc,
 					RoleVoterBeanFactory.class));
 			voters.add(new RootBeanDefinition(AuthenticatedVoter.class));
@@ -917,7 +916,7 @@ class HttpConfigurationBuilder {
 		private SecurityContextHolderAwareRequestFilter filter = new SecurityContextHolderAwareRequestFilter();
 
 		private SecurityContextHolderStrategy securityContextHolderStrategy = SecurityContextHolder
-			.getContextHolderStrategy();
+				.getContextHolderStrategy();
 
 		@Override
 		public SecurityContextHolderAwareRequestFilter getBean() {

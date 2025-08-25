@@ -245,7 +245,7 @@ public abstract class AbstractAuthenticationProcessingFilter extends GenericFilt
 				return;
 			}
 
-			// 认证成功
+			// 认证成功，执行会话的一些策略逻辑
 			this.sessionStrategy.onAuthentication(authenticationResult, request, response);
 
 			// Authentication success

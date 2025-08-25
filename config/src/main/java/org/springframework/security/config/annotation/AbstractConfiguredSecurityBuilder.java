@@ -55,6 +55,9 @@ public abstract class AbstractConfiguredSecurityBuilder<O, B extends SecurityBui
 
 	private final Log logger = LogFactory.getLog(getClass());
 
+	/**
+	 * 核心的成员变量，其中保存了一种一对多的映射，通过特定 Class 可以找到一系列对象
+	 */
 	private final LinkedHashMap<Class<? extends SecurityConfigurer<O, B>>, List<SecurityConfigurer<O, B>>> configurers = new LinkedHashMap<>();
 
 	private final List<SecurityConfigurer<O, B>> configurersAddedInInitializing = new ArrayList<>();
@@ -95,6 +98,7 @@ public abstract class AbstractConfiguredSecurityBuilder<O, B extends SecurityBui
 	/**
 	 * Similar to {@link #build()} and {@link #getObject()} but checks the state to
 	 * determine if {@link #build()} needs to be called first.
+	 *
 	 * @return the result of {@link #build()} or {@link #getObject()}. If an error occurs
 	 * while building, returns null.
 	 */
@@ -104,8 +108,7 @@ public abstract class AbstractConfiguredSecurityBuilder<O, B extends SecurityBui
 		}
 		try {
 			return build();
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			this.logger.debug("Failed to perform build. Returning null", ex);
 			return null;
 		}
@@ -114,6 +117,7 @@ public abstract class AbstractConfiguredSecurityBuilder<O, B extends SecurityBui
 	/**
 	 * Applies a {@link SecurityConfigurerAdapter} to this {@link SecurityBuilder} and
 	 * invokes {@link SecurityConfigurerAdapter#setBuilder(SecurityBuilder)}.
+	 *
 	 * @param configurer
 	 * @return the {@link SecurityConfigurerAdapter} for further customizations
 	 * @throws Exception
@@ -130,6 +134,7 @@ public abstract class AbstractConfiguredSecurityBuilder<O, B extends SecurityBui
 	 * Applies a {@link SecurityConfigurer} to this {@link SecurityBuilder} overriding any
 	 * {@link SecurityConfigurer} of the exact same class. Note that object hierarchies
 	 * are not considered.
+	 *
 	 * @param configurer
 	 * @return the {@link SecurityConfigurerAdapter} for further customizations
 	 * @throws Exception
@@ -141,8 +146,9 @@ public abstract class AbstractConfiguredSecurityBuilder<O, B extends SecurityBui
 
 	/**
 	 * Sets an object that is shared by multiple {@link SecurityConfigurer}.
+	 *
 	 * @param sharedType the Class to key the shared object by.
-	 * @param object the Object to store
+	 * @param object     the Object to store
 	 */
 	@SuppressWarnings("unchecked")
 	public <C> void setSharedObject(Class<C> sharedType, C object) {
@@ -151,6 +157,7 @@ public abstract class AbstractConfiguredSecurityBuilder<O, B extends SecurityBui
 
 	/**
 	 * Gets a shared Object. Note that object heirarchies are not considered.
+	 *
 	 * @param sharedType the type of the shared Object
 	 * @return the shared Object or null if it is not found
 	 */
@@ -161,6 +168,7 @@ public abstract class AbstractConfiguredSecurityBuilder<O, B extends SecurityBui
 
 	/**
 	 * Gets the shared objects
+	 *
 	 * @return the shared Objects
 	 */
 	public Map<Class<?>, Object> getSharedObjects() {
@@ -170,13 +178,14 @@ public abstract class AbstractConfiguredSecurityBuilder<O, B extends SecurityBui
 	/**
 	 * Adds {@link SecurityConfigurer} ensuring that it is allowed and invoking
 	 * {@link SecurityConfigurer#init(SecurityBuilder)} immediately if necessary.
+	 *
 	 * @param configurer the {@link SecurityConfigurer} to add
 	 */
 	@SuppressWarnings("unchecked")
 	private <C extends SecurityConfigurer<O, B>> void add(C configurer) {
 		Assert.notNull(configurer, "configurer cannot be null");
 		Class<? extends SecurityConfigurer<O, B>> clazz = (Class<? extends SecurityConfigurer<O, B>>) configurer
-			.getClass();
+				.getClass();
 		synchronized (this.configurers) {
 			if (this.buildState.isConfigured()) {
 				throw new IllegalStateException("Cannot apply " + configurer + " to already built object");
@@ -188,6 +197,8 @@ public abstract class AbstractConfiguredSecurityBuilder<O, B extends SecurityBui
 			configs = (configs != null) ? configs : new ArrayList<>(1);
 			configs.add(configurer);
 			this.configurers.put(clazz, configs);
+
+			// 如果当前正在初始化，但是调用了 add configurer 方法，就添加到一个特殊的集合
 			if (this.buildState.isInitializing()) {
 				this.configurersAddedInInitializing.add(configurer);
 			}
@@ -197,6 +208,7 @@ public abstract class AbstractConfiguredSecurityBuilder<O, B extends SecurityBui
 	/**
 	 * Gets all the {@link SecurityConfigurer} instances by its class name or an empty
 	 * List if not found. Note that object hierarchies are not considered.
+	 *
 	 * @param clazz the {@link SecurityConfigurer} class to look for
 	 * @return a list of {@link SecurityConfigurer}s for further customization
 	 */
@@ -212,6 +224,7 @@ public abstract class AbstractConfiguredSecurityBuilder<O, B extends SecurityBui
 	/**
 	 * Removes all the {@link SecurityConfigurer} instances by its class name or an empty
 	 * List if not found. Note that object hierarchies are not considered.
+	 *
 	 * @param clazz the {@link SecurityConfigurer} class to look for
 	 * @return a list of {@link SecurityConfigurer}s for further customization
 	 */
@@ -228,6 +241,7 @@ public abstract class AbstractConfiguredSecurityBuilder<O, B extends SecurityBui
 	/**
 	 * Gets the {@link SecurityConfigurer} by its class name or <code>null</code> if not
 	 * found. Note that object hierarchies are not considered.
+	 *
 	 * @param clazz
 	 * @return the {@link SecurityConfigurer} for further customizations
 	 */
@@ -245,6 +259,7 @@ public abstract class AbstractConfiguredSecurityBuilder<O, B extends SecurityBui
 	/**
 	 * Removes and returns the {@link SecurityConfigurer} by its class name or
 	 * <code>null</code> if not found. Note that object hierarchies are not considered.
+	 *
 	 * @param clazz
 	 * @return
 	 */
@@ -266,6 +281,7 @@ public abstract class AbstractConfiguredSecurityBuilder<O, B extends SecurityBui
 
 	/**
 	 * Specifies the {@link ObjectPostProcessor} to use.
+	 *
 	 * @param objectPostProcessor the {@link ObjectPostProcessor} to use. Cannot be null
 	 * @return the {@link SecurityBuilder} for further customizations
 	 */
@@ -279,6 +295,7 @@ public abstract class AbstractConfiguredSecurityBuilder<O, B extends SecurityBui
 	/**
 	 * Performs post processing of an object. The default is to delegate to the
 	 * {@link ObjectPostProcessor}.
+	 *
 	 * @param object the Object to post process
 	 * @return the possibly modified Object to use
 	 */
@@ -301,14 +318,21 @@ public abstract class AbstractConfiguredSecurityBuilder<O, B extends SecurityBui
 	@Override
 	protected final O doBuild() throws Exception {
 		synchronized (this.configurers) {
+			// 设置状态是 initializing，然后执行 beforeInit、init
 			this.buildState = BuildState.INITIALIZING;
-			beforeInit();
-			init();
+			beforeInit(); // 我没有看到任何子类实现
+			init(); // 私有方法，固定逻辑
+
+			// 设置状态是 configuring，然后执行 beforeConfigure、configure
 			this.buildState = BuildState.CONFIGURING;
 			beforeConfigure();
-			configure();
+			configure(); // 私有方法，固定逻辑
+
+			// 设置状态时 building，然后执行 performBuild
 			this.buildState = BuildState.BUILDING;
-			O result = performBuild();
+			O result = performBuild(); // 对于 WebSecurity 等等来说，这个方法逻辑非常多
+
+			// 结束，设置状态 built -> build 现在完成时
 			this.buildState = BuildState.BUILT;
 			return result;
 		}
@@ -333,16 +357,23 @@ public abstract class AbstractConfiguredSecurityBuilder<O, B extends SecurityBui
 
 	/**
 	 * Subclasses must implement this method to build the object that is being returned.
+	 *
 	 * @return the Object to be buit or null if the implementation allows it
 	 */
 	protected abstract O performBuild() throws Exception;
 
 	@SuppressWarnings("unchecked")
 	private void init() throws Exception {
+		// 获取所有的 configurer 配置器
 		Collection<SecurityConfigurer<O, B>> configurers = getConfigurers();
+
+		// 调用所有 configurer 的 init
 		for (SecurityConfigurer<O, B> configurer : configurers) {
 			configurer.init((B) this);
 		}
+
+		// 这里是担心，如果在上面的循环中 init 方法调用了 add(C configurer)，会出现循环中操作集合的并发异常 ConcurrentModificationException
+		// 如果是 init 阶段添加了 SecurityConfigurer，那么就在这里调用
 		for (SecurityConfigurer<O, B> configurer : this.configurersAddedInInitializing) {
 			configurer.init((B) this);
 		}
@@ -350,14 +381,22 @@ public abstract class AbstractConfiguredSecurityBuilder<O, B extends SecurityBui
 
 	@SuppressWarnings("unchecked")
 	private void configure() throws Exception {
+		// 再次从 Map 中获取所有 Value 构造了一个集合
 		Collection<SecurityConfigurer<O, B>> configurers = getConfigurers();
+
+		// 调用所有 configurer 的 configure 方法
 		for (SecurityConfigurer<O, B> configurer : configurers) {
 			configurer.configure((B) this);
 		}
 	}
 
+	/**
+	 * 获取所有配置器，表面上是简单的 get，实际上是构造了一个 List，然后汇总 Map 中的所有 Value
+	 */
 	private Collection<SecurityConfigurer<O, B>> getConfigurers() {
 		List<SecurityConfigurer<O, B>> result = new ArrayList<>();
+
+		// 虽然这是一个 Map，但是这里是直接获取所有 values，汇总成 List
 		for (List<SecurityConfigurer<O, B>> configs : this.configurers.values()) {
 			result.addAll(configs);
 		}
@@ -366,6 +405,7 @@ public abstract class AbstractConfiguredSecurityBuilder<O, B extends SecurityBui
 
 	/**
 	 * Determines if the object is unbuilt.
+	 *
 	 * @return true, if unbuilt else false
 	 */
 	private boolean isUnbuilt() {
@@ -425,6 +465,7 @@ public abstract class AbstractConfiguredSecurityBuilder<O, B extends SecurityBui
 
 		/**
 		 * Determines if the state is CONFIGURING or later
+		 *
 		 * @return
 		 */
 		public boolean isConfigured() {
