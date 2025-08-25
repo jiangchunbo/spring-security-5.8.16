@@ -68,7 +68,7 @@ public class SecurityContextLogoutHandler implements LogoutHandler {
 	public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
 		Assert.notNull(request, "HttpServletRequest required");
 
-		// 是否需要失效 Session
+		// 调用 Session 的 invalidate 方法
 		if (this.invalidateHttpSession) {
 			HttpSession session = request.getSession(false);
 			if (session != null) {
@@ -79,11 +79,17 @@ public class SecurityContextLogoutHandler implements LogoutHandler {
 				}
 			}
 		}
+
+		// 删除 ThreadLocal 中的值
 		SecurityContext context = this.securityContextHolderStrategy.getContext();
 		this.securityContextHolderStrategy.clearContext();
+
+		// 删除 Context 中的 Authentication 对象
 		if (this.clearAuthentication) {
 			context.setAuthentication(null);
 		}
+
+		// 创建了一个 emptyContext save 会触发 Http Session 的属性删除
 		SecurityContext emptyContext = this.securityContextHolderStrategy.createEmptyContext();
 		this.securityContextRepository.saveContext(emptyContext, request, response);
 	}
