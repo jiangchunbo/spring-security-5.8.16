@@ -73,11 +73,11 @@ final class FilterOrderRegistration {
 		Step order = new Step(INITIAL_ORDER, ORDER_STEP);
 
 		// 设置各种 Filter 的 order 值
-		put(DisableEncodeUrlFilter.class, order.next());
-		put(ForceEagerSessionCreationFilter.class, order.next());
-		put(ChannelProcessingFilter.class, order.next());
+		put(DisableEncodeUrlFilter.class, order.next()); // 100
+		put(ForceEagerSessionCreationFilter.class, order.next()); // 200
+		put(ChannelProcessingFilter.class, order.next()); // 300
 
-		order.next(); // gh-8105
+		order.next(); // gh-8105  400
 
 		put(WebAsyncManagerIntegrationFilter.class, order.next());
 		put(SecurityContextHolderFilter.class, order.next());
@@ -100,8 +100,12 @@ final class FilterOrderRegistration {
 		this.filterToOrder.put(
 				"org.springframework.security.saml2.provider.service.web.authentication.Saml2WebSsoAuthenticationFilter",
 				order.next());
+
+		// 账密登录
 		put(UsernamePasswordAuthenticationFilter.class, order.next());
+
 		order.next(); // gh-8105
+
 		this.filterToOrder.put("org.springframework.security.openid.OpenIDAuthenticationFilter", order.next());
 		put(DefaultLoginPageGeneratingFilter.class, order.next());
 		put(DefaultLogoutPageGeneratingFilter.class, order.next());

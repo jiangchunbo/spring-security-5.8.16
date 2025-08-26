@@ -76,7 +76,12 @@ public final class FormLoginConfigurer<H extends HttpSecurityBuilder<H>> extends
 	 * @see HttpSecurity#formLogin()
 	 */
 	public FormLoginConfigurer() {
+		// 基础的表单用户名、密码登录认证，创建了一个认证过滤器
+		// 没有设置 url
 		super(new UsernamePasswordAuthenticationFilter(), null);
+
+		// 由于上一步骤已经设置了 filter，这里直接像过滤器中设置接受的参数名
+		// 默认就是 username + password
 		usernameParameter("username");
 		passwordParameter("password");
 	}
@@ -179,6 +184,7 @@ public final class FormLoginConfigurer<H extends HttpSecurityBuilder<H>> extends
 	 */
 	@Override
 	public FormLoginConfigurer<H> loginPage(String loginPage) {
+		// 这方法自己也没实现什么东西啊？
 		return super.loginPage(loginPage);
 	}
 
@@ -190,6 +196,7 @@ public final class FormLoginConfigurer<H extends HttpSecurityBuilder<H>> extends
 	 * @return the {@link FormLoginConfigurer} for additional customization
 	 */
 	public FormLoginConfigurer<H> usernameParameter(String usernameParameter) {
+		// 设置 username 参数名
 		getAuthenticationFilter().setUsernameParameter(usernameParameter);
 		return this;
 	}
@@ -202,6 +209,7 @@ public final class FormLoginConfigurer<H extends HttpSecurityBuilder<H>> extends
 	 * @return the {@link FormLoginConfigurer} for additional customization
 	 */
 	public FormLoginConfigurer<H> passwordParameter(String passwordParameter) {
+		// 设置 password 参数名
 		getAuthenticationFilter().setPasswordParameter(passwordParameter);
 		return this;
 	}
@@ -232,8 +240,12 @@ public final class FormLoginConfigurer<H extends HttpSecurityBuilder<H>> extends
 		initDefaultLoginFilter(http);
 	}
 
+	/**
+	 * 创建请求匹配器
+	 */
 	@Override
 	protected RequestMatcher createLoginProcessingUrlMatcher(String loginProcessingUrl) {
+		// 匹配 POST /login
 		return new AntPathRequestMatcher(loginProcessingUrl, "POST");
 	}
 
