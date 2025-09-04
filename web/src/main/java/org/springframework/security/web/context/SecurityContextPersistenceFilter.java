@@ -73,6 +73,9 @@ public class SecurityContextPersistenceFilter extends GenericFilterBean {
 
 	private boolean forceEagerSessionCreation = false;
 
+	/**
+	 * 默认使用 Http Session 作为 SecurityContext 存储库
+	 */
 	public SecurityContextPersistenceFilter() {
 		this(new HttpSessionSecurityContextRepository());
 	}
@@ -90,18 +93,25 @@ public class SecurityContextPersistenceFilter extends GenericFilterBean {
 	private void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
 			throws IOException, ServletException {
 		// ensure that filter is only applied once per request
+		// 只是确保每个请求只执行一次
 		if (request.getAttribute(FILTER_APPLIED) != null) {
 			chain.doFilter(request, response);
 			return;
 		}
 		request.setAttribute(FILTER_APPLIED, Boolean.TRUE);
+
+		// 是否强制快速创建 Session
 		if (this.forceEagerSessionCreation) {
 			HttpSession session = request.getSession();
 			if (this.logger.isDebugEnabled() && session.isNew()) {
 				this.logger.debug(LogMessage.format("Created session %s eagerly", session.getId()));
 			}
 		}
+
+		// 过时的东西，将 request 和 response 包装在一起
 		HttpRequestResponseHolder holder = new HttpRequestResponseHolder(request, response);
+
+		// 其实就是通过 request 和 response 从仓库获取 SecurityContext
 		SecurityContext contextBeforeChainExecution = this.repo.loadContext(holder);
 		try {
 			this.securityContextHolderStrategy.setContext(contextBeforeChainExecution);

@@ -383,12 +383,17 @@ public class HeadersConfigurer<H extends HttpSecurityBuilder<H>>
 	 * @return the {@link HeaderWriter}
 	 */
 	private HeaderWriterFilter createHeaderWriterFilter() {
+		// 获取所有的 HeaderWriter，用来写入 header
 		List<HeaderWriter> writers = getHeaderWriters();
 		if (writers.isEmpty()) {
 			throw new IllegalStateException(
 					"Headers security is enabled, but no headers will be added. Either add headers or disable headers security");
 		}
+
+		// 将所有的 HeaderWriter 封装到 Filter 里
 		HeaderWriterFilter headersFilter = new HeaderWriterFilter(writers);
+
+		// 处理 HeaderWriter
 		headersFilter = postProcess(headersFilter);
 		return headersFilter;
 	}
@@ -399,6 +404,7 @@ public class HeadersConfigurer<H extends HttpSecurityBuilder<H>>
 	 */
 	private List<HeaderWriter> getHeaderWriters() {
 		List<HeaderWriter> writers = new ArrayList<>();
+		// 如果 not null (非空)， 才放到 List 中
 		addIfNotNull(writers, this.contentTypeOptions.writer);
 		addIfNotNull(writers, this.xssProtection.writer);
 		addIfNotNull(writers, this.cacheControl.writer);

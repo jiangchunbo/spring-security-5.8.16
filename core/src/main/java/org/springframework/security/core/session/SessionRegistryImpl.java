@@ -94,6 +94,12 @@ public class SessionRegistryImpl implements SessionRegistry, ApplicationListener
 		return list;
 	}
 
+	/**
+	 * 给定 Session ID 获取 Session 信息，从 内存 Map 获取
+	 *
+	 * @param sessionId to lookup (should never be <code>null</code>)
+	 * @return
+	 */
 	@Override
 	public SessionInformation getSessionInformation(String sessionId) {
 		Assert.hasText(sessionId, "SessionId required as per interface contract");
@@ -109,8 +115,7 @@ public class SessionRegistryImpl implements SessionRegistry, ApplicationListener
 			SessionDestroyedEvent sessionDestroyedEvent = (SessionDestroyedEvent) event;
 			String sessionId = sessionDestroyedEvent.getId();
 			removeSessionInformation(sessionId);
-		}
-		else if (event instanceof SessionIdChangedEvent) {
+		} else if (event instanceof SessionIdChangedEvent) {
 			SessionIdChangedEvent sessionIdChangedEvent = (SessionIdChangedEvent) event;
 			String oldSessionId = sessionIdChangedEvent.getOldSessionId();
 			if (this.sessionIds.containsKey(oldSessionId)) {
@@ -172,7 +177,7 @@ public class SessionRegistryImpl implements SessionRegistry, ApplicationListener
 		// 该用户使用了哪些 SessionId，找出来那个 Set，然后从中 remove 会话
 		this.principals.computeIfPresent(info.getPrincipal(), (key, sessionsUsedByPrincipal) -> {
 			this.logger
-				.debug(LogMessage.format("Removing session %s from principal's set of registered sessions", sessionId));
+					.debug(LogMessage.format("Removing session %s from principal's set of registered sessions", sessionId));
 
 			// 从集合中删除 SessionId
 			sessionsUsedByPrincipal.remove(sessionId);
@@ -182,7 +187,7 @@ public class SessionRegistryImpl implements SessionRegistry, ApplicationListener
 				sessionsUsedByPrincipal = null;
 			}
 			this.logger
-				.trace(LogMessage.format("Sessions used by '%s' : %s", info.getPrincipal(), sessionsUsedByPrincipal));
+					.trace(LogMessage.format("Sessions used by '%s' : %s", info.getPrincipal(), sessionsUsedByPrincipal));
 			return sessionsUsedByPrincipal;
 		});
 	}

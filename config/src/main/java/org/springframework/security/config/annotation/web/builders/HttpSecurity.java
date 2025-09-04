@@ -151,6 +151,9 @@ public final class HttpSecurity extends AbstractConfiguredSecurityBuilder<Defaul
 
 	private final RequestMatcherConfigurer requestMatcherConfigurer;
 
+	/**
+	 * 所有的 Filter，而且都是有序的
+	 */
 	private List<OrderedFilter> filters = new ArrayList<>();
 
 	private RequestMatcher requestMatcher = AnyRequestMatcher.INSTANCE;
@@ -3229,10 +3232,15 @@ public final class HttpSecurity extends AbstractConfiguredSecurityBuilder<Defaul
 	@SuppressWarnings("unchecked")
 	@Override
 	protected DefaultSecurityFilterChain performBuild() {
+
+		// 获取 AuthorizeHttpRequestsConfigurer 授权配置器 --> 只能有一个存在
 		ExpressionUrlAuthorizationConfigurer<?> expressionConfigurer = getConfigurer(
 				ExpressionUrlAuthorizationConfigurer.class);
+
 		AuthorizeHttpRequestsConfigurer<?> httpConfigurer = getConfigurer(AuthorizeHttpRequestsConfigurer.class);
+
 		boolean oneConfigurerPresent = expressionConfigurer == null ^ httpConfigurer == null;
+
 		Assert.state((expressionConfigurer == null && httpConfigurer == null) || oneConfigurerPresent,
 				"authorizeHttpRequests cannot be used in conjunction with authorizeRequests. Please select just one.");
 		this.filters.sort(OrderComparator.INSTANCE);
@@ -3240,6 +3248,8 @@ public final class HttpSecurity extends AbstractConfiguredSecurityBuilder<Defaul
 		for (Filter filter : this.filters) {
 			sortedFilters.add(((OrderedFilter) filter).filter);
 		}
+
+		// 构造一个 FilterChain
 		return new DefaultSecurityFilterChain(this.requestMatcher, sortedFilters);
 	}
 

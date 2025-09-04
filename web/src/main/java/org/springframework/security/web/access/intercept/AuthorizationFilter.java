@@ -79,6 +79,7 @@ public class AuthorizationFilter extends GenericFilterBean {
 		HttpServletRequest request = (HttpServletRequest) servletRequest;
 		HttpServletResponse response = (HttpServletResponse) servletResponse;
 
+		// 如果每个请求只观测一次，并且 isApplied -> 已经观测过了，那么不再执行
 		if (this.observeOncePerRequest && isApplied(request)) {
 			chain.doFilter(request, response);
 			return;
@@ -89,10 +90,16 @@ public class AuthorizationFilter extends GenericFilterBean {
 			return;
 		}
 
+		// 先设置一下标记
 		String alreadyFilteredAttributeName = getAlreadyFilteredAttributeName();
 		request.setAttribute(alreadyFilteredAttributeName, Boolean.TRUE);
+
+
 		try {
+			// 使用 authorizationManager 进行检查
 			AuthorizationDecision decision = this.authorizationManager.check(this::getAuthentication, request);
+
+			// 发布
 			this.eventPublisher.publishAuthorizationEvent(this::getAuthentication, request, decision);
 			if (decision != null && !decision.isGranted()) {
 				throw new AccessDeniedException("Access Denied");

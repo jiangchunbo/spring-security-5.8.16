@@ -64,6 +64,9 @@ import org.springframework.security.web.session.ForceEagerSessionCreationFilter;
 public final class SecurityContextConfigurer<H extends HttpSecurityBuilder<H>>
 		extends AbstractHttpConfigurer<SecurityContextConfigurer<H>, H> {
 
+	/**
+	 * 显式保存，默认是 false，也就是隐式保存，进一步推理就是 Spring 帮我们保存 SecurityContext
+	 */
 	private boolean requireExplicitSave;
 
 	/**
@@ -104,17 +107,27 @@ public final class SecurityContextConfigurer<H extends HttpSecurityBuilder<H>>
 	@Override
 	@SuppressWarnings("unchecked")
 	public void configure(H http) {
+
+		// 获取存储 SecurityContext 的仓库
 		SecurityContextRepository securityContextRepository = getSecurityContextRepository();
+
 		if (this.requireExplicitSave) {
 			SecurityContextHolderFilter securityContextHolderFilter = postProcess(
 					new SecurityContextHolderFilter(securityContextRepository));
 			securityContextHolderFilter.setSecurityContextHolderStrategy(getSecurityContextHolderStrategy());
 			http.addFilter(securityContextHolderFilter);
 		}
+
+		// 下面就是默认情况，隐式保存 SecurityContext
 		else {
+			// 将仓库传给 Filter
 			SecurityContextPersistenceFilter securityContextFilter = new SecurityContextPersistenceFilter(
 					securityContextRepository);
+			// 设置 SecurityContextHolderStrategy 跟上面一样
 			securityContextFilter.setSecurityContextHolderStrategy(getSecurityContextHolderStrategy());
+
+			// 关注这里 --> 获取了其他的 SessionManagementConfigurer
+			// 这里我们可以知道，自己定义 configurer 的时候，也可以获取其他 configurer 配合
 			SessionManagementConfigurer<?> sessionManagement = http.getConfigurer(SessionManagementConfigurer.class);
 			SessionCreationPolicy sessionCreationPolicy = (sessionManagement != null)
 					? sessionManagement.getSessionCreationPolicy() : null;
@@ -124,6 +137,9 @@ public final class SecurityContextConfigurer<H extends HttpSecurityBuilder<H>>
 			}
 			securityContextFilter = postProcess(securityContextFilter);
 			http.addFilter(securityContextFilter);
+
+
+			// 上述操作可能添加 1 个 filter 也可能是 2 个(其中一个是 ForceEagerSessionCreationFilter -> 强制创建 session)
 		}
 	}
 

@@ -125,6 +125,9 @@ final class FilterOrderRegistration {
 		put(SessionManagementFilter.class, order.next());
 		put(ExceptionTranslationFilter.class, order.next());
 		put(FilterSecurityInterceptor.class, order.next());
+
+
+		// 认证过滤器，非常靠后的位置
 		put(AuthorizationFilter.class, order.next());
 		put(SwitchUserFilter.class, order.next());
 	}

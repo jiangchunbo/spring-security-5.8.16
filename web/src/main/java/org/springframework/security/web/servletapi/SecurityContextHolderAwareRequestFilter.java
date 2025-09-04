@@ -161,6 +161,9 @@ public class SecurityContextHolderAwareRequestFilter extends GenericFilterBean {
 	@Override
 	public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
 			throws IOException, ServletException {
+
+		// request 通过 RequestFactory 创建了一个包装类
+		// 通过这个包装类可以在 getRemoteUser 时获取 Principal 的信息
 		chain.doFilter(this.requestFactory.create((HttpServletRequest) req, (HttpServletResponse) res), res);
 	}
 
