@@ -50,6 +50,8 @@ import org.springframework.web.filter.GenericFilterBean;
  * Handles any <code>AccessDeniedException</code> and <code>AuthenticationException</code>
  * thrown within the filter chain.
  * <p>
+ * 处理在过滤器链中抛出的任何 AccessDeniedException 和 AuthenticationException 异常
+ * <p>
  * This filter is necessary because it provides the bridge between Java exceptions and
  * HTTP responses. It is solely concerned with maintaining the user interface. This filter
  * does not do any actual security enforcement.
@@ -84,7 +86,7 @@ import org.springframework.web.filter.GenericFilterBean;
 public class ExceptionTranslationFilter extends GenericFilterBean implements MessageSourceAware {
 
 	private SecurityContextHolderStrategy securityContextHolderStrategy = SecurityContextHolder
-		.getContextHolderStrategy();
+			.getContextHolderStrategy();
 
 	private AccessDeniedHandler accessDeniedHandler = new AccessDeniedHandlerImpl();
 
@@ -124,22 +126,20 @@ public class ExceptionTranslationFilter extends GenericFilterBean implements Mes
 			throws IOException, ServletException {
 		try {
 			chain.doFilter(request, response);
-		}
-		catch (IOException ex) {
+		} catch (IOException ex) {
 			throw ex;
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			// Try to extract a SpringSecurityException from the stacktrace
 			Throwable[] causeChain = this.throwableAnalyzer.determineCauseChain(ex);
 
 			// 获得第一个 Throwable AuthenticationException
 			RuntimeException securityException = (AuthenticationException) this.throwableAnalyzer
-				.getFirstThrowableOfType(AuthenticationException.class, causeChain);
+					.getFirstThrowableOfType(AuthenticationException.class, causeChain);
 
 			// 获得第一个 Throwable AccessDeniedException
 			if (securityException == null) {
 				securityException = (AccessDeniedException) this.throwableAnalyzer
-					.getFirstThrowableOfType(AccessDeniedException.class, causeChain);
+						.getFirstThrowableOfType(AccessDeniedException.class, causeChain);
 			}
 
 			// 如果还是没有异常，那么就直接抛出
@@ -180,8 +180,7 @@ public class ExceptionTranslationFilter extends GenericFilterBean implements Mes
 			FilterChain chain, RuntimeException exception) throws IOException, ServletException {
 		if (exception instanceof AuthenticationException) {
 			handleAuthenticationException(request, response, chain, (AuthenticationException) exception);
-		}
-		else if (exception instanceof AccessDeniedException) {
+		} else if (exception instanceof AccessDeniedException) {
 			handleAccessDeniedException(request, response, chain, (AccessDeniedException) exception);
 		}
 	}
@@ -205,8 +204,7 @@ public class ExceptionTranslationFilter extends GenericFilterBean implements Mes
 					new InsufficientAuthenticationException(
 							this.messages.getMessage("ExceptionTranslationFilter.insufficientAuthentication",
 									"Full authentication is required to access this resource")));
-		}
-		else {
+		} else {
 			if (logger.isTraceEnabled()) {
 				logger.trace(
 						LogMessage.format("Sending %s to access denied handler since access is denied", authentication),

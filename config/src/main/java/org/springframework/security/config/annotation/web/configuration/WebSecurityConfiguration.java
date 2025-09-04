@@ -103,18 +103,30 @@ public class WebSecurityConfiguration implements ImportAware, BeanClassLoaderAwa
 	 */
 	@Bean(name = AbstractSecurityWebApplicationInitializer.DEFAULT_FILTER_NAME)
 	public Filter springSecurityFilterChain() throws Exception {
+
+		// configurers 有没有配置，是不是空
 		boolean hasConfigurers = this.webSecurityConfigurers != null && !this.webSecurityConfigurers.isEmpty();
+
+		// filter chain 是不是空
 		boolean hasFilterChain = !this.securityFilterChains.isEmpty();
 		Assert.state(!(hasConfigurers && hasFilterChain),
 				"Found WebSecurityConfigurerAdapter as well as SecurityFilterChain. Please select just one.");
+
+		// 如果什么都没有，也会给你有一些默认的配置
 		if (!hasConfigurers && !hasFilterChain) {
 			WebSecurityConfigurerAdapter adapter = this.objectObjectPostProcessor
 					.postProcess(new WebSecurityConfigurerAdapter() {
 					});
+			// apply 只是添加了一个 configurer 没有更多逻辑
 			this.webSecurity.apply(adapter);
 		}
+
+
+		// 遍历每个 filter chain
 		for (SecurityFilterChain securityFilterChain : this.securityFilterChains) {
 			this.webSecurity.addSecurityFilterChainBuilder(() -> securityFilterChain);
+
+			// 都是一些过时的逻辑
 			for (Filter filter : securityFilterChain.getFilters()) {
 				if (filter instanceof FilterSecurityInterceptor) {
 					this.webSecurity.securityInterceptor((FilterSecurityInterceptor) filter);
@@ -122,6 +134,8 @@ public class WebSecurityConfiguration implements ImportAware, BeanClassLoaderAwa
 				}
 			}
 		}
+
+		// 自定义逻辑
 		for (WebSecurityCustomizer customizer : this.webSecurityCustomizers) {
 			customizer.customize(this.webSecurity);
 		}

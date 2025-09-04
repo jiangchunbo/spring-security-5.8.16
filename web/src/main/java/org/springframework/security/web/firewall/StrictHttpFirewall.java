@@ -75,14 +75,16 @@ import org.springframework.util.Assert;
  *
  * @author Rob Winch
  * @author Eddú Meléndez
- * @since 4.2.4
  * @see DefaultHttpFirewall
+ * @since 4.2.4
  */
 public class StrictHttpFirewall implements HttpFirewall {
 
 	/**
 	 * Used to specify to {@link #setAllowedHttpMethods(Collection)} that any HTTP method
 	 * should be allowed.
+	 * <p>
+	 * 空集合，表示允许任何 HTTP 方法
 	 */
 	private static final Set<String> ALLOW_ANY_HTTP_METHOD = Collections.emptySet();
 
@@ -91,19 +93,19 @@ public class StrictHttpFirewall implements HttpFirewall {
 	private static final String PERCENT = "%";
 
 	private static final List<String> FORBIDDEN_ENCODED_PERIOD = Collections
-		.unmodifiableList(Arrays.asList("%2e", "%2E"));
+			.unmodifiableList(Arrays.asList("%2e", "%2E"));
 
 	private static final List<String> FORBIDDEN_SEMICOLON = Collections
-		.unmodifiableList(Arrays.asList(";", "%3b", "%3B"));
+			.unmodifiableList(Arrays.asList(";", "%3b", "%3B"));
 
 	private static final List<String> FORBIDDEN_FORWARDSLASH = Collections
-		.unmodifiableList(Arrays.asList("%2f", "%2F"));
+			.unmodifiableList(Arrays.asList("%2f", "%2F"));
 
 	private static final List<String> FORBIDDEN_DOUBLE_FORWARDSLASH = Collections
-		.unmodifiableList(Arrays.asList("//", "%2f%2f", "%2f%2F", "%2F%2f", "%2F%2F"));
+			.unmodifiableList(Arrays.asList("//", "%2f%2f", "%2f%2F", "%2F%2f", "%2F%2F"));
 
 	private static final List<String> FORBIDDEN_BACKSLASH = Collections
-		.unmodifiableList(Arrays.asList("\\", "%5c", "%5C"));
+			.unmodifiableList(Arrays.asList("\\", "%5c", "%5C"));
 
 	private static final List<String> FORBIDDEN_NULL = Collections.unmodifiableList(Arrays.asList("\0", "%00"));
 
@@ -114,7 +116,7 @@ public class StrictHttpFirewall implements HttpFirewall {
 	private static final List<String> FORBIDDEN_LINE_SEPARATOR = Collections.unmodifiableList(Arrays.asList("\u2028"));
 
 	private static final List<String> FORBIDDEN_PARAGRAPH_SEPARATOR = Collections
-		.unmodifiableList(Arrays.asList("\u2029"));
+			.unmodifiableList(Arrays.asList("\u2029"));
 
 	private Set<String> encodedUrlBlocklist = new HashSet<>();
 
@@ -125,7 +127,7 @@ public class StrictHttpFirewall implements HttpFirewall {
 	private Predicate<String> allowedHostnames = (hostname) -> true;
 
 	private static final Pattern ASSIGNED_AND_NOT_ISO_CONTROL_PATTERN = Pattern
-		.compile("[\\p{IsAssigned}&&[^\\p{IsControl}]]*");
+			.compile("[\\p{IsAssigned}&&[^\\p{IsControl}]]*");
 
 	private static final Predicate<String> ASSIGNED_AND_NOT_ISO_CONTROL_PREDICATE = (
 			s) -> ASSIGNED_AND_NOT_ISO_CONTROL_PATTERN.matcher(s).matches();
@@ -153,6 +155,8 @@ public class StrictHttpFirewall implements HttpFirewall {
 
 		this.encodedUrlBlocklist.add(ENCODED_PERCENT);
 		this.encodedUrlBlocklist.addAll(FORBIDDEN_ENCODED_PERIOD);
+
+		// %
 		this.decodedUrlBlocklist.add(PERCENT);
 		this.decodedUrlBlocklist.addAll(FORBIDDEN_LINE_SEPARATOR);
 		this.decodedUrlBlocklist.addAll(FORBIDDEN_PARAGRAPH_SEPARATOR);
@@ -163,10 +167,11 @@ public class StrictHttpFirewall implements HttpFirewall {
 	 * HTTP method will be performed. This can open the application up to
 	 * <a href="https://www.owasp.org/index.php/Test_HTTP_Methods_(OTG-CONFIG-006)"> HTTP
 	 * Verb tampering and XST attacks</a>
+	 *
 	 * @param unsafeAllowAnyHttpMethod if true, disables HTTP method validation, else
-	 * resets back to the defaults. Default is false.
-	 * @since 5.1
+	 *                                 resets back to the defaults. Default is false.
 	 * @see #setAllowedHttpMethods(Collection)
+	 * @since 5.1
 	 */
 	public void setUnsafeAllowAnyHttpMethod(boolean unsafeAllowAnyHttpMethod) {
 		this.allowedHttpMethods = unsafeAllowAnyHttpMethod ? ALLOW_ANY_HTTP_METHOD : createDefaultAllowedHttpMethods();
@@ -177,10 +182,11 @@ public class StrictHttpFirewall implements HttpFirewall {
 	 * Determines which HTTP methods should be allowed. The default is to allow "DELETE",
 	 * "GET", "HEAD", "OPTIONS", "PATCH", "POST", and "PUT".
 	 * </p>
+	 *
 	 * @param allowedHttpMethods the case-sensitive collection of HTTP methods that are
-	 * allowed.
-	 * @since 5.1
+	 *                           allowed.
 	 * @see #setUnsafeAllowAnyHttpMethod(boolean)
+	 * @since 5.1
 	 */
 	public void setAllowedHttpMethods(Collection<String> allowedHttpMethods) {
 		Assert.notNull(allowedHttpMethods, "allowedHttpMethods cannot be null");
@@ -218,13 +224,13 @@ public class StrictHttpFirewall implements HttpFirewall {
 	 * <li>Matrix Variables - Users wanting to leverage Matrix Variables should consider
 	 * using HTTP parameters instead.</li>
 	 * </ul>
+	 *
 	 * @param allowSemicolon should semicolons be allowed in the URL. Default is false
 	 */
 	public void setAllowSemicolon(boolean allowSemicolon) {
 		if (allowSemicolon) {
 			urlBlocklistsRemoveAll(FORBIDDEN_SEMICOLON);
-		}
-		else {
+		} else {
 			urlBlocklistsAddAll(FORBIDDEN_SEMICOLON);
 		}
 	}
@@ -240,14 +246,14 @@ public class StrictHttpFirewall implements HttpFirewall {
 	 * parsed consistently which results in different values in {@code HttpServletRequest}
 	 * path related values which allow bypassing certain security constraints.
 	 * </p>
+	 *
 	 * @param allowUrlEncodedSlash should a slash "/" that is URL encoded "%2F" be allowed
-	 * in the path or not. Default is false.
+	 *                             in the path or not. Default is false.
 	 */
 	public void setAllowUrlEncodedSlash(boolean allowUrlEncodedSlash) {
 		if (allowUrlEncodedSlash) {
 			urlBlocklistsRemoveAll(FORBIDDEN_FORWARDSLASH);
-		}
-		else {
+		} else {
 			urlBlocklistsAddAll(FORBIDDEN_FORWARDSLASH);
 		}
 	}
@@ -257,14 +263,14 @@ public class StrictHttpFirewall implements HttpFirewall {
 	 * Determines if double slash "//" that is URL encoded "%2F%2F" should be allowed in
 	 * the path or not. The default is to not allow.
 	 * </p>
+	 *
 	 * @param allowUrlEncodedDoubleSlash should a slash "//" that is URL encoded "%2F%2F"
-	 * be allowed in the path or not. Default is false.
+	 *                                   be allowed in the path or not. Default is false.
 	 */
 	public void setAllowUrlEncodedDoubleSlash(boolean allowUrlEncodedDoubleSlash) {
 		if (allowUrlEncodedDoubleSlash) {
 			urlBlocklistsRemoveAll(FORBIDDEN_DOUBLE_FORWARDSLASH);
-		}
-		else {
+		} else {
 			urlBlocklistsAddAll(FORBIDDEN_DOUBLE_FORWARDSLASH);
 		}
 	}
@@ -282,14 +288,14 @@ public class StrictHttpFirewall implements HttpFirewall {
 	 * values in {@code HttpServletRequest} path related values which allow bypassing
 	 * certain security constraints.
 	 * </p>
+	 *
 	 * @param allowUrlEncodedPeriod should a period "." that is URL encoded "%2E" be
-	 * allowed in the path or not. Default is false.
+	 *                              allowed in the path or not. Default is false.
 	 */
 	public void setAllowUrlEncodedPeriod(boolean allowUrlEncodedPeriod) {
 		if (allowUrlEncodedPeriod) {
 			this.encodedUrlBlocklist.removeAll(FORBIDDEN_ENCODED_PERIOD);
-		}
-		else {
+		} else {
 			this.encodedUrlBlocklist.addAll(FORBIDDEN_ENCODED_PERIOD);
 		}
 	}
@@ -307,14 +313,14 @@ public class StrictHttpFirewall implements HttpFirewall {
 	 * values in {@code HttpServletRequest} path related values which allow bypassing
 	 * certain security constraints.
 	 * </p>
+	 *
 	 * @param allowBackSlash a backslash "\" or a URL encoded backslash "%5C" be allowed
-	 * in the path or not. Default is false
+	 *                       in the path or not. Default is false
 	 */
 	public void setAllowBackSlash(boolean allowBackSlash) {
 		if (allowBackSlash) {
 			urlBlocklistsRemoveAll(FORBIDDEN_BACKSLASH);
-		}
-		else {
+		} else {
 			urlBlocklistsAddAll(FORBIDDEN_BACKSLASH);
 		}
 	}
@@ -325,15 +331,15 @@ public class StrictHttpFirewall implements HttpFirewall {
 	 * or not. The default is not to allow this behavior because it is a frequent source
 	 * of security exploits.
 	 * </p>
+	 *
 	 * @param allowNull a null "\0" or a URL encoded null "%00" be allowed in the path or
-	 * not. Default is false
+	 *                  not. Default is false
 	 * @since 5.4
 	 */
 	public void setAllowNull(boolean allowNull) {
 		if (allowNull) {
 			urlBlocklistsRemoveAll(FORBIDDEN_NULL);
-		}
-		else {
+		} else {
 			urlBlocklistsAddAll(FORBIDDEN_NULL);
 		}
 	}
@@ -348,15 +354,15 @@ public class StrictHttpFirewall implements HttpFirewall {
 	 * For example, this can lead to exploits that involve double URL encoding that lead
 	 * to bypassing security constraints.
 	 * </p>
+	 *
 	 * @param allowUrlEncodedPercent if a percent "%" that is URL encoded "%25" should be
-	 * allowed in the path or not. Default is false
+	 *                               allowed in the path or not. Default is false
 	 */
 	public void setAllowUrlEncodedPercent(boolean allowUrlEncodedPercent) {
 		if (allowUrlEncodedPercent) {
 			this.encodedUrlBlocklist.remove(ENCODED_PERCENT);
 			this.decodedUrlBlocklist.remove(PERCENT);
-		}
-		else {
+		} else {
 			this.encodedUrlBlocklist.add(ENCODED_PERCENT);
 			this.decodedUrlBlocklist.add(PERCENT);
 		}
@@ -366,14 +372,14 @@ public class StrictHttpFirewall implements HttpFirewall {
 	 * Determines if a URL encoded Carriage Return is allowed in the path or not. The
 	 * default is not to allow this behavior because it is a frequent source of security
 	 * exploits.
+	 *
 	 * @param allowUrlEncodedCarriageReturn if URL encoded Carriage Return is allowed in
-	 * the URL or not. Default is false.
+	 *                                      the URL or not. Default is false.
 	 */
 	public void setAllowUrlEncodedCarriageReturn(boolean allowUrlEncodedCarriageReturn) {
 		if (allowUrlEncodedCarriageReturn) {
 			urlBlocklistsRemoveAll(FORBIDDEN_CR);
-		}
-		else {
+		} else {
 			urlBlocklistsAddAll(FORBIDDEN_CR);
 		}
 	}
@@ -381,14 +387,14 @@ public class StrictHttpFirewall implements HttpFirewall {
 	/**
 	 * Determines if a URL encoded Line Feed is allowed in the path or not. The default is
 	 * not to allow this behavior because it is a frequent source of security exploits.
+	 *
 	 * @param allowUrlEncodedLineFeed if URL encoded Line Feed is allowed in the URL or
-	 * not. Default is false.
+	 *                                not. Default is false.
 	 */
 	public void setAllowUrlEncodedLineFeed(boolean allowUrlEncodedLineFeed) {
 		if (allowUrlEncodedLineFeed) {
 			urlBlocklistsRemoveAll(FORBIDDEN_LF);
-		}
-		else {
+		} else {
 			urlBlocklistsAddAll(FORBIDDEN_LF);
 		}
 	}
@@ -397,14 +403,14 @@ public class StrictHttpFirewall implements HttpFirewall {
 	 * Determines if a URL encoded paragraph separator is allowed in the path or not. The
 	 * default is not to allow this behavior because it is a frequent source of security
 	 * exploits.
+	 *
 	 * @param allowUrlEncodedParagraphSeparator if URL encoded paragraph separator is
-	 * allowed in the URL or not. Default is false.
+	 *                                          allowed in the URL or not. Default is false.
 	 */
 	public void setAllowUrlEncodedParagraphSeparator(boolean allowUrlEncodedParagraphSeparator) {
 		if (allowUrlEncodedParagraphSeparator) {
 			this.decodedUrlBlocklist.removeAll(FORBIDDEN_PARAGRAPH_SEPARATOR);
-		}
-		else {
+		} else {
 			this.decodedUrlBlocklist.addAll(FORBIDDEN_PARAGRAPH_SEPARATOR);
 		}
 	}
@@ -413,14 +419,14 @@ public class StrictHttpFirewall implements HttpFirewall {
 	 * Determines if a URL encoded line separator is allowed in the path or not. The
 	 * default is not to allow this behavior because it is a frequent source of security
 	 * exploits.
+	 *
 	 * @param allowUrlEncodedLineSeparator if URL encoded line separator is allowed in the
-	 * URL or not. Default is false.
+	 *                                     URL or not. Default is false.
 	 */
 	public void setAllowUrlEncodedLineSeparator(boolean allowUrlEncodedLineSeparator) {
 		if (allowUrlEncodedLineSeparator) {
 			this.decodedUrlBlocklist.removeAll(FORBIDDEN_LINE_SEPARATOR);
-		}
-		else {
+		} else {
 			this.decodedUrlBlocklist.addAll(FORBIDDEN_LINE_SEPARATOR);
 		}
 	}
@@ -430,10 +436,11 @@ public class StrictHttpFirewall implements HttpFirewall {
 	 * Determines which header names should be allowed. The default is to reject header
 	 * names that contain ISO control characters and characters that are not defined.
 	 * </p>
+	 *
 	 * @param allowedHeaderNames the predicate for testing header names
-	 * @since 5.4
 	 * @see Character#isISOControl(int)
 	 * @see Character#isDefined(int)
+	 * @since 5.4
 	 */
 	public void setAllowedHeaderNames(Predicate<String> allowedHeaderNames) {
 		Assert.notNull(allowedHeaderNames, "allowedHeaderNames cannot be null");
@@ -445,10 +452,11 @@ public class StrictHttpFirewall implements HttpFirewall {
 	 * Determines which header values should be allowed. The default is to reject header
 	 * values that contain ISO control characters and characters that are not defined.
 	 * </p>
+	 *
 	 * @param allowedHeaderValues the predicate for testing hostnames
-	 * @since 5.4
 	 * @see Character#isISOControl(int)
 	 * @see Character#isDefined(int)
+	 * @since 5.4
 	 */
 	public void setAllowedHeaderValues(Predicate<String> allowedHeaderValues) {
 		Assert.notNull(allowedHeaderValues, "allowedHeaderValues cannot be null");
@@ -458,10 +466,11 @@ public class StrictHttpFirewall implements HttpFirewall {
 	/**
 	 * Determines which parameter names should be allowed. The default is to reject header
 	 * names that contain ISO control characters and characters that are not defined.
+	 *
 	 * @param allowedParameterNames the predicate for testing parameter names
-	 * @since 5.4
 	 * @see Character#isISOControl(int)
 	 * @see Character#isDefined(int)
+	 * @since 5.4
 	 */
 	public void setAllowedParameterNames(Predicate<String> allowedParameterNames) {
 		Assert.notNull(allowedParameterNames, "allowedParameterNames cannot be null");
@@ -473,6 +482,7 @@ public class StrictHttpFirewall implements HttpFirewall {
 	 * Determines which parameter values should be allowed. The default is to allow any
 	 * parameter value.
 	 * </p>
+	 *
 	 * @param allowedParameterValues the predicate for testing parameter values
 	 * @since 5.4
 	 */
@@ -485,6 +495,7 @@ public class StrictHttpFirewall implements HttpFirewall {
 	 * <p>
 	 * Determines which hostnames should be allowed. The default is to allow any hostname.
 	 * </p>
+	 *
 	 * @param allowedHostnames the predicate for testing hostnames
 	 * @since 5.2
 	 */
@@ -505,12 +516,19 @@ public class StrictHttpFirewall implements HttpFirewall {
 
 	@Override
 	public FirewalledRequest getFirewalledRequest(HttpServletRequest request) throws RequestRejectedException {
+		// 检查 HTTP 方法
 		rejectForbiddenHttpMethod(request);
+
+		// 请求 uri 检测
 		rejectedBlocklistedUrls(request);
+
+		// serverName 检测
 		rejectedUntrustedHosts(request);
 		if (!isNormalized(request)) {
 			throw new RequestRejectedException("The request was rejected because the URL was not normalized.");
 		}
+
+		// 检测不可打印的 ASCII 字符
 		rejectNonPrintableAsciiCharactersInFieldName(request.getRequestURI(), "requestURI");
 		return new StrictFirewalledRequest(request);
 	}
@@ -518,14 +536,17 @@ public class StrictHttpFirewall implements HttpFirewall {
 	private void rejectNonPrintableAsciiCharactersInFieldName(String toCheck, String propertyName) {
 		if (!containsOnlyPrintableAsciiCharacters(toCheck)) {
 			throw new RequestRejectedException(String
-				.format("The %s was rejected because it can only contain printable ASCII characters.", propertyName));
+					.format("The %s was rejected because it can only contain printable ASCII characters.", propertyName));
 		}
 	}
 
 	private void rejectForbiddenHttpMethod(HttpServletRequest request) {
+		// 匹配任意 HTTP 方法
 		if (this.allowedHttpMethods == ALLOW_ANY_HTTP_METHOD) {
 			return;
 		}
+
+		// 非匹配所有 HTTP 方法，检测是否在可允许的 HTTP 方法中
 		if (!this.allowedHttpMethods.contains(request.getMethod())) {
 			throw new RequestRejectedException(
 					"The request was rejected because the HTTP method \"" + request.getMethod()
@@ -535,6 +556,7 @@ public class StrictHttpFirewall implements HttpFirewall {
 
 	private void rejectedBlocklistedUrls(HttpServletRequest request) {
 		for (String forbidden : this.encodedUrlBlocklist) {
+			// 如果 url 包含被禁止的字符串，那么就被拒绝
 			if (encodedUrlContains(request, forbidden)) {
 				throw new RequestRejectedException(
 						"The request was rejected because the URL contained a potentially malicious String \""
@@ -563,6 +585,9 @@ public class StrictHttpFirewall implements HttpFirewall {
 		return new FirewalledResponse(response);
 	}
 
+	/**
+	 * 创建默认允许的 HTTP 方法
+	 */
 	private static Set<String> createDefaultAllowedHttpMethods() {
 		Set<String> result = new HashSet<>();
 		result.add(HttpMethod.DELETE.name());
@@ -592,6 +617,7 @@ public class StrictHttpFirewall implements HttpFirewall {
 	}
 
 	private static boolean encodedUrlContains(HttpServletRequest request, String value) {
+		// 允许 context path 包含
 		if (valueContains(request.getContextPath(), value)) {
 			return true;
 		}
@@ -629,6 +655,7 @@ public class StrictHttpFirewall implements HttpFirewall {
 	/**
 	 * Checks whether a path is normalized (doesn't contain path traversal sequences like
 	 * "./", "/../" or "/.")
+	 *
 	 * @param path the path to test
 	 * @return true if the path doesn't contain any path-traversal character sequences.
 	 */
@@ -636,7 +663,7 @@ public class StrictHttpFirewall implements HttpFirewall {
 		if (path == null) {
 			return true;
 		}
-		for (int i = path.length(); i > 0;) {
+		for (int i = path.length(); i > 0; ) {
 			int slashIndex = path.lastIndexOf('/', i - 1);
 			int gap = i - slashIndex;
 			if (gap == 2 && path.charAt(slashIndex + 1) == '.') {
@@ -652,6 +679,7 @@ public class StrictHttpFirewall implements HttpFirewall {
 
 	/**
 	 * Provides the existing encoded url blocklist which can add/remove entries from
+	 *
 	 * @return the existing encoded url blocklist, never null
 	 */
 	public Set<String> getEncodedUrlBlocklist() {
@@ -660,6 +688,7 @@ public class StrictHttpFirewall implements HttpFirewall {
 
 	/**
 	 * Provides the existing decoded url blocklist which can add/remove entries from
+	 *
 	 * @return the existing decoded url blocklist, never null
 	 */
 	public Set<String> getDecodedUrlBlocklist() {
@@ -668,6 +697,7 @@ public class StrictHttpFirewall implements HttpFirewall {
 
 	/**
 	 * Provides the existing encoded url blocklist which can add/remove entries from
+	 *
 	 * @return the existing encoded url blocklist, never null
 	 * @deprecated Use {@link #getEncodedUrlBlocklist()} instead
 	 */
@@ -678,6 +708,7 @@ public class StrictHttpFirewall implements HttpFirewall {
 
 	/**
 	 * Provides the existing decoded url blocklist which can add/remove entries from
+	 *
 	 * @return the existing decoded url blocklist, never null
 	 *
 	 */
@@ -857,6 +888,8 @@ public class StrictHttpFirewall implements HttpFirewall {
 		public void reset() {
 		}
 
-	};
+	}
+
+	;
 
 }
