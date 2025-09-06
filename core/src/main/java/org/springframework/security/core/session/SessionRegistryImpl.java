@@ -51,10 +51,18 @@ public class SessionRegistryImpl implements SessionRegistry, ApplicationListener
 
 	protected final Log logger = LogFactory.getLog(SessionRegistryImpl.class);
 
-	// <principal:Object,SessionIdSet>
+	/**
+	 * 通过 Principal 找到 Session Ids
+	 *
+	 * <principal:Object,SessionIdSet>
+	 */
 	private final ConcurrentMap<Object, Set<String>> principals;
 
-	// <sessionId:Object,SessionInformation>
+	/**
+	 * Session 注册表
+	 * <p>
+	 * <sessionId:String,SessionInformation>
+	 */
 	private final Map<String, SessionInformation> sessionIds;
 
 	public SessionRegistryImpl() {
@@ -95,14 +103,15 @@ public class SessionRegistryImpl implements SessionRegistry, ApplicationListener
 	}
 
 	/**
-	 * 给定 Session ID 获取 Session 信息，从 内存 Map 获取
+	 * 其实就是从注册表获取 Session 对象而已
 	 *
 	 * @param sessionId to lookup (should never be <code>null</code>)
-	 * @return
+	 * @return Session 对象
 	 */
 	@Override
 	public SessionInformation getSessionInformation(String sessionId) {
 		Assert.hasText(sessionId, "SessionId required as per interface contract");
+		// 给定 Session ID 获取 Session 信息，从 内存 Map 获取
 		return this.sessionIds.get(sessionId);
 	}
 
@@ -135,16 +144,24 @@ public class SessionRegistryImpl implements SessionRegistry, ApplicationListener
 		}
 	}
 
+	/**
+	 * 注册新的 Session
+	 */
 	@Override
 	public void registerNewSession(String sessionId, Object principal) {
 		Assert.hasText(sessionId, "SessionId required as per interface contract");
 		Assert.notNull(principal, "Principal required as per interface contract");
+
+		// 如果在注册表已经有了 Session 对象，那么删除
 		if (getSessionInformation(sessionId) != null) {
 			removeSessionInformation(sessionId);
 		}
+
 		if (this.logger.isDebugEnabled()) {
 			this.logger.debug(LogMessage.format("Registering session %s, for principal %s", sessionId, principal));
 		}
+
+		// 创建一个新的 Session 对象
 		this.sessionIds.put(sessionId, new SessionInformation(principal, sessionId, new Date()));
 		this.principals.compute(principal, (key, sessionsUsedByPrincipal) -> {
 			if (sessionsUsedByPrincipal == null) {
