@@ -53,15 +53,15 @@ public class SessionRegistryImpl implements SessionRegistry, ApplicationListener
 
 	/**
 	 * 通过 Principal 找到 Session Ids
-	 *
-	 * <principal:Object,SessionIdSet>
+	 * <p>
+	 * {@code <principal:Object,SessionIdSet>}
 	 */
 	private final ConcurrentMap<Object, Set<String>> principals;
 
 	/**
 	 * Session 注册表
 	 * <p>
-	 * <sessionId:String,SessionInformation>
+	 * {@code <sessionId:String,SessionInformation>}
 	 */
 	private final Map<String, SessionInformation> sessionIds;
 
