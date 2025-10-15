@@ -321,12 +321,15 @@ public final class WebSecurity extends AbstractConfiguredSecurityBuilder<Filter,
 			requestMatcherPrivilegeEvaluatorsEntries
 					.add(getRequestMatcherPrivilegeEvaluatorsEntry(securityFilterChain));
 		}
+
+		// 遍历一些函数
 		for (SecurityBuilder<? extends SecurityFilterChain> securityFilterChainBuilder : this.securityFilterChainBuilders) {
 			SecurityFilterChain securityFilterChain = securityFilterChainBuilder.build();
 			securityFilterChains.add(securityFilterChain);
 			requestMatcherPrivilegeEvaluatorsEntries
 					.add(getRequestMatcherPrivilegeEvaluatorsEntry(securityFilterChain));
 		}
+
 		if (this.privilegeEvaluator == null) {
 			this.privilegeEvaluator = new RequestMatcherDelegatingWebInvocationPrivilegeEvaluator(
 					requestMatcherPrivilegeEvaluatorsEntries);

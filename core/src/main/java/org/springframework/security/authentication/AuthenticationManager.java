@@ -31,8 +31,13 @@ public interface AuthenticationManager {
 	 * fully populated <code>Authentication</code> object (including granted authorities)
 	 * if successful.
 	 * <p>
+	 * <p>
+	 * 传入一个 Authentication 对象尝试认证它，返回一个完全填充好的 Authentication 对象（包含权限）
+	 * <p>
 	 * An <code>AuthenticationManager</code> must honour the following contract concerning
 	 * exceptions:
+	 * <p>
+	 * AuthenticationManager 必须遵循以下关于异常的契约：
 	 * <ul>
 	 * <li>A {@link DisabledException} must be thrown if an account is disabled and the
 	 * <code>AuthenticationManager</code> can test for this state.</li>
@@ -46,6 +51,11 @@ public interface AuthenticationManager {
 	 * above (i.e. if an account is disabled or locked, the authentication request is
 	 * immediately rejected and the credentials testing process is not performed). This
 	 * prevents credentials being tested against disabled or locked accounts.
+	 * <p>
+	 * 异常的检测和抛出应该按上述顺序进行（例如，如果用户被禁用或锁定，则认证请求立即被拒绝且不进行凭据测试）。
+	 * <p>
+	 * 这可避免对禁用或锁定的账户测试凭据。
+	 *
 	 * @param authentication the authentication request object
 	 * @return a fully authenticated object including credentials
 	 * @throws AuthenticationException if authentication fails

@@ -88,6 +88,8 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 public @interface EnableWebSecurity {
 
+	// 导入 Spring Security 核心过滤器
+
 	/**
 	 * Controls debugging support for Spring Security. Default is false.
 	 * @return if true, enables debug support with Spring Security

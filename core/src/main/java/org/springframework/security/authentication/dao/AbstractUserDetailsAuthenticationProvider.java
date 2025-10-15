@@ -142,8 +142,9 @@ public abstract class AbstractUserDetailsAuthenticationProvider
 				// 从数据库加载 UserDetails
 				user = retrieveUser(username, (UsernamePasswordAuthenticationToken) authentication);
 			} catch (UsernameNotFoundException ex) {
-				// 如果 retrieveUser 抛出了 UsernameNotFoundException
+				// 这个异常一般由 UserDetailsService 抛出
 				this.logger.debug("Failed to find user '" + username + "'");
+
 				// 如果不隐藏用户名找不到的错误，则直接抛出
 				// 默认是 true，让攻击者不知道用户名是否正确
 				if (!this.hideUserNotFoundExceptions) {

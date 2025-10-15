@@ -91,6 +91,9 @@ public class ProviderManager implements AuthenticationManager, MessageSourceAwar
 
 	private static final Log logger = LogFactory.getLog(ProviderManager.class);
 
+	/**
+	 * 认证事件发布器。默认是一个空实现。
+	 */
 	private AuthenticationEventPublisher eventPublisher = new NullEventPublisher();
 
 	private List<AuthenticationProvider> providers = Collections.emptyList();
@@ -99,6 +102,9 @@ public class ProviderManager implements AuthenticationManager, MessageSourceAwar
 
 	private AuthenticationManager parent;
 
+	/**
+	 * 是否在认证之后抹除凭据。
+	 */
 	private boolean eraseCredentialsAfterAuthentication = true;
 
 	/**
@@ -191,7 +197,10 @@ public class ProviderManager implements AuthenticationManager, MessageSourceAwar
 					break;
 				}
 			} catch (AccountStatusException | InternalAuthenticationServiceException ex) {
+				// 如果异常是 AccountStatusException 账号异常，那么不会放过，直接抛出
+				// 这说明这个 Provider 能够检测这种账号，否则它不会抛出异常的
 				prepareException(ex, authentication);
+
 				// SEC-546: Avoid polling additional providers if auth failure is due to
 				// invalid account status
 				throw ex;

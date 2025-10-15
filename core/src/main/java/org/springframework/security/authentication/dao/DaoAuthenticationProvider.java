@@ -33,6 +33,8 @@ import org.springframework.util.Assert;
 /**
  * An {@link AuthenticationProvider} implementation that retrieves user details from a
  * {@link UserDetailsService}.
+ * <p>
+ * AuthenticationProvider 实现类。用于从 UserDetailsService 获取用户详情。UserDetailsService 并没有具体来源，可能是 jdbc 等。
  *
  * @author Ben Alex
  * @author Rob Winch
@@ -101,7 +103,7 @@ public class DaoAuthenticationProvider extends AbstractUserDetailsAuthentication
 			}
 			return loadedUser;
 		} catch (UsernameNotFoundException ex) {
-			// 即使用户没找到，也会将发来的密码与现有的密码进行匹配
+			// loadUserByUsername 方法规定需要处理这种异常
 			mitigateAgainstTimingAttack(authentication);
 			throw ex;
 		} catch (InternalAuthenticationServiceException ex) {

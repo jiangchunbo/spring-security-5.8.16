@@ -124,6 +124,8 @@ public class WebSecurityConfiguration implements ImportAware, BeanClassLoaderAwa
 
 		// 遍历每个 filter chain
 		for (SecurityFilterChain securityFilterChain : this.securityFilterChains) {
+
+			// 添加一个函数
 			this.webSecurity.addSecurityFilterChainBuilder(() -> securityFilterChain);
 
 			// 都是一些过时的逻辑
