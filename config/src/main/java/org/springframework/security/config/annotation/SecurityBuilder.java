@@ -18,6 +18,10 @@ package org.springframework.security.config.annotation;
 
 /**
  * Interface for building an Object
+ * <p>
+ * 用于构建某个对象的接口
+ * <p>
+ * 很类似 {@link java.util.function.Supplier} 但是 {@link SecurityBuilder} 支持抛出异常
  *
  * @param <O> The type of the Object being built
  * @author Rob Winch
@@ -27,6 +31,8 @@ public interface SecurityBuilder<O> {
 
 	/**
 	 * Builds the object and returns it or null.
+	 * <p>
+	 * 构建某个对象并返回，或者返回 null
 	 *
 	 * @return the Object to be built or null if the implementation allows it.
 	 * @throws Exception if an error occurred when building the Object

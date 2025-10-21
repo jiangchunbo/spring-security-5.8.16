@@ -38,12 +38,20 @@ import org.springframework.web.filter.DelegatingFilterProxy;
  * and broken up into a number of {@link SecurityConfigurer} objects that have more
  * specific goals than that of the {@link SecurityBuilder}.
  * </p>
+ * <p>
+ * 一个基础的 {@link SecurityBuilder}，支持向其中应用多个 {@link SecurityConfigurer}。
+ * 通过这种方式，修改 {@link SecurityBuilder} 的策略可以被拆分，并封装到若干具备更明确职责的 {@link SecurityConfigurer} 中，
+ * 而不必全部堆砌在 {@link SecurityBuilder} 自身
  *
  * <p>
  * For example, a {@link SecurityBuilder} may build an {@link DelegatingFilterProxy}, but
  * a {@link SecurityConfigurer} might populate the {@link SecurityBuilder} with the
  * filters necessary for session management, form based login, authorization, etc.
  * </p>
+ * <p>
+ * 例如，某个 {@link SecurityBuilder} 可能负责构建 {@link DelegatingFilterProxy}，
+ * 而不同的 {@link SecurityConfigurer} 则可以向该 {@link SecurityBuilder} 中
+ * 注入会话管理、表单登录、授权等所需的过滤器。
  *
  * @param <O> The object that this builder returns
  * @param <B> The type of this builder (that is returned by the base class)
@@ -57,13 +65,21 @@ public abstract class AbstractConfiguredSecurityBuilder<O, B extends SecurityBui
 
 	/**
 	 * 核心的成员变量，其中保存了一种一对多的映射，通过特定 Class 可以找到一系列对象
+	 *
+	 * @see AbstractConfiguredSecurityBuilder#allowConfigurersOfSameType
 	 */
 	private final LinkedHashMap<Class<? extends SecurityConfigurer<O, B>>, List<SecurityConfigurer<O, B>>> configurers = new LinkedHashMap<>();
 
+	/**
+	 * init 过程中添加的配置器
+	 */
 	private final List<SecurityConfigurer<O, B>> configurersAddedInInitializing = new ArrayList<>();
 
 	private final Map<Class<?>, Object> sharedObjects = new HashMap<>();
 
+	/**
+	 * 是否允许配置相同类型的 configurer
+	 */
 	private final boolean allowConfigurersOfSameType;
 
 	private BuildState buildState = BuildState.UNBUILT;
@@ -191,11 +207,16 @@ public abstract class AbstractConfiguredSecurityBuilder<O, B extends SecurityBui
 				throw new IllegalStateException("Cannot apply " + configurer + " to already built object");
 			}
 			List<SecurityConfigurer<O, B>> configs = null;
+
+			// 如果允许配置相同类型的 configurer，那么获取之前的数组(?)
 			if (this.allowConfigurersOfSameType) {
 				configs = this.configurers.get(clazz);
 			}
+
+			// 添加到数组中(也有可能是初始化)
 			configs = (configs != null) ? configs : new ArrayList<>(1);
 			configs.add(configurer);
+
 			this.configurers.put(clazz, configs);
 
 			// 如果当前正在初始化，但是调用了 add configurer 方法，就添加到一个特殊的集合
@@ -269,6 +290,9 @@ public abstract class AbstractConfiguredSecurityBuilder<O, B extends SecurityBui
 		if (configs == null) {
 			return null;
 		}
+
+		// configurers 没有 configurersAddedInInitializing 一定也没有
+		// configurers 有 configurersAddedInInitializing 可能有
 		removeFromConfigurersAddedInInitializing(clazz);
 		Assert.state(configs.size() == 1,
 				() -> "Only one configurer expected for type " + clazz + ", but got " + configs);
@@ -321,16 +345,16 @@ public abstract class AbstractConfiguredSecurityBuilder<O, B extends SecurityBui
 			// 设置状态是 initializing，然后执行 beforeInit、init
 			this.buildState = BuildState.INITIALIZING;
 			beforeInit(); // 我没有看到任何子类实现
-			init(); // 私有方法，固定逻辑
+			init(); // private 方法，固定逻辑
 
 			// 设置状态是 configuring，然后执行 beforeConfigure、configure
 			this.buildState = BuildState.CONFIGURING;
 			beforeConfigure();
-			configure(); // 私有方法，固定逻辑
+			configure(); // private 方法，固定逻辑
 
 			// 设置状态时 building，然后执行 performBuild
 			this.buildState = BuildState.BUILDING;
-			O result = performBuild(); // 对于 WebSecurity 等等来说，这个方法逻辑非常多
+			O result = performBuild(); // 子类实现
 
 			// 结束，设置状态 built -> build 现在完成时
 			this.buildState = BuildState.BUILT;
@@ -364,7 +388,7 @@ public abstract class AbstractConfiguredSecurityBuilder<O, B extends SecurityBui
 
 	@SuppressWarnings("unchecked")
 	private void init() throws Exception {
-		// 获取所有的 configurer 配置器
+		// 获取所有的 configurer，这是一个全新的对象
 		Collection<SecurityConfigurer<O, B>> configurers = getConfigurers();
 
 		// 调用所有 configurer 的 init
@@ -372,8 +396,9 @@ public abstract class AbstractConfiguredSecurityBuilder<O, B extends SecurityBui
 			configurer.init((B) this);
 		}
 
-		// 这里是担心，如果在上面的循环中 init 方法调用了 add(C configurer)，会出现循环中操作集合的并发异常 ConcurrentModificationException
-		// 如果是 init 阶段添加了 SecurityConfigurer，那么就在这里调用
+		// 如果在上面的循环中 init 方法调用了 add(C configurer)，会出现循环中操作集合的并发异常 ConcurrentModificationException 吗 ??? 不会!
+
+		// 如果是 init 阶段添加了新的 SecurityConfigurer，那么还可以在这里再次调用一次
 		for (SecurityConfigurer<O, B> configurer : this.configurersAddedInInitializing) {
 			configurer.init((B) this);
 		}
