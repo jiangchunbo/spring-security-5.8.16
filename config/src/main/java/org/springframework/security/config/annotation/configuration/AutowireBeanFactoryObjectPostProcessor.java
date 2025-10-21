@@ -34,12 +34,18 @@ import org.springframework.util.Assert;
  * Allows registering Objects to participate with an {@link AutowireCapableBeanFactory}'s
  * post processing of {@link Aware} methods, {@link InitializingBean#afterPropertiesSet()}
  * , and {@link DisposableBean#destroy()}.
+ * <p>
+ * 允许正在注册的对象，参与 BeanFactory 的后置处理 Aware 方法，afterProperties 方法，以及 destroy 方法
  *
  * @author Rob Winch
  * @since 3.2
  */
 final class AutowireBeanFactoryObjectPostProcessor
 		implements ObjectPostProcessor<Object>, DisposableBean, SmartInitializingSingleton {
+
+	// 由于可能需要后处理的对象类型很多，因此该后处理器必须支持 Object 类型。
+
+	// 协助调用这些对象的方法，但是这些对象始终不是 bean
 
 	private final Log logger = LogFactory.getLog(getClass());
 
@@ -60,18 +66,25 @@ final class AutowireBeanFactoryObjectPostProcessor
 		if (object == null) {
 			return null;
 		}
+
+		// 调用 initializeBean 方法
 		T result = null;
 		try {
 			result = (T) this.autowireBeanFactory.initializeBean(object, object.toString());
-		}
-		catch (RuntimeException ex) {
+		} catch (RuntimeException ex) {
 			Class<?> type = object.getClass();
 			throw new RuntimeException("Could not postProcess " + object + " of type " + type, ex);
 		}
+
+		// 调用 autowireBean 方法
 		this.autowireBeanFactory.autowireBean(object);
+
+		// 添加到 disposableBeans 在这里销毁
 		if (result instanceof DisposableBean) {
 			this.disposableBeans.add((DisposableBean) result);
 		}
+
+		// 添加到 smartSingletons，等单例 bean 都创建好，调用
 		if (result instanceof SmartInitializingSingleton) {
 			this.smartSingletons.add((SmartInitializingSingleton) result);
 		}
@@ -90,8 +103,7 @@ final class AutowireBeanFactoryObjectPostProcessor
 		for (DisposableBean disposable : this.disposableBeans) {
 			try {
 				disposable.destroy();
-			}
-			catch (Exception ex) {
+			} catch (Exception ex) {
 				this.logger.error(ex);
 			}
 		}

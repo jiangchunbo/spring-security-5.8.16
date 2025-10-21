@@ -36,8 +36,12 @@ public abstract class AbstractSecurityBuilder<O> implements SecurityBuilder<O> {
 
 	@Override
 	public final O build() throws Exception {
+		// 只是为了避免多线程执行
 		if (this.building.compareAndSet(false, true)) {
+
+			// 这里面会调用到 performBuild()
 			this.object = doBuild();
+
 			return this.object;
 		}
 		throw new AlreadyBuiltException("This object has already been built");

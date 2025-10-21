@@ -67,6 +67,11 @@ import org.springframework.util.Assert;
 @Configuration(proxyBeanMethods = false)
 public class WebSecurityConfiguration implements ImportAware, BeanClassLoaderAware {
 
+	/**
+	 * 这是一个 null 对象，它是如何注入的呢？其实是直接 new 出来的
+	 * <p>
+	 * 请关注 {@link #setFilterChainProxySecurityConfigurer(ObjectPostProcessor, ConfigurableListableBeanFactory)}
+	 */
 	private WebSecurity webSecurity;
 
 	private Boolean debugEnabled;
@@ -121,7 +126,6 @@ public class WebSecurityConfiguration implements ImportAware, BeanClassLoaderAwa
 			this.webSecurity.apply(adapter);
 		}
 
-
 		// 遍历每个 filter chain
 		for (SecurityFilterChain securityFilterChain : this.securityFilterChains) {
 
@@ -162,6 +166,8 @@ public class WebSecurityConfiguration implements ImportAware, BeanClassLoaderAwa
 	 *
 	 * @param objectPostProcessor the {@link ObjectPostProcessor} used to create a
 	 *                            {@link WebSecurity} instance
+	 *                            <p>
+	 *                            框架内有不少实现了 ObjectPostProcessor，但是只需要关注 {@link org.springframework.security.config.annotation.configuration.AutowireBeanFactoryObjectPostProcessor}
 	 * @param beanFactory         the bean factory to use to retrieve the relevant
 	 *                            {@code <SecurityConfigurer<FilterChainProxy, WebSecurityBuilder>} instances used to
 	 *                            create the web configuration
@@ -170,14 +176,24 @@ public class WebSecurityConfiguration implements ImportAware, BeanClassLoaderAwa
 	@Autowired(required = false)
 	public void setFilterChainProxySecurityConfigurer(ObjectPostProcessor<Object> objectPostProcessor,
 			ConfigurableListableBeanFactory beanFactory) throws Exception {
+
+		// 把 objectPostProcessor 传给 WebSecurity ???
+		// 然后又用 objectPostProcessor 处理了 WebSecurity
 		this.webSecurity = objectPostProcessor.postProcess(new WebSecurity(objectPostProcessor));
+
 		if (this.debugEnabled != null) {
 			this.webSecurity.debug(this.debugEnabled);
 		}
+
+		// 找到 SecurityConfigurer<Filter, WebSecurity>> 所有的 bean
+		// --> 这么说，每个人可以实现这个类型，定制自己的 configurer
 		List<SecurityConfigurer<Filter, WebSecurity>> webSecurityConfigurers = new AutowiredWebSecurityConfigurersIgnoreParents(
 				beanFactory)
 				.getWebSecurityConfigurers();
-		webSecurityConfigurers.sort(AnnotationAwareOrderComparator.INSTANCE);
+
+		webSecurityConfigurers.sort(AnnotationAwareOrderComparator.INSTANCE); // 排序不看了
+
+		// 顺序禁止相等，否则可能出现一些不明确的歧义现象
 		Integer previousOrder = null;
 		Object previousConfig = null;
 		for (SecurityConfigurer<Filter, WebSecurity> config : webSecurityConfigurers) {
@@ -189,6 +205,8 @@ public class WebSecurityConfiguration implements ImportAware, BeanClassLoaderAwa
 			previousOrder = order;
 			previousConfig = config;
 		}
+
+		// 将这些 configurer 全都应用到 WebSecurity 上
 		for (SecurityConfigurer<Filter, WebSecurity> webSecurityConfigurer : webSecurityConfigurers) {
 			this.webSecurity.apply(webSecurityConfigurer);
 		}

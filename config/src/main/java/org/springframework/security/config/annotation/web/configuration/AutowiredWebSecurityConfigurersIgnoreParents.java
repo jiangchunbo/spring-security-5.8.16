@@ -48,7 +48,11 @@ public final class AutowiredWebSecurityConfigurersIgnoreParents {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public List<SecurityConfigurer<Filter, WebSecurity>> getWebSecurityConfigurers() {
 		List<SecurityConfigurer<Filter, WebSecurity>> webSecurityConfigurers = new ArrayList<>();
+
+		// 其实就是按类型找 bean WebSecurityConfigurer
 		Map<String, WebSecurityConfigurer> beansOfType = this.beanFactory.getBeansOfType(WebSecurityConfigurer.class);
+
+		// 把找到的 bean 放到 List 中返回
 		for (Entry<String, WebSecurityConfigurer> entry : beansOfType.entrySet()) {
 			webSecurityConfigurers.add(entry.getValue());
 		}

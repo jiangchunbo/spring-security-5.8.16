@@ -86,23 +86,27 @@ public abstract class AbstractConfiguredSecurityBuilder<O, B extends SecurityBui
 
 	private ObjectPostProcessor<Object> objectPostProcessor;
 
-	/***
+	/**
 	 * Creates a new instance with the provided {@link ObjectPostProcessor}. This post
 	 * processor must support Object since there are many types of objects that may be
 	 * post processed.
+	 * <p>
+	 * 使用所提供的 ObjectPostProcessor 创建一个新的实例。由于可能需要后处理的对象类型很多，因此该后处理器必须支持 Object 类型。
+	 *
 	 * @param objectPostProcessor the {@link ObjectPostProcessor} to use
 	 */
 	protected AbstractConfiguredSecurityBuilder(ObjectPostProcessor<Object> objectPostProcessor) {
 		this(objectPostProcessor, false);
 	}
 
-	/***
+	/**
 	 * Creates a new instance with the provided {@link ObjectPostProcessor}. This post
 	 * processor must support Object since there are many types of objects that may be
 	 * post processed.
-	 * @param objectPostProcessor the {@link ObjectPostProcessor} to use
+	 *
+	 * @param objectPostProcessor        the {@link ObjectPostProcessor} to use
 	 * @param allowConfigurersOfSameType if true, will not override other
-	 * {@link SecurityConfigurer}'s when performing apply
+	 *                                   {@link SecurityConfigurer}'s when performing apply
 	 */
 	protected AbstractConfiguredSecurityBuilder(ObjectPostProcessor<Object> objectPostProcessor,
 			boolean allowConfigurersOfSameType) {
