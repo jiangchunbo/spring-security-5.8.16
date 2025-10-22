@@ -31,8 +31,11 @@ import org.springframework.security.config.annotation.web.servlet.configuration.
 
 /**
  * The {@link EnableGlobalAuthentication} annotation signals that the annotated class can
- * be used to configure a global instance of {@link AuthenticationManagerBuilder}. For
- * example:
+ * be used to configure a global instance of {@link AuthenticationManagerBuilder}.
+ * <p>
+ * 直接在类上面添加 {@link EnableGlobalAuthentication} 注解，就会注册 {@link AuthenticationManagerBuilder}.
+ * <p>
+ * For example:
  *
  * <pre class="code">
  * &#064;Configuration
@@ -52,13 +55,17 @@ import org.springframework.security.config.annotation.web.servlet.configuration.
  * 			.roles(&quot;ADMIN&quot;, &quot;USER&quot;)
  * 			.build();
  * 		return new InMemoryUserDetailsManager(user, admin);
- * 	}
+ *    }
  * }
  * </pre>
- *
+ * <p>
  * Annotations that are annotated with {@link EnableGlobalAuthentication} also signal that
  * the annotated class can be used to configure a global instance of
- * {@link AuthenticationManagerBuilder}. For example:
+ * {@link AuthenticationManagerBuilder}.
+ * <p>
+ * 那些携带者 {@link EnableGlobalAuthentication} 的注解，也有相同的作用，能够注册 {@link AuthenticationManagerBuilder}
+ * <p>
+ * For example:
  *
  * <pre class="code">
  * &#064;Configuration
@@ -78,12 +85,12 @@ import org.springframework.security.config.annotation.web.servlet.configuration.
  * 			.roles(&quot;ADMIN&quot;, &quot;USER&quot;)
  * 			.build();
  * 		return new InMemoryUserDetailsManager(user, admin);
- * 	}
+ *    }
  *
  * 	// Possibly more bean methods ...
  * }
  * </pre>
- *
+ * <p>
  * The following annotations are annotated with {@link EnableGlobalAuthentication}
  *
  * <ul>
@@ -91,15 +98,17 @@ import org.springframework.security.config.annotation.web.servlet.configuration.
  * <li>{@link EnableWebMvcSecurity}</li>
  * <li>{@link EnableGlobalMethodSecurity}</li>
  * </ul>
- *
+ * <p>
  * Configuring {@link AuthenticationManagerBuilder} in a class without the
  * {@link EnableGlobalAuthentication} annotation has unpredictable results.
+ * <p>
+ * 如果你自己配置了一个 {@link AuthenticationManagerBuilder}
+ * 并没有使用 {@link EnableGlobalAuthentication} 可能会出现一些不可预测的结果
  *
+ * @author Rob Winch
  * @see EnableWebMvcSecurity
  * @see EnableWebSecurity
  * @see EnableGlobalMethodSecurity
- * @author Rob Winch
- *
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

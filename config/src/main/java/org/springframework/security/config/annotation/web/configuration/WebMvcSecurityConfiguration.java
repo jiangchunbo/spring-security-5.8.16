@@ -58,16 +58,21 @@ class WebMvcSecurityConfiguration implements WebMvcConfigurer, ApplicationContex
 	@Override
 	@SuppressWarnings("deprecation")
 	public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
+		// 用于处理 @AuthenticationPrincipal (新的、旧的)
 		AuthenticationPrincipalArgumentResolver authenticationPrincipalResolver = new AuthenticationPrincipalArgumentResolver();
 		authenticationPrincipalResolver.setBeanResolver(this.beanResolver);
 		authenticationPrincipalResolver.setSecurityContextHolderStrategy(this.securityContextHolderStrategy);
 		argumentResolvers.add(authenticationPrincipalResolver);
 		argumentResolvers
 			.add(new org.springframework.security.web.bind.support.AuthenticationPrincipalArgumentResolver());
+
+		// 用于处理 @CurrentSecurityContext
 		CurrentSecurityContextArgumentResolver currentSecurityContextArgumentResolver = new CurrentSecurityContextArgumentResolver();
 		currentSecurityContextArgumentResolver.setBeanResolver(this.beanResolver);
 		currentSecurityContextArgumentResolver.setSecurityContextHolderStrategy(this.securityContextHolderStrategy);
 		argumentResolvers.add(currentSecurityContextArgumentResolver);
+
+		// 处理参数类型是 CsrfToken
 		argumentResolvers.add(new CsrfTokenArgumentResolver());
 	}
 

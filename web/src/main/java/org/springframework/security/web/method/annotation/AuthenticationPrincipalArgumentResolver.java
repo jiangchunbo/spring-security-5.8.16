@@ -99,17 +99,21 @@ public final class AuthenticationPrincipalArgumentResolver implements HandlerMet
 
 	@Override
 	public boolean supportsParameter(MethodParameter parameter) {
+		// 寻找是否存在注解 @AuthenticationPrincipal (元注解也可以)
 		return findMethodAnnotation(AuthenticationPrincipal.class, parameter) != null;
 	}
 
 	@Override
 	public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
 			NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
+		// 从 Context 中获取 Authentication
 		Authentication authentication = this.securityContextHolderStrategy.getContext().getAuthentication();
 		if (authentication == null) {
 			return null;
 		}
 		Object principal = authentication.getPrincipal();
+
+		// 解析注解中的表达式(如果配置了)
 		AuthenticationPrincipal annotation = findMethodAnnotation(AuthenticationPrincipal.class, parameter);
 		String expressionToParse = annotation.expression();
 		if (StringUtils.hasLength(expressionToParse)) {
@@ -120,6 +124,8 @@ public final class AuthenticationPrincipalArgumentResolver implements HandlerMet
 			Expression expression = this.parser.parseExpression(expressionToParse);
 			principal = expression.getValue(context);
 		}
+
+		// 如果参数类型无法映射，那么抛出异常或者返回 null
 		if (principal != null && !ClassUtils.isAssignable(parameter.getParameterType(), principal.getClass())) {
 			if (annotation.errorOnInvalidType()) {
 				throw new ClassCastException(principal + " is not assignable to " + parameter.getParameterType());
@@ -156,10 +162,13 @@ public final class AuthenticationPrincipalArgumentResolver implements HandlerMet
 	 * @return the {@link Annotation} that was found or null.
 	 */
 	private <T extends Annotation> T findMethodAnnotation(Class<T> annotationClass, MethodParameter parameter) {
+		// 找到直接注解
 		T annotation = parameter.getParameterAnnotation(annotationClass);
 		if (annotation != null) {
 			return annotation;
 		}
+
+		// 没找到就尝试找元注解
 		Annotation[] annotationsToSearch = parameter.getParameterAnnotations();
 		for (Annotation toSearch : annotationsToSearch) {
 			annotation = AnnotationUtils.findAnnotation(toSearch.annotationType(), annotationClass);

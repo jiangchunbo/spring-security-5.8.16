@@ -45,6 +45,8 @@ import static org.springframework.security.config.Customizer.withDefaults;
 
 /**
  * {@link Configuration} that exposes the {@link HttpSecurity} bean.
+ * <p>
+ * 暴露 HttpSecurity bean 的配置类
  *
  * @author Eleftheria Stein
  * @since 5.4
@@ -65,12 +67,13 @@ class HttpSecurityConfiguration {
 	private ApplicationContext context;
 
 	private SecurityContextHolderStrategy securityContextHolderStrategy = SecurityContextHolder
-		.getContextHolderStrategy();
+			.getContextHolderStrategy();
 
 	private ContentNegotiationStrategy contentNegotiationStrategy = new HeaderContentNegotiationStrategy();
 
 	@Autowired
 	void setObjectPostProcessor(ObjectPostProcessor<Object> objectPostProcessor) {
+		// 自动注入用于后置处理对象的 ObjectPostProcessor<Object>
 		this.objectPostProcessor = objectPostProcessor;
 	}
 
@@ -143,7 +146,7 @@ class HttpSecurityConfiguration {
 	private void applyDefaultConfigurers(HttpSecurity http) throws Exception {
 		ClassLoader classLoader = this.context.getClassLoader();
 		List<AbstractHttpConfigurer> defaultHttpConfigurers = SpringFactoriesLoader
-			.loadFactories(AbstractHttpConfigurer.class, classLoader);
+				.loadFactories(AbstractHttpConfigurer.class, classLoader);
 		for (AbstractHttpConfigurer configurer : defaultHttpConfigurers) {
 			http.apply(configurer);
 		}

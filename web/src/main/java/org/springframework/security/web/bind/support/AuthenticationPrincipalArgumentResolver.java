@@ -87,6 +87,8 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 @Deprecated
 public final class AuthenticationPrincipalArgumentResolver implements HandlerMethodArgumentResolver {
 
+	// 已经淘汰过时
+
 	@Override
 	public boolean supportsParameter(MethodParameter parameter) {
 		return findMethodAnnotation(AuthenticationPrincipal.class, parameter) != null;

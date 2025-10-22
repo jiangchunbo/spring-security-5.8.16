@@ -85,6 +85,7 @@ public final class CurrentSecurityContextArgumentResolver implements HandlerMeth
 
 	@Override
 	public boolean supportsParameter(MethodParameter parameter) {
+		// 找注解 @CurrentSecurityContext
 		return findMethodAnnotation(CurrentSecurityContext.class, parameter) != null;
 	}
 

@@ -49,7 +49,10 @@ public class WebMvcSecurityConfiguration implements WebMvcConfigurer {
 	@Override
 	@SuppressWarnings("deprecation")
 	public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
+		// 解析注解 @AuthenticationPrincipal
 		argumentResolvers.add(new AuthenticationPrincipalArgumentResolver());
+
+		// 兼容旧版本
 		argumentResolvers
 			.add(new org.springframework.security.web.bind.support.AuthenticationPrincipalArgumentResolver());
 	}

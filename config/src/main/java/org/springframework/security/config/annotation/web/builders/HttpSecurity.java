@@ -143,6 +143,8 @@ import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 public final class HttpSecurity extends AbstractConfiguredSecurityBuilder<DefaultSecurityFilterChain, HttpSecurity>
 		implements SecurityBuilder<DefaultSecurityFilterChain>, HttpSecurityBuilder<HttpSecurity> {
 
+	// 这通常作为 prototype bean，能够得到一个 DefaultSecurityFilterChain 对象
+
 	private static final String HANDLER_MAPPING_INTROSPECTOR_BEAN_NAME = "mvcHandlerMappingIntrospector";
 
 	private static final String HANDLER_MAPPING_INTROSPECTOR = "org.springframework.web.servlet.handler.HandlerMappingIntrospector";
@@ -158,6 +160,9 @@ public final class HttpSecurity extends AbstractConfiguredSecurityBuilder<Defaul
 
 	private RequestMatcher requestMatcher = AnyRequestMatcher.INSTANCE;
 
+	/**
+	 * 从中可以获取一些特定 Filter 的 order
+	 */
 	private FilterOrderRegistration filterOrders = new FilterOrderRegistration();
 
 	private AuthenticationManager authenticationManager;
@@ -178,8 +183,12 @@ public final class HttpSecurity extends AbstractConfiguredSecurityBuilder<Defaul
 	@SuppressWarnings("unchecked")
 	public HttpSecurity(ObjectPostProcessor<Object> objectPostProcessor,
 			AuthenticationManagerBuilder authenticationBuilder, Map<Class<?>, Object> sharedObjects) {
+		// objectPostProcessor 用于后置处理对象
 		super(objectPostProcessor);
+
 		Assert.notNull(authenticationBuilder, "authenticationBuilder cannot be null");
+
+		// 设置一个 AuthenticationManagerBuilder ? builder ?
 		setSharedObject(AuthenticationManagerBuilder.class, authenticationBuilder);
 		for (Map.Entry<Class<?>, Object> entry : sharedObjects.entrySet()) {
 			setSharedObject((Class<Object>) entry.getKey(), entry.getValue());

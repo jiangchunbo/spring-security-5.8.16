@@ -58,7 +58,6 @@ import org.springframework.util.Assert;
  *
  * @author Rob Winch
  * @since 3.2
- *
  */
 @Configuration(proxyBeanMethods = false)
 @Import(ObjectPostProcessorConfiguration.class)
@@ -76,6 +75,13 @@ public class AuthenticationConfiguration {
 
 	private ObjectPostProcessor<Object> objectPostProcessor;
 
+	/**
+	 * 用于构建得到 AuthenticationManager 的构建起
+	 *
+	 * @param objectPostProcessor 后置处理器
+	 * @param context             应用上下文
+	 * @return AuthenticationManagerBuilder
+	 */
 	@Bean
 	public AuthenticationManagerBuilder authenticationManagerBuilder(ObjectPostProcessor<Object> objectPostProcessor,
 			ApplicationContext context) {
@@ -185,8 +191,8 @@ public class AuthenticationConfiguration {
 		}
 		for (String beanName : beanNamesForType) {
 			if (((ConfigurableApplicationContext) this.applicationContext).getBeanFactory()
-				.getBeanDefinition(beanName)
-				.isPrimary()) {
+					.getBeanDefinition(beanName)
+					.isPrimary()) {
 				list.add(beanName);
 			}
 		}
@@ -200,8 +206,7 @@ public class AuthenticationConfiguration {
 	private static <T> T getBeanOrNull(ApplicationContext applicationContext, Class<T> type) {
 		try {
 			return applicationContext.getBean(type);
-		}
-		catch (NoSuchBeanDefinitionException notFound) {
+		} catch (NoSuchBeanDefinitionException notFound) {
 			return null;
 		}
 	}
@@ -219,7 +224,7 @@ public class AuthenticationConfiguration {
 		@Override
 		public void init(AuthenticationManagerBuilder auth) {
 			Map<String, Object> beansWithAnnotation = this.context
-				.getBeansWithAnnotation(EnableGlobalAuthentication.class);
+					.getBeansWithAnnotation(EnableGlobalAuthentication.class);
 			if (logger.isTraceEnabled()) {
 				logger.trace(LogMessage.format("Eagerly initializing %s", beansWithAnnotation));
 			}
@@ -274,6 +279,7 @@ public class AuthenticationConfiguration {
 
 		/**
 		 * Creates a new instance
+		 *
 		 * @param objectPostProcessor the {@link ObjectPostProcessor} instance to use.
 		 */
 		DefaultPasswordEncoderAuthenticationManagerBuilder(ObjectPostProcessor<Object> objectPostProcessor,

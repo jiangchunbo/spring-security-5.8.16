@@ -29,11 +29,17 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
  * Spring {@link Configuration} that exports the default {@link ObjectPostProcessor}. This
  * class is not intended to be imported manually rather it is imported automatically when
  * using {@link EnableWebSecurity} or {@link EnableGlobalMethodSecurity}.
+ * <p>
+ * 暴露一个默认的 {@code ObjectPostProcessor<Object>}
+ * <p>
+ * 这个类无需，也不应该被手动导入；也就是不应该手动 @Import 它
+ * <p>
+ * 在使用 @EnableWebSecurity 或者 @EnableGlobalMethodSecurity 时会自动导入
  *
  * @author Rob Winch
- * @since 3.2
  * @see EnableWebSecurity
  * @see EnableGlobalMethodSecurity
+ * @since 3.2
  */
 @Configuration(proxyBeanMethods = false)
 @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
