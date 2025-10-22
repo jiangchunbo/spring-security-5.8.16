@@ -144,8 +144,12 @@ public abstract class AbstractConfiguredSecurityBuilder<O, B extends SecurityBui
 	 */
 	@SuppressWarnings("unchecked")
 	public <C extends SecurityConfigurerAdapter<O, B>> C apply(C configurer) throws Exception {
+		// 添加 objectPostProcessor 只是为了能够给这些 configurer 对象添加 bean factory 的后置处理支持
 		configurer.addObjectPostProcessor(this.objectPostProcessor);
+
 		configurer.setBuilder((B) this);
+
+		// 添加到内部维护的 configurer 中
 		add(configurer);
 		return configurer;
 	}
@@ -266,6 +270,8 @@ public abstract class AbstractConfiguredSecurityBuilder<O, B extends SecurityBui
 	/**
 	 * Gets the {@link SecurityConfigurer} by its class name or <code>null</code> if not
 	 * found. Note that object hierarchies are not considered.
+	 * <p>
+	 * 获取唯一的 Configurer，如果获取多个，则需要立即抛出异常。
 	 *
 	 * @param clazz
 	 * @return the {@link SecurityConfigurer} for further customizations

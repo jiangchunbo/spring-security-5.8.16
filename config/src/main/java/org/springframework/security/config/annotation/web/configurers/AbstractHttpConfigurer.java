@@ -44,6 +44,11 @@ public abstract class AbstractHttpConfigurer<T extends AbstractHttpConfigurer<T,
 	 */
 	@SuppressWarnings("unchecked")
 	public B disable() {
+		// 移除这个配置，
+		// --> 我甚至觉得不应该调用这个方法，
+		// --> 因为调用这个方法，一般已经进入了 AbstractConfiguredSecurityBuilder 的配置链中
+		// --> 然后你又把他移除了？！
+
 		getBuilder().removeConfigurer(getClass());
 		return getBuilder();
 	}
