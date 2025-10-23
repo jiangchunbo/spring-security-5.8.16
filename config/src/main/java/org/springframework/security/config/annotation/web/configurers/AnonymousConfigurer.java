@@ -141,14 +141,19 @@ public final class AnonymousConfigurer<H extends HttpSecurityBuilder<H>>
 
 	@Override
 	public void init(H http) {
+		// 这是给 ProviderManager 提供的一种认证方式，匿名认证
 		if (this.authenticationProvider == null) {
 			this.authenticationProvider = new AnonymousAuthenticationProvider(getKey());
 		}
+
+		// 构造匿名过滤器，在 configure 中添加到 filter chain
 		if (this.authenticationFilter == null) {
 			this.authenticationFilter = new AnonymousAuthenticationFilter(getKey(), this.principal, this.authorities);
 			this.authenticationFilter.setSecurityContextHolderStrategy(getSecurityContextHolderStrategy());
 		}
 		this.authenticationFilter.setSecurityContextHolderStrategy(getSecurityContextHolderStrategy());
+
+		// 后置处理
 		this.authenticationProvider = postProcess(this.authenticationProvider);
 		http.authenticationProvider(this.authenticationProvider);
 	}

@@ -66,9 +66,14 @@ public final class CsrfAuthenticationStrategy implements SessionAuthenticationSt
 	@Override
 	public void onAuthentication(Authentication authentication, HttpServletRequest request,
 			HttpServletResponse response) throws SessionAuthenticationException {
+		// 从仓库中加载 Token，但是没有处理返回值的接收，只是判断是否是 null
 		boolean containsToken = this.tokenRepository.loadToken(request) != null;
+
 		if (containsToken) {
+			// 清空 token ，注意看 save token 参数是 null
 			this.tokenRepository.saveToken(null, request, response);
+
+			// 加载延迟的 token
 			DeferredCsrfToken deferredCsrfToken = this.tokenRepository.loadDeferredToken(request, response);
 			this.requestHandler.handle(request, response, deferredCsrfToken::get);
 			this.logger.debug("Replaced CSRF Token");

@@ -54,10 +54,13 @@ import org.springframework.web.filter.GenericFilterBean;
 public class LogoutFilter extends GenericFilterBean {
 
 	private SecurityContextHolderStrategy securityContextHolderStrategy = SecurityContextHolder
-		.getContextHolderStrategy();
+			.getContextHolderStrategy();
 
 	private RequestMatcher logoutRequestMatcher;
 
+	/**
+	 * 类型你直接写 CompositeLogoutHandler 算了
+	 */
 	private final LogoutHandler handler;
 
 	private final LogoutSuccessHandler logoutSuccessHandler;
@@ -67,6 +70,9 @@ public class LogoutFilter extends GenericFilterBean {
 	 * target destination after logging out. The list of <tt>LogoutHandler</tt>s are
 	 * intended to perform the actual logout functionality (such as clearing the security
 	 * context, invalidating the session, etc.).
+	 *
+	 * @param logoutSuccessHandler 使用自定义的方式处理 logout 请求
+	 * @param handlers             多个 logoutHandler，最终会被组合到 CompositeLogoutHandler
 	 */
 	public LogoutFilter(LogoutSuccessHandler logoutSuccessHandler, LogoutHandler... handlers) {
 		this.handler = new CompositeLogoutHandler(handlers);
@@ -75,6 +81,9 @@ public class LogoutFilter extends GenericFilterBean {
 		setFilterProcessesUrl("/logout");
 	}
 
+	/**
+	 * @param handlers @param handlers 多个 logoutHandler，最终会被组合到 CompositeLogoutHandler
+	 */
 	public LogoutFilter(String logoutSuccessUrl, LogoutHandler... handlers) {
 		this.handler = new CompositeLogoutHandler(handlers);
 		Assert.isTrue(!StringUtils.hasLength(logoutSuccessUrl) || UrlUtils.isValidRedirectUrl(logoutSuccessUrl),
@@ -113,7 +122,8 @@ public class LogoutFilter extends GenericFilterBean {
 
 	/**
 	 * Allow subclasses to modify when a logout should take place.
-	 * @param request the request
+	 *
+	 * @param request  the request
 	 * @param response the response
 	 * @return <code>true</code> if logout should occur, <code>false</code> otherwise
 	 */

@@ -38,6 +38,7 @@ final class PermitAllSupport {
 	static void permitAll(HttpSecurityBuilder<? extends HttpSecurityBuilder<?>> http, String... urls) {
 		for (String url : urls) {
 			if (url != null) {
+				// 构建一个精准匹配器，甚至连 query 都可以匹配
 				permitAll(http, new ExactUrlRequestMatcher(url));
 			}
 		}
@@ -69,8 +70,14 @@ final class PermitAllSupport {
 		}
 	}
 
+	/**
+	 * 私有类，只是用于精确匹配，不支持 /** 等
+	 */
 	private static final class ExactUrlRequestMatcher implements RequestMatcher {
 
+		/**
+		 * 更应该是一个 final 不可变字符串
+		 */
 		private String processUrl;
 
 		private ExactUrlRequestMatcher(String processUrl) {
@@ -79,14 +86,21 @@ final class PermitAllSupport {
 
 		@Override
 		public boolean matches(HttpServletRequest request) {
+			// 请求不带主机名和端口的 URI，例如 /logout
 			String uri = request.getRequestURI();
+
+			// 获取查询字符串，如果存在，则拼接到 uri 后面
 			String query = request.getQueryString();
 			if (query != null) {
 				uri += "?" + query;
 			}
+
+			// 如果没有配置 context path，直接比较 uri 和 processUrl
 			if ("".equals(request.getContextPath())) {
 				return uri.equals(this.processUrl);
 			}
+
+			// 前缀增加 context path 再比较
 			return uri.equals(request.getContextPath() + this.processUrl);
 		}
 

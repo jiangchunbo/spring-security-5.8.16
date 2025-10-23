@@ -51,10 +51,14 @@ import org.springframework.web.filter.GenericFilterBean;
 public class AnonymousAuthenticationFilter extends GenericFilterBean implements InitializingBean {
 
 	private SecurityContextHolderStrategy securityContextHolderStrategy = SecurityContextHolder
-		.getContextHolderStrategy();
+			.getContextHolderStrategy();
 
 	private AuthenticationDetailsSource<HttpServletRequest, ?> authenticationDetailsSource = new WebAuthenticationDetailsSource();
 
+	/**
+	 * 这个 Key 很关键，与 {@link org.springframework.security.authentication.AnonymousAuthenticationProvider} 密切关联
+	 * 必须维护相同的 key，否则 AnonymousAuthenticationProvider 无法颁发令牌
+	 */
 	private String key;
 
 	private Object principal;
@@ -64,6 +68,7 @@ public class AnonymousAuthenticationFilter extends GenericFilterBean implements 
 	/**
 	 * Creates a filter with a principal named "anonymousUser" and the single authority
 	 * "ROLE_ANONYMOUS".
+	 *
 	 * @param key the key to identify tokens created by this filter
 	 */
 	public AnonymousAuthenticationFilter(String key) {
@@ -71,8 +76,8 @@ public class AnonymousAuthenticationFilter extends GenericFilterBean implements 
 	}
 
 	/**
-	 * @param key key the key to identify tokens created by this filter
-	 * @param principal the principal which will be used to represent anonymous users
+	 * @param key         key the key to identify tokens created by this filter
+	 * @param principal   the principal which will be used to represent anonymous users
 	 * @param authorities the authority list for anonymous users
 	 */
 	public AnonymousAuthenticationFilter(String key, Object principal, List<GrantedAuthority> authorities) {
@@ -100,7 +105,7 @@ public class AnonymousAuthenticationFilter extends GenericFilterBean implements 
 		// 设置 Supplier<SecurityContext>，其中会调用 get() 方法立即加载
 		// 其中，如果检测到没有认证信息，会创建一个认证通过的，匿名用户安全上下文
 		this.securityContextHolderStrategy
-			.setDeferredContext(defaultWithAnonymous((HttpServletRequest) req, deferredContext));
+				.setDeferredContext(defaultWithAnonymous((HttpServletRequest) req, deferredContext));
 		chain.doFilter(req, res);
 	}
 
@@ -114,11 +119,12 @@ public class AnonymousAuthenticationFilter extends GenericFilterBean implements 
 		});
 	}
 
+	/**
+	 * SecurityContext 决策，如果存在 Authentication 就返回，不存在就创建一个全新的 SecurityContext
+	 */
 	private SecurityContext defaultWithAnonymous(HttpServletRequest request, SecurityContext currentContext) {
-		// 获得安全上下文中的 Authentication
+		// 如果安全上下文没有 Authentication，就颁发一个匿名令牌
 		Authentication currentAuthentication = currentContext.getAuthentication();
-
-		// 如果里面没有认证之后的信息
 		if (currentAuthentication == null) {
 			// 那么创建一个匿名的信息
 			Authentication anonymous = createAuthentication(request);
@@ -126,8 +132,7 @@ public class AnonymousAuthenticationFilter extends GenericFilterBean implements 
 			// 日志，不用看
 			if (this.logger.isTraceEnabled()) {
 				this.logger.trace(LogMessage.of(() -> "Set SecurityContextHolder to " + anonymous));
-			}
-			else {
+			} else {
 				this.logger.debug("Set SecurityContextHolder to anonymous SecurityContext");
 			}
 
@@ -135,8 +140,7 @@ public class AnonymousAuthenticationFilter extends GenericFilterBean implements 
 			SecurityContext anonymousContext = this.securityContextHolderStrategy.createEmptyContext();
 			anonymousContext.setAuthentication(anonymous);
 			return anonymousContext;
-		}
-		else {
+		} else {
 			if (this.logger.isTraceEnabled()) {
 				this.logger.trace(LogMessage.of(() -> "Did not set SecurityContextHolder since already authenticated "
 						+ currentAuthentication));
@@ -145,6 +149,9 @@ public class AnonymousAuthenticationFilter extends GenericFilterBean implements 
 		return currentContext;
 	}
 
+	/**
+	 * 创建一个匿名 Token，或者叫颁发一个匿名令牌
+	 */
 	protected Authentication createAuthentication(HttpServletRequest request) {
 		AnonymousAuthenticationToken token = new AnonymousAuthenticationToken(this.key, this.principal,
 				this.authorities);

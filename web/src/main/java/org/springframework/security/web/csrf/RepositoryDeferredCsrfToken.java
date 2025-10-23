@@ -55,12 +55,19 @@ final class RepositoryDeferredCsrfToken implements DeferredCsrfToken {
 		return this.missingToken;
 	}
 
+	/**
+	 * 得需要获取的时候再 init
+	 */
 	private void init() {
+		// 初始化完毕
 		if (this.csrfToken != null) {
 			return;
 		}
 
+		// 加载 csrf token，其实就是从某个地方获取一下，可能还没创建
 		this.csrfToken = this.csrfTokenRepository.loadToken(this.request);
+
+		// 如果没有获取到，就生成
 		this.missingToken = (this.csrfToken == null);
 		if (this.missingToken) {
 			this.csrfToken = this.csrfTokenRepository.generateToken(this.request);

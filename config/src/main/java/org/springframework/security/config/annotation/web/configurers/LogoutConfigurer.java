@@ -48,7 +48,7 @@ import org.springframework.util.Assert;
  * phase.
  *
  * <h2>Security Filters</h2>
- *
+ * <p>
  * The following Filters are populated
  *
  * <ul>
@@ -56,17 +56,17 @@ import org.springframework.util.Assert;
  * </ul>
  *
  * <h2>Shared Objects Created</h2>
- *
+ * <p>
  * No shared Objects are created
  *
  * <h2>Shared Objects Used</h2>
- *
+ * <p>
  * No shared objects are used.
  *
  * @author Rob Winch
  * @author Onur Kagan Ozcan
- * @since 3.2
  * @see RememberMeConfigurer
+ * @since 3.2
  */
 public final class LogoutConfigurer<H extends HttpSecurityBuilder<H>>
 		extends AbstractHttpConfigurer<LogoutConfigurer<H>, H> {
@@ -89,14 +89,21 @@ public final class LogoutConfigurer<H extends HttpSecurityBuilder<H>>
 
 	private RequestMatcher logoutRequestMatcher;
 
+	/**
+	 * 是否允许所有用户(包括已认证和未认证) 访问
+	 */
 	private boolean permitAll;
 
+	/**
+	 * 是否自定义了 logout success 的方式
+	 */
 	private boolean customLogoutSuccess;
 
 	private LinkedHashMap<RequestMatcher, LogoutSuccessHandler> defaultLogoutSuccessHandlerMappings = new LinkedHashMap<>();
 
 	/**
 	 * Creates a new instance
+	 *
 	 * @see HttpSecurity#logout()
 	 */
 	public LogoutConfigurer() {
@@ -106,6 +113,7 @@ public final class LogoutConfigurer<H extends HttpSecurityBuilder<H>>
 	 * Adds a {@link LogoutHandler}. {@link SecurityContextLogoutHandler} and
 	 * {@link LogoutSuccessEventPublishingLogoutHandler} are added as last
 	 * {@link LogoutHandler} instances by default.
+	 *
 	 * @param logoutHandler the {@link LogoutHandler} to add
 	 * @return the {@link LogoutConfigurer} for further customization
 	 */
@@ -118,8 +126,9 @@ public final class LogoutConfigurer<H extends HttpSecurityBuilder<H>>
 	/**
 	 * Specifies if {@link SecurityContextLogoutHandler} should clear the
 	 * {@link Authentication} at the time of logout.
+	 *
 	 * @param clearAuthentication true {@link SecurityContextLogoutHandler} should clear
-	 * the {@link Authentication} (default), or false otherwise.
+	 *                            the {@link Authentication} (default), or false otherwise.
 	 * @return the {@link LogoutConfigurer} for further customization
 	 */
 	public LogoutConfigurer<H> clearAuthentication(boolean clearAuthentication) {
@@ -130,8 +139,9 @@ public final class LogoutConfigurer<H extends HttpSecurityBuilder<H>>
 	/**
 	 * Configures {@link SecurityContextLogoutHandler} to invalidate the
 	 * {@link HttpSession} at the time of logout.
+	 *
 	 * @param invalidateHttpSession true if the {@link HttpSession} should be invalidated
-	 * (default), or false otherwise.
+	 *                              (default), or false otherwise.
 	 * @return the {@link LogoutConfigurer} for further customization
 	 */
 	public LogoutConfigurer<H> invalidateHttpSession(boolean invalidateHttpSession) {
@@ -152,6 +162,7 @@ public final class LogoutConfigurer<H extends HttpSecurityBuilder<H>>
 	 * attacks</a>. If you really want to use an HTTP GET, you can use
 	 * <code>logoutRequestMatcher(new AntPathRequestMatcher(logoutUrl, "GET"));</code>
 	 * </p>
+	 *
 	 * @param logoutUrl the URL that will invoke logout.
 	 * @return the {@link LogoutConfigurer} for further customization
 	 * @see #logoutRequestMatcher(RequestMatcher)
@@ -166,8 +177,9 @@ public final class LogoutConfigurer<H extends HttpSecurityBuilder<H>>
 	/**
 	 * The RequestMatcher that triggers log out to occur. In most circumstances users will
 	 * use {@link #logoutUrl(String)} which helps enforce good practices.
+	 *
 	 * @param logoutRequestMatcher the RequestMatcher used to determine if logout should
-	 * occur.
+	 *                             occur.
 	 * @return the {@link LogoutConfigurer} for further customization
 	 * @see #logoutUrl(String)
 	 */
@@ -180,17 +192,19 @@ public final class LogoutConfigurer<H extends HttpSecurityBuilder<H>>
 	 * The URL to redirect to after logout has occurred. The default is "/login?logout".
 	 * This is a shortcut for invoking {@link #logoutSuccessHandler(LogoutSuccessHandler)}
 	 * with a {@link SimpleUrlLogoutSuccessHandler}.
+	 *
 	 * @param logoutSuccessUrl the URL to redirect to after logout occurred
 	 * @return the {@link LogoutConfigurer} for further customization
 	 */
 	public LogoutConfigurer<H> logoutSuccessUrl(String logoutSuccessUrl) {
-		this.customLogoutSuccess = true;
+		this.customLogoutSuccess = true; // 自定义 logoutSuccessUrl
 		this.logoutSuccessUrl = logoutSuccessUrl;
 		return this;
 	}
 
 	/**
 	 * A shortcut for {@link #permitAll(boolean)} with <code>true</code> as an argument.
+	 *
 	 * @return the {@link LogoutConfigurer} for further customizations
 	 */
 	public LogoutConfigurer<H> permitAll() {
@@ -201,6 +215,7 @@ public final class LogoutConfigurer<H extends HttpSecurityBuilder<H>>
 	 * Allows specifying the names of cookies to be removed on logout success. This is a
 	 * shortcut to easily invoke {@link #addLogoutHandler(LogoutHandler)} with a
 	 * {@link CookieClearingLogoutHandler}.
+	 *
 	 * @param cookieNamesToClear the names of cookies to be removed on logout success.
 	 * @return the {@link LogoutConfigurer} for further customization
 	 */
@@ -211,13 +226,14 @@ public final class LogoutConfigurer<H extends HttpSecurityBuilder<H>>
 	/**
 	 * Sets the {@link LogoutSuccessHandler} to use. If this is specified,
 	 * {@link #logoutSuccessUrl(String)} is ignored.
+	 *
 	 * @param logoutSuccessHandler the {@link LogoutSuccessHandler} to use after a user
-	 * has been logged out.
+	 *                             has been logged out.
 	 * @return the {@link LogoutConfigurer} for further customizations
 	 */
 	public LogoutConfigurer<H> logoutSuccessHandler(LogoutSuccessHandler logoutSuccessHandler) {
 		this.logoutSuccessUrl = null;
-		this.customLogoutSuccess = true;
+		this.customLogoutSuccess = true; // 自定义 logoutSuccessHandler
 		this.logoutSuccessHandler = logoutSuccessHandler;
 		return this;
 	}
@@ -229,9 +245,10 @@ public final class LogoutConfigurer<H extends HttpSecurityBuilder<H>>
 	 * {@link LogoutSuccessHandler} instances are configured, then a
 	 * {@link DelegatingLogoutSuccessHandler} will be used that defaults to a
 	 * {@link SimpleUrlLogoutSuccessHandler}.
-	 * @param handler the {@link LogoutSuccessHandler} to use
+	 *
+	 * @param handler          the {@link LogoutSuccessHandler} to use
 	 * @param preferredMatcher the {@link RequestMatcher} for this default
-	 * {@link LogoutSuccessHandler}
+	 *                         {@link LogoutSuccessHandler}
 	 * @return the {@link LogoutConfigurer} for further customizations
 	 */
 	public LogoutConfigurer<H> defaultLogoutSuccessHandlerFor(LogoutSuccessHandler handler,
@@ -245,6 +262,7 @@ public final class LogoutConfigurer<H extends HttpSecurityBuilder<H>>
 	/**
 	 * Grants access to the {@link #logoutSuccessUrl(String)} and the
 	 * {@link #logoutUrl(String)} for every user.
+	 *
 	 * @param permitAll if true grants access, else nothing is done
 	 * @return the {@link LogoutConfigurer} for further customization.
 	 */
@@ -256,6 +274,7 @@ public final class LogoutConfigurer<H extends HttpSecurityBuilder<H>>
 	/**
 	 * Gets the {@link LogoutSuccessHandler} if not null, otherwise creates a new
 	 * {@link SimpleUrlLogoutSuccessHandler} using the {@link #logoutSuccessUrl(String)}.
+	 *
 	 * @return the {@link LogoutSuccessHandler} to use
 	 */
 	public LogoutSuccessHandler getLogoutSuccessHandler() {
@@ -281,12 +300,20 @@ public final class LogoutConfigurer<H extends HttpSecurityBuilder<H>>
 
 	@Override
 	public void init(H http) {
+		// 总结下来就是，默认情况下，又是前后端分离开发，下面基本不会有作用
+
+		// permitAll 是否允许任何人访问 url
+		// 默认是 false，所以基本不会走进去
 		if (this.permitAll) {
+			// 任何人都可以访问 /logout?logout
 			PermitAllSupport.permitAll(http, this.logoutSuccessUrl);
+			// 任何人都可以访问 /logout
 			PermitAllSupport.permitAll(http, this.getLogoutRequestMatcher(http));
 		}
+
+		// 生成登录页面，但是如果你自定义了 logout success 方式就没用
 		DefaultLoginPageGeneratingFilter loginPageGeneratingFilter = http
-			.getSharedObject(DefaultLoginPageGeneratingFilter.class);
+				.getSharedObject(DefaultLoginPageGeneratingFilter.class);
 		if (loginPageGeneratingFilter != null && !isCustomLogoutSuccess()) {
 			loginPageGeneratingFilter.setLogoutSuccessUrl(getLogoutSuccessUrl());
 		}
@@ -294,6 +321,7 @@ public final class LogoutConfigurer<H extends HttpSecurityBuilder<H>>
 
 	@Override
 	public void configure(H http) throws Exception {
+		// 创建 logout
 		LogoutFilter logoutFilter = createLogoutFilter(http);
 		http.addFilter(logoutFilter);
 	}
@@ -302,6 +330,7 @@ public final class LogoutConfigurer<H extends HttpSecurityBuilder<H>>
 	 * Returns true if the logout success has been customized via
 	 * {@link #logoutSuccessUrl(String)} or
 	 * {@link #logoutSuccessHandler(LogoutSuccessHandler)}.
+	 *
 	 * @return true if logout success handling has been customized, else false
 	 */
 	boolean isCustomLogoutSuccess() {
@@ -311,6 +340,7 @@ public final class LogoutConfigurer<H extends HttpSecurityBuilder<H>>
 	/**
 	 * Gets the logoutSuccesUrl or null if a
 	 * {@link #logoutSuccessHandler(LogoutSuccessHandler)} was configured.
+	 *
 	 * @return the logoutSuccessUrl
 	 */
 	private String getLogoutSuccessUrl() {
@@ -319,6 +349,7 @@ public final class LogoutConfigurer<H extends HttpSecurityBuilder<H>>
 
 	/**
 	 * Gets the {@link LogoutHandler} instances that will be used.
+	 *
 	 * @return the {@link LogoutHandler} instances. Cannot be null.
 	 */
 	public List<LogoutHandler> getLogoutHandlers() {
@@ -329,15 +360,24 @@ public final class LogoutConfigurer<H extends HttpSecurityBuilder<H>>
 	 * Creates the {@link LogoutFilter} using the {@link LogoutHandler} instances, the
 	 * {@link #logoutSuccessHandler(LogoutSuccessHandler)} and the
 	 * {@link #logoutUrl(String)}.
+	 *
 	 * @param http the builder to use
 	 * @return the {@link LogoutFilter} to use.
 	 */
 	private LogoutFilter createLogoutFilter(H http) {
+		// 配置 logout handler
 		this.contextLogoutHandler.setSecurityContextHolderStrategy(getSecurityContextHolderStrategy());
 		this.contextLogoutHandler.setSecurityContextRepository(getSecurityContextRepository(http));
+
+		// 添加到 logoutHandlers
 		this.logoutHandlers.add(this.contextLogoutHandler);
+
+		// 发布事件
 		this.logoutHandlers.add(postProcess(new LogoutSuccessEventPublishingLogoutHandler()));
+
 		LogoutHandler[] handlers = this.logoutHandlers.toArray(new LogoutHandler[0]);
+
+		// 不管怎么样，这一切的触发还是通过 LogoutFilter
 		LogoutFilter result = new LogoutFilter(getLogoutSuccessHandler(), handlers);
 		result.setSecurityContextHolderStrategy(getSecurityContextHolderStrategy());
 		result.setLogoutRequestMatcher(getLogoutRequestMatcher(http));
@@ -361,12 +401,21 @@ public final class LogoutConfigurer<H extends HttpSecurityBuilder<H>>
 		return this.logoutRequestMatcher;
 	}
 
+	/**
+	 * 创建一个 logout 的请求匹配器
+	 * <p>
+	 * 可以参考这种思想，我们也可以起名为 createXyzRequestMatcher
+	 */
 	@SuppressWarnings("unchecked")
 	private RequestMatcher createLogoutRequestMatcher(H http) {
+		// 默认情况下 POST 请求方法的 /logout 一定是可以的
 		RequestMatcher post = createLogoutRequestMatcher("POST");
 		if (http.getConfigurer(CsrfConfigurer.class) != null) {
 			return post;
 		}
+
+		// 如果程序没有配置 CSRF，那么也允许 GET PUT DELETE
+
 		RequestMatcher get = createLogoutRequestMatcher("GET");
 		RequestMatcher put = createLogoutRequestMatcher("PUT");
 		RequestMatcher delete = createLogoutRequestMatcher("DELETE");
