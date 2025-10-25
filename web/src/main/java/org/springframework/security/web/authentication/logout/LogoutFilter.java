@@ -63,6 +63,9 @@ public class LogoutFilter extends GenericFilterBean {
 	 */
 	private final LogoutHandler handler;
 
+	/**
+	 * 注销成功处理器，还有注销处理器。处理器还不少~~。请注意区别
+	 */
 	private final LogoutSuccessHandler logoutSuccessHandler;
 
 	/**
@@ -112,8 +115,12 @@ public class LogoutFilter extends GenericFilterBean {
 				this.logger.debug(LogMessage.format("Logging out [%s]", auth));
 			}
 
+			// 双 handler 调用
+
 			// 调用 logout handler 进行注销。其中包括了 Session 的无效化
 			this.handler.logout(request, response, auth);
+
+			// logout success 处理器
 			this.logoutSuccessHandler.onLogoutSuccess(request, response, auth);
 			return;
 		}

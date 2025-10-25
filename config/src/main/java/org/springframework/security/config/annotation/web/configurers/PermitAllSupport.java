@@ -47,10 +47,13 @@ final class PermitAllSupport {
 	@SuppressWarnings("unchecked")
 	static void permitAll(HttpSecurityBuilder<? extends HttpSecurityBuilder<?>> http,
 			RequestMatcher... requestMatchers) {
+		// ExpressionUrlAuthorizationConfigurer 似乎计划淘汰
 		ExpressionUrlAuthorizationConfigurer<?> configurer = http
 			.getConfigurer(ExpressionUrlAuthorizationConfigurer.class);
+		// AuthorizeHttpRequestsConfigurer 更为现代的方式
 		AuthorizeHttpRequestsConfigurer<?> httpConfigurer = http.getConfigurer(AuthorizeHttpRequestsConfigurer.class);
 
+		// 两者取其一
 		boolean oneConfigurerPresent = configurer == null ^ httpConfigurer == null;
 		Assert.state(oneConfigurerPresent,
 				"permitAll only works with either HttpSecurity.authorizeRequests() or HttpSecurity.authorizeHttpRequests(). "
@@ -58,6 +61,7 @@ final class PermitAllSupport {
 
 		for (RequestMatcher matcher : requestMatchers) {
 			if (matcher != null) {
+				// 将 permitAll 添加到 ExpressionUrlAuthorizationConfigurer OR AuthorizeHttpRequestsConfigurer
 				if (configurer != null) {
 					configurer.getRegistry()
 						.addMapping(0, new UrlMapping(matcher,

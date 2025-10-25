@@ -83,6 +83,9 @@ public final class LogoutConfigurer<H extends HttpSecurityBuilder<H>>
 
 	private String logoutSuccessUrl = "/login?logout";
 
+	/**
+	 * 注销成功处理器。可能自己设置，也可能使用一个默认的(在获取时)。
+	 */
 	private LogoutSuccessHandler logoutSuccessHandler;
 
 	private String logoutUrl = "/logout";
@@ -278,6 +281,7 @@ public final class LogoutConfigurer<H extends HttpSecurityBuilder<H>>
 	 * @return the {@link LogoutSuccessHandler} to use
 	 */
 	public LogoutSuccessHandler getLogoutSuccessHandler() {
+		// 获取注销成功处理器，如果没有配置，那么使用一个默认的
 		LogoutSuccessHandler handler = this.logoutSuccessHandler;
 		if (handler == null) {
 			handler = createDefaultSuccessHandler();
@@ -287,8 +291,11 @@ public final class LogoutConfigurer<H extends HttpSecurityBuilder<H>>
 	}
 
 	private LogoutSuccessHandler createDefaultSuccessHandler() {
+		// 默认使用重定向 logoutSuccessHandler
 		SimpleUrlLogoutSuccessHandler urlLogoutHandler = new SimpleUrlLogoutSuccessHandler();
 		urlLogoutHandler.setDefaultTargetUrl(this.logoutSuccessUrl);
+
+		// 若
 		if (this.defaultLogoutSuccessHandlerMappings.isEmpty()) {
 			return urlLogoutHandler;
 		}

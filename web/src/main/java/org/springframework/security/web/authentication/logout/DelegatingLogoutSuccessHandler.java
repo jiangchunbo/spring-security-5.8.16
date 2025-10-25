@@ -49,6 +49,8 @@ public class DelegatingLogoutSuccessHandler implements LogoutSuccessHandler {
 	@Override
 	public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication)
 			throws IOException, ServletException {
+		// 一种策略，通过不同的匹配器，获取不同的 logout success handler
+
 		for (Map.Entry<RequestMatcher, LogoutSuccessHandler> entry : this.matcherToHandler.entrySet()) {
 			RequestMatcher matcher = entry.getKey();
 			if (matcher.matches(request)) {
@@ -57,6 +59,8 @@ public class DelegatingLogoutSuccessHandler implements LogoutSuccessHandler {
 				return;
 			}
 		}
+
+		// 若没有命中任何注销处理器，则使用默认的
 		if (this.defaultLogoutSuccessHandler != null) {
 			this.defaultLogoutSuccessHandler.onLogoutSuccess(request, response, authentication);
 		}

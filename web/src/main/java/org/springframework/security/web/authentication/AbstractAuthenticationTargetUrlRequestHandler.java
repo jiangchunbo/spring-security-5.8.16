@@ -40,6 +40,17 @@ import org.springframework.util.StringUtils;
  * {@link org.springframework.security.web.authentication.logout.LogoutSuccessHandler
  * LogoutSuccessHandler}, for example.
  * <p>
+ * 该抽象基类封装了若干重定向策略所需的核心逻辑，这些策略在处理跳转时会接收一个 {@code Authentication} 对象
+ * (例如 AuthenticationSuccessHandler LogoutSuccessHandler)
+ * <p>
+ * 本类通过以下顺序决定最终的转发/重定向地址
+ * <ul>
+ * <li>1. 若 {@link alwaysUseDefaultTargetUrl} 时 true，则始终用 {@link defaultTargetUrl}
+ * <li>2. 若请求种包含名为 {@link targetUrlParameter} 的参数，则取其值作为目的地址。
+ * <li>3. 若 userReferer 为 true，且请求头种存在 Referer，则使用其值
+ * <li>4. 如以上条件均为满足，则退回到 defaultTargetUrl
+ * </ul>
+ * <p>
  * Uses the following logic sequence to determine how it should handle the
  * forward/redirect
  * <ul>
@@ -97,6 +108,7 @@ public abstract class AbstractAuthenticationTargetUrlRequestHandler {
 
 	/**
 	 * Builds the target URL according to the logic defined in the main class Javadoc
+	 *
 	 * @since 5.2
 	 */
 	protected String determineTargetUrl(HttpServletRequest request, HttpServletResponse response,
@@ -144,6 +156,7 @@ public abstract class AbstractAuthenticationTargetUrlRequestHandler {
 	 * Supplies the default target Url that will be used if no saved request is found or
 	 * the {@code alwaysUseDefaultTargetUrl} property is set to true. If not set, defaults
 	 * to {@code /}.
+	 *
 	 * @return the defaultTargetUrl property
 	 */
 	protected final String getDefaultTargetUrl() {
@@ -157,6 +170,7 @@ public abstract class AbstractAuthenticationTargetUrlRequestHandler {
 	 * context path, and should include the leading <code>/</code>. Alternatively,
 	 * inclusion of a scheme name (such as "http://" or "https://") as the prefix will
 	 * denote a fully-qualified URL and this is also supported.
+	 *
 	 * @param defaultTargetUrl
 	 */
 	public void setDefaultTargetUrl(String defaultTargetUrl) {
@@ -180,8 +194,9 @@ public abstract class AbstractAuthenticationTargetUrlRequestHandler {
 	/**
 	 * If this property is set, the current request will be checked for this a parameter
 	 * with this name and the value used as the target URL if present.
+	 *
 	 * @param targetUrlParameter the name of the parameter containing the encoded target
-	 * URL. Defaults to null.
+	 *                           URL. Defaults to null.
 	 */
 	public void setTargetUrlParameter(String targetUrlParameter) {
 		if (targetUrlParameter != null) {
