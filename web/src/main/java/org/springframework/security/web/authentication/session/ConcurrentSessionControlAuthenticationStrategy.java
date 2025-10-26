@@ -103,8 +103,7 @@ public class ConcurrentSessionControlAuthenticationStrategy
 			return;
 		}
 
-		// 从 Session 注册表，获取目前所有 Session
-		// 但是，不包含过期的会话
+		// 从 Session 注册表，获取所有 Session (不包含过期的会话)
 		List<SessionInformation> sessions = this.sessionRegistry.getAllSessions(authentication.getPrincipal(), false);
 
 		// 获取数量
@@ -173,6 +172,7 @@ public class ConcurrentSessionControlAuthenticationStrategy
 		int maximumSessionsExceededBy = sessions.size() - allowableSessions + 1;
 
 		// 取出旧的几个，调用他们的过期方法
+		// 思考一下：标记为过期，但是还没有注销这个会话，会话的注销在 ConcurrentSessionFilter
 		List<SessionInformation> sessionsToBeExpired = sessions.subList(0, maximumSessionsExceededBy);
 		for (SessionInformation session : sessionsToBeExpired) {
 			session.expireNow();

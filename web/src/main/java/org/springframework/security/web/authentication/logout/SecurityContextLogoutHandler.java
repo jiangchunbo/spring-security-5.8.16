@@ -52,8 +52,14 @@ public class SecurityContextLogoutHandler implements LogoutHandler {
 	private SecurityContextHolderStrategy securityContextHolderStrategy = SecurityContextHolder
 		.getContextHolderStrategy();
 
+	/**
+	 * 失效 http session
+	 */
 	private boolean invalidateHttpSession = true;
 
+	/**
+	 * 清除 authentication
+	 */
 	private boolean clearAuthentication = true;
 
 	private SecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();

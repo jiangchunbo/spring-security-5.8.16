@@ -107,6 +107,9 @@ public final class SessionManagementConfigurer<H extends HttpSecurityBuilder<H>>
 
 	private SessionAuthenticationStrategy sessionFixationAuthenticationStrategy = this.DEFAULT_SESSION_FIXATION_STRATEGY;
 
+	/**
+	 * 缓存字段
+	 */
 	private SessionAuthenticationStrategy sessionAuthenticationStrategy;
 
 	private SessionAuthenticationStrategy providedSessionAuthenticationStrategy;
@@ -547,9 +550,12 @@ public final class SessionManagementConfigurer<H extends HttpSecurityBuilder<H>>
 	 * @return the {@link SessionAuthenticationStrategy} to use
 	 */
 	private SessionAuthenticationStrategy getSessionAuthenticationStrategy(H http) {
+		// 其实这是一个缓存字段
 		if (this.sessionAuthenticationStrategy != null) {
 			return this.sessionAuthenticationStrategy;
 		}
+
+		//
 		List<SessionAuthenticationStrategy> delegateStrategies = this.sessionAuthenticationStrategies;
 		SessionAuthenticationStrategy defaultSessionAuthenticationStrategy;
 		if (this.providedSessionAuthenticationStrategy == null) {
@@ -559,10 +565,13 @@ public final class SessionManagementConfigurer<H extends HttpSecurityBuilder<H>>
 		} else {
 			defaultSessionAuthenticationStrategy = this.providedSessionAuthenticationStrategy;
 		}
+
+		// 并发会话控制
 		if (isConcurrentSessionControlEnabled()) {
 			SessionRegistry sessionRegistry = getSessionRegistry(http);
 			ConcurrentSessionControlAuthenticationStrategy concurrentSessionControlStrategy = new ConcurrentSessionControlAuthenticationStrategy(
 					sessionRegistry);
+			// 最大并发会话数
 			concurrentSessionControlStrategy.setMaximumSessions(this.maximumSessions);
 			concurrentSessionControlStrategy.setExceptionIfMaximumExceeded(this.maxSessionsPreventsLogin);
 			concurrentSessionControlStrategy = postProcess(concurrentSessionControlStrategy);
@@ -616,6 +625,7 @@ public final class SessionManagementConfigurer<H extends HttpSecurityBuilder<H>>
 	 * @return the default {@link SessionAuthenticationStrategy} for session fixation
 	 */
 	private static SessionAuthenticationStrategy createDefaultSessionFixationProtectionStrategy() {
+		// 默认的 Session 固定攻击防护策略是
 		return new ChangeSessionIdAuthenticationStrategy();
 	}
 

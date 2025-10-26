@@ -69,7 +69,7 @@ import org.springframework.web.filter.GenericFilterBean;
 public class ConcurrentSessionFilter extends GenericFilterBean {
 
 	private SecurityContextHolderStrategy securityContextHolderStrategy = SecurityContextHolder
-		.getContextHolderStrategy();
+			.getContextHolderStrategy();
 
 	private final SessionRegistry sessionRegistry;
 
@@ -81,6 +81,9 @@ public class ConcurrentSessionFilter extends GenericFilterBean {
 
 	private SessionInformationExpiredStrategy sessionInformationExpiredStrategy;
 
+	/**
+	 * SessionInformationExpiredStrategy 默认使用响应字符串的方式
+	 */
 	public ConcurrentSessionFilter(SessionRegistry sessionRegistry) {
 		Assert.notNull(sessionRegistry, "SessionRegistry required");
 		this.sessionRegistry = sessionRegistry;
@@ -89,8 +92,11 @@ public class ConcurrentSessionFilter extends GenericFilterBean {
 
 	/**
 	 * Creates a new instance
+	 * <p>
+	 * 构造一个 lambda 表示用来表示 SessionInformationExpiredStrategy，但是建议使用 SimpleRedirectSessionInformationExpiredStrategy
+	 *
 	 * @param sessionRegistry the SessionRegistry to use
-	 * @param expiredUrl the URL to redirect to
+	 * @param expiredUrl      the URL to redirect to
 	 * @deprecated use
 	 * {@link #ConcurrentSessionFilter(SessionRegistry, SessionInformationExpiredStrategy)}
 	 * with {@link SimpleRedirectSessionInformationExpiredStrategy} instead.
@@ -110,6 +116,9 @@ public class ConcurrentSessionFilter extends GenericFilterBean {
 		};
 	}
 
+	/**
+	 * 使用地策略，非常灵活
+	 */
 	public ConcurrentSessionFilter(SessionRegistry sessionRegistry,
 			SessionInformationExpiredStrategy sessionInformationExpiredStrategy) {
 		Assert.notNull(sessionRegistry, "sessionRegistry required");
@@ -131,17 +140,24 @@ public class ConcurrentSessionFilter extends GenericFilterBean {
 
 	private void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
 			throws IOException, ServletException {
+		// 尝试获取 Session
 		HttpSession session = request.getSession(false);
 		if (session != null) {
+			// 有可能用户被踢了，但是用户还不知道，所以此时这里可能还是可以获取到的，但是获取的是过期的
 			SessionInformation info = this.sessionRegistry.getSessionInformation(session.getId());
 			if (info != null) {
+				// 如果判断为过期，那么注销
 				if (info.isExpired()) {
 					// Expired - abort processing
 					this.logger.debug(LogMessage
-						.of(() -> "Requested session ID " + request.getRequestedSessionId() + " has expired."));
+							.of(() -> "Requested session ID " + request.getRequestedSessionId() + " has expired."));
+
+					// 注销会话
 					doLogout(request, response);
+
+					// 注销之后反馈给用户，例如：你已经被踢了
 					this.sessionInformationExpiredStrategy
-						.onExpiredSessionDetected(new SessionInformationExpiredEvent(info, request, response));
+							.onExpiredSessionDetected(new SessionInformationExpiredEvent(info, request, response));
 					return;
 				}
 				// Non-expired - update last request date/time
@@ -153,8 +169,9 @@ public class ConcurrentSessionFilter extends GenericFilterBean {
 
 	/**
 	 * Determine the URL for expiration
+	 *
 	 * @param request the HttpServletRequest
-	 * @param info the {@link SessionInformation}
+	 * @param info    the {@link SessionInformation}
 	 * @return the URL for expiration
 	 * @deprecated Use
 	 * {@link #ConcurrentSessionFilter(SessionRegistry, SessionInformationExpiredStrategy)}
@@ -165,6 +182,9 @@ public class ConcurrentSessionFilter extends GenericFilterBean {
 		return this.expiredUrl;
 	}
 
+	/**
+	 * @see CompositeLogoutHandler#logout(HttpServletRequest, HttpServletResponse, Authentication)
+	 */
 	private void doLogout(HttpServletRequest request, HttpServletResponse response) {
 		Authentication auth = this.securityContextHolderStrategy.getContext().getAuthentication();
 
@@ -188,6 +208,7 @@ public class ConcurrentSessionFilter extends GenericFilterBean {
 
 	/**
 	 * Set list of {@link LogoutHandler}
+	 *
 	 * @param handlers list of {@link LogoutHandler}
 	 * @since 5.2.0
 	 */
@@ -198,6 +219,7 @@ public class ConcurrentSessionFilter extends GenericFilterBean {
 	/**
 	 * Sets the {@link RedirectStrategy} used with
 	 * {@link #ConcurrentSessionFilter(SessionRegistry, String)}
+	 *
 	 * @param redirectStrategy the {@link RedirectStrategy} to use
 	 * @deprecated use
 	 * {@link #ConcurrentSessionFilter(SessionRegistry, SessionInformationExpiredStrategy)}
@@ -222,8 +244,8 @@ public class ConcurrentSessionFilter extends GenericFilterBean {
 		public void onExpiredSessionDetected(SessionInformationExpiredEvent event) throws IOException {
 			HttpServletResponse response = event.getResponse();
 			response.getWriter()
-				.print("This session has been expired (possibly due to multiple concurrent "
-						+ "logins being attempted as the same user).");
+					.print("This session has been expired (possibly due to multiple concurrent "
+							+ "logins being attempted as the same user).");
 			response.flushBuffer();
 		}
 

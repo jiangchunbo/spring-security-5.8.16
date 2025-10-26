@@ -78,6 +78,9 @@ import org.springframework.util.Assert;
 public class HeadersConfigurer<H extends HttpSecurityBuilder<H>>
 		extends AbstractHttpConfigurer<HeadersConfigurer<H>, H> {
 
+	/**
+	 * 最终会注入到过滤器中的 HTTP Header 写入器
+	 */
 	private List<HeaderWriter> headerWriters = new ArrayList<>();
 
 	private final ContentTypeOptionsConfig contentTypeOptions = new ContentTypeOptionsConfig();
@@ -374,7 +377,10 @@ public class HeadersConfigurer<H extends HttpSecurityBuilder<H>>
 
 	@Override
 	public void configure(H http) {
+		// 创建过滤器
 		HeaderWriterFilter headersFilter = createHeaderWriterFilter();
+
+		// 添加到过滤器链的 Builder
 		http.addFilter(headersFilter);
 	}
 

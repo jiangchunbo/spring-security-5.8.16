@@ -74,10 +74,13 @@ public abstract class AbstractSessionFixationProtectionStrategy
 	public void onAuthentication(Authentication authentication, HttpServletRequest request,
 			HttpServletResponse response) {
 		boolean hadSessionAlready = request.getSession(false) != null;
+
+		// 如果 session 都不存在，那么也不会存在 session 固定攻击
 		if (!hadSessionAlready && !this.alwaysCreateSession) {
 			// Session fixation isn't a problem if there's no session
 			return;
 		}
+
 		// Create new session if necessary
 		HttpSession session = request.getSession();
 		if (hadSessionAlready && request.isRequestedSessionIdValid()) {

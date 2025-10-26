@@ -86,11 +86,19 @@ public class SessionFixationProtectionStrategy extends AbstractSessionFixationPr
 		String originalSessionId = session.getId();
 		this.logger.debug(LogMessage.of(() -> "Invalidating session with Id '" + originalSessionId + "' "
 				+ (this.migrateSessionAttributes ? "and" : "without") + " migrating attributes."));
+
+		// 获取 session 里面的属性、超时时间
 		Map<String, Object> attributesToMigrate = extractAttributes(session);
 		int maxInactiveIntervalToMigrate = session.getMaxInactiveInterval();
+
+		// 让 session 失效
 		session.invalidate();
+
+		// 再获取一个新的 session
 		session = request.getSession(true); // we now have a new session
 		this.logger.debug(LogMessage.format("Started new session: %s", session.getId()));
+
+		// 迁移属性
 		transferAttributes(attributesToMigrate, session);
 		if (this.migrateSessionAttributes) {
 			session.setMaxInactiveInterval(maxInactiveIntervalToMigrate);
