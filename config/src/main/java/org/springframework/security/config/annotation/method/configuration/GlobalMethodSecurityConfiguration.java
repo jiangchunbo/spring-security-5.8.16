@@ -147,6 +147,8 @@ public class GlobalMethodSecurityConfiguration implements ImportAware, SmartInit
 	 */
 	@Bean
 	public MethodInterceptor methodSecurityInterceptor(MethodSecurityMetadataSource methodSecurityMetadataSource) {
+		// 该方法返回一个 aop 概念的 MethodInterceptor
+
 		this.methodSecurityInterceptor = isAspectJ() ? new AspectJMethodSecurityInterceptor()
 				: new MethodSecurityInterceptor();
 		this.methodSecurityInterceptor.setAccessDecisionManager(accessDecisionManager());

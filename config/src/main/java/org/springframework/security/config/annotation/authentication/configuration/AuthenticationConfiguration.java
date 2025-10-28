@@ -63,6 +63,8 @@ import org.springframework.util.Assert;
 @Import(ObjectPostProcessorConfiguration.class)
 public class AuthenticationConfiguration {
 
+	// 主要就是配置 AuthenticationManagerBuilder
+
 	private AtomicBoolean buildingAuthenticationManager = new AtomicBoolean();
 
 	private ApplicationContext applicationContext;
@@ -76,7 +78,7 @@ public class AuthenticationConfiguration {
 	private ObjectPostProcessor<Object> objectPostProcessor;
 
 	/**
-	 * 用于构建得到 AuthenticationManager 的构建起
+	 * 用于构建得到 AuthenticationManager 的构建器
 	 *
 	 * @param objectPostProcessor 后置处理器
 	 * @param context             应用上下文
@@ -85,8 +87,13 @@ public class AuthenticationConfiguration {
 	@Bean
 	public AuthenticationManagerBuilder authenticationManagerBuilder(ObjectPostProcessor<Object> objectPostProcessor,
 			ApplicationContext context) {
+		// 惰性地从 bean factory 获取 PasswordEncoder
 		LazyPasswordEncoder defaultPasswordEncoder = new LazyPasswordEncoder(context);
+
+		// 事件发布器
 		AuthenticationEventPublisher authenticationEventPublisher = getAuthenticationEventPublisher(context);
+
+		// AuthenticationManagerBuilder 需要 3 个东西：后置处理器、密码编码器、事件发布器
 		DefaultPasswordEncoderAuthenticationManagerBuilder result = new DefaultPasswordEncoderAuthenticationManagerBuilder(
 				objectPostProcessor, defaultPasswordEncoder);
 		if (authenticationEventPublisher != null) {
@@ -95,18 +102,35 @@ public class AuthenticationConfiguration {
 		return result;
 	}
 
+	// 下面全都是 GlobalAuthenticationConfigurerAdapter 的实现类
+
+	/**
+	 * 通过这个配置器，将具有 {@link EnableGlobalAuthentication} 注解的 bean 全都创建出来
+	 *
+	 * @return 定义的返回类型是抽象类 GlobalAuthenticationConfigurerAdapter，实际上是 EnableGlobalAuthenticationAutowiredConfigurer
+	 */
 	@Bean
 	public static GlobalAuthenticationConfigurerAdapter enableGlobalAuthenticationAutowiredConfigurer(
 			ApplicationContext context) {
 		return new EnableGlobalAuthenticationAutowiredConfigurer(context);
 	}
 
+	/**
+	 * 其实就是看看是否要注册 AuthenticationProvider
+	 * <p>
+	 * 如果容器中存在 UserDetailsService，就自动注入 DaoAuthenticationProvider
+	 */
 	@Bean
 	public static InitializeUserDetailsBeanManagerConfigurer initializeUserDetailsBeanManagerConfigurer(
 			ApplicationContext context) {
 		return new InitializeUserDetailsBeanManagerConfigurer(context);
 	}
 
+	/**
+	 * 其实就是看看是否要注册 AuthenticationProvider
+	 * <p>
+	 * 如果容器中有且仅有 1 个 AuthenticationProvider，就注入它
+	 */
 	@Bean
 	public static InitializeAuthenticationProviderBeanManagerConfigurer initializeAuthenticationProviderBeanManagerConfigurer(
 			ApplicationContext context) {
@@ -117,6 +141,8 @@ public class AuthenticationConfiguration {
 		if (this.authenticationManagerInitialized) {
 			return this.authenticationManager;
 		}
+
+		// 从容器中找到 AuthenticationManagerBuilder，所以你绝对不要定义多个
 		AuthenticationManagerBuilder authBuilder = this.applicationContext.getBean(AuthenticationManagerBuilder.class);
 		if (this.buildingAuthenticationManager.getAndSet(true)) {
 			return new AuthenticationManagerDelegator(authBuilder);
@@ -307,6 +333,9 @@ public class AuthenticationConfiguration {
 
 	}
 
+	/**
+	 * 惰性地 LazyPassword，就是真正调用时才会去容器中获取 PasswordEncoder
+	 */
 	static class LazyPasswordEncoder implements PasswordEncoder {
 
 		private ApplicationContext applicationContext;

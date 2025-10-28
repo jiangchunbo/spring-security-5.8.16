@@ -33,6 +33,12 @@ import org.springframework.security.config.annotation.authentication.configurati
  * <p>
  * Enables Spring Security global method security similar to the
  * &lt;global-method-security&gt; xml support.
+ * <p>
+ * 类似于 {@code <global-method-security>} XML 一样，启用 Spring Security 的全局方法安全
+ * <p>
+ * 当初可能是为了与 XML 保持一致，使用了 Global 这个单词
+ * <p>
+ * 在 Java Config 时代，全局没有什么意义了，反而可能有误解，直接用 {@link EnableMethodSecurity} 更好
  *
  * <p>
  * More advanced configurations may wish to extend
@@ -49,7 +55,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented
-@Import({ GlobalMethodSecuritySelector.class })
+@Import({GlobalMethodSecuritySelector.class})
 @EnableGlobalAuthentication
 @Configuration
 public @interface EnableGlobalMethodSecurity {
@@ -57,12 +63,14 @@ public @interface EnableGlobalMethodSecurity {
 	/**
 	 * Determines if Spring Security's pre post annotations should be enabled. Default is
 	 * false.
+	 *
 	 * @return true if pre post annotations should be enabled false otherwise.
 	 */
 	boolean prePostEnabled() default false;
 
 	/**
 	 * Determines if Spring Security's {@link Secured} annotations should be enabled.
+	 *
 	 * @return true if {@link Secured} annotations should be enabled false otherwise.
 	 * Default is false.
 	 */
@@ -70,6 +78,7 @@ public @interface EnableGlobalMethodSecurity {
 
 	/**
 	 * Determines if JSR-250 annotations should be enabled. Default is false.
+	 *
 	 * @return true if JSR-250 should be enabled false otherwise.
 	 */
 	boolean jsr250Enabled() default false;
@@ -87,6 +96,7 @@ public @interface EnableGlobalMethodSecurity {
 	 * annotation will be upgraded to subclass proxying at the same time. This approach
 	 * has no negative impact in practice unless one is explicitly expecting one type of
 	 * proxy vs another, e.g. in tests.
+	 *
 	 * @return true if CGILIB proxies should be created instead of interface based
 	 * proxies, else false
 	 */
@@ -95,8 +105,9 @@ public @interface EnableGlobalMethodSecurity {
 	/**
 	 * Indicate how security advice should be applied. The default is
 	 * {@link AdviceMode#PROXY}.
-	 * @see AdviceMode
+	 *
 	 * @return the {@link AdviceMode} to use
+	 * @see AdviceMode
 	 */
 	AdviceMode mode() default AdviceMode.PROXY;
 
@@ -104,6 +115,7 @@ public @interface EnableGlobalMethodSecurity {
 	 * Indicate the ordering of the execution of the security advisor when multiple
 	 * advices are applied at a specific joinpoint. The default is
 	 * {@link Ordered#LOWEST_PRECEDENCE}.
+	 *
 	 * @return the order the security advisor should be applied
 	 */
 	int order() default Ordered.LOWEST_PRECEDENCE;
