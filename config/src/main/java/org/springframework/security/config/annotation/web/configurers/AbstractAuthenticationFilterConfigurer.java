@@ -333,6 +333,9 @@ public abstract class AbstractAuthenticationFilterConfigurer<B extends HttpSecur
 		}
 		this.authFilter.setSecurityContextHolderStrategy(getSecurityContextHolderStrategy());
 		F filter = postProcess(this.authFilter);
+
+
+		// 把 Filter 添加到 httpSecurity 中，如果找不到 Filter 实现类的 Class 对应的 order 就会报错
 		http.addFilter(filter);
 	}
 

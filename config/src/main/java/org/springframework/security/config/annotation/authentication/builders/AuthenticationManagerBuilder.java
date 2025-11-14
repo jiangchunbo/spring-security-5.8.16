@@ -221,6 +221,8 @@ public class AuthenticationManagerBuilder
 
 	@Override
 	protected ProviderManager performBuild() throws Exception {
+		// 如果其中已经存在了 AuthenticationProvider，那么不能构建，所以构建之前必须保证内部是空的
+		// 进一步推理，只有 build 完了，才能往里面添加 Provider
 		if (!isConfigured()) {
 			this.logger.debug("No authenticationProviders and no parentAuthenticationManager defined. Returning null.");
 			return null;
@@ -255,6 +257,7 @@ public class AuthenticationManagerBuilder
 	 * false
 	 */
 	public boolean isConfigured() {
+		// 如果你在构建器中
 		return !this.authenticationProviders.isEmpty() || this.parentAuthenticationManager != null;
 	}
 

@@ -78,6 +78,9 @@ import org.springframework.web.accept.HeaderContentNegotiationStrategy;
  * you must create a class that extends AbstractHttpConfigurer and then create a file in
  * the classpath at "META-INF/spring.factories" that looks something like:
  * </p>
+ *
+ * 能够从 spring.factories 中找到的 AbstractHttpConfigurer 并使用他们
+ *
  * <pre>
  * org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer = sample.MyClassThatExtendsAbstractHttpConfigurer
  * </pre> If you have multiple classes that should be added you can use "," to separate
@@ -130,10 +133,19 @@ public abstract class WebSecurityConfigurerAdapter implements WebSecurityConfigu
 
 	private AuthenticationConfiguration authenticationConfiguration;
 
+	/**
+	 * 两个 Builder。其一
+	 */
 	private AuthenticationManagerBuilder authenticationBuilder;
 
+	/**
+	 * 两个 Builder。其二，用于本地构建
+	 */
 	private AuthenticationManagerBuilder localConfigureAuthenticationBldr;
 
+	/**
+	 * 是否禁用本地的配置认证器
+	 */
 	private boolean disableLocalConfigureAuthenticationBldr;
 
 	private boolean authenticationManagerInitialized;
@@ -157,8 +169,9 @@ public abstract class WebSecurityConfigurerAdapter implements WebSecurityConfigu
 	 * Creates an instance which allows specifying if the default configuration should be
 	 * enabled. Disabling the default configuration should be considered more advanced
 	 * usage as it requires more understanding of how the framework is implemented.
+	 *
 	 * @param disableDefaults true if the default configuration should be disabled, else
-	 * false
+	 *                        false
 	 */
 	protected WebSecurityConfigurerAdapter(boolean disableDefaults) {
 		this.disableDefaults = disableDefaults;
@@ -203,6 +216,7 @@ public abstract class WebSecurityConfigurerAdapter implements WebSecurityConfigu
 	 * }
 	 *
 	 * </pre>
+	 *
 	 * @param auth the {@link AuthenticationManagerBuilder} to use
 	 * @throws Exception
 	 */
@@ -212,29 +226,44 @@ public abstract class WebSecurityConfigurerAdapter implements WebSecurityConfigu
 
 	/**
 	 * Creates the {@link HttpSecurity} or returns the current instance
+	 *
 	 * @return the {@link HttpSecurity}
 	 * @throws Exception
 	 */
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@SuppressWarnings({"rawtypes", "unchecked"})
 	protected final HttpSecurity getHttp() throws Exception {
 		if (this.http != null) {
 			return this.http;
 		}
+
+		// 事件发布
 		AuthenticationEventPublisher eventPublisher = getAuthenticationEventPublisher();
 		this.localConfigureAuthenticationBldr.authenticationEventPublisher(eventPublisher);
+
+		// 构建/获取 AuthenticationManager
 		AuthenticationManager authenticationManager = authenticationManager();
+
+		// 设置作为 parent 认证器
 		this.authenticationBuilder.parentAuthenticationManager(authenticationManager);
+
+		// 创建一个共享对象
 		Map<Class<?>, Object> sharedObjects = createSharedObjects();
+
+		// 创建 HttpSecurity 对象 (用于产生 FilterChain)
 		this.http = new HttpSecurity(this.objectPostProcessor, this.authenticationBuilder, sharedObjects);
+
 		if (!this.disableDefaults) {
 			applyDefaultConfiguration(this.http);
 			ClassLoader classLoader = this.context.getClassLoader();
+			// 找到所有的 AbstractHttpConfigurer，并使用他们
 			List<AbstractHttpConfigurer> defaultHttpConfigurers = SpringFactoriesLoader
-				.loadFactories(AbstractHttpConfigurer.class, classLoader);
+					.loadFactories(AbstractHttpConfigurer.class, classLoader);
 			for (AbstractHttpConfigurer configurer : defaultHttpConfigurers) {
 				this.http.apply(configurer);
 			}
 		}
+
+		// 配置 httpFilter
 		configure(this.http);
 		return this.http;
 	}
@@ -265,6 +294,7 @@ public abstract class WebSecurityConfigurerAdapter implements WebSecurityConfigu
 	 *     return super.authenticationManagerBean();
 	 * }
 	 * </pre>
+	 *
 	 * @return the {@link AuthenticationManager}
 	 * @throws Exception
 	 */
@@ -277,15 +307,23 @@ public abstract class WebSecurityConfigurerAdapter implements WebSecurityConfigu
 	 * {@link #configure(AuthenticationManagerBuilder)} method is overridden to use the
 	 * {@link AuthenticationManagerBuilder} that was passed in. Otherwise, autowire the
 	 * {@link AuthenticationManager} by type.
+	 * <p>
+	 * 获取 AuthenticationManager 对象，可能使用本地 builder 构建，也可能从全局配置拿
+	 *
 	 * @return the {@link AuthenticationManager} to use
 	 * @throws Exception
 	 */
 	protected AuthenticationManager authenticationManager() throws Exception {
 		if (!this.authenticationManagerInitialized) {
+			// 首先需要配置一下 builder，尽管待会可能不用
 			configure(this.localConfigureAuthenticationBldr);
+
+			// 若禁用本地 builder，那么就从 AuthenticationConfiguration 获取一个，这样可以减少到处创建自己的 Builder
 			if (this.disableLocalConfigureAuthenticationBldr) {
 				this.authenticationManager = this.authenticationConfiguration.getAuthenticationManager();
 			}
+
+			// 不禁用本地 builder，那么就用本地 builder 构建
 			else {
 				this.authenticationManager = this.localConfigureAuthenticationBldr.build();
 			}
@@ -307,9 +345,10 @@ public abstract class WebSecurityConfigurerAdapter implements WebSecurityConfigu
 	 * 	return super.userDetailsServiceBean();
 	 * }
 	 * </pre>
-	 *
+	 * <p>
 	 * To change the instance returned, developers should change
 	 * {@link #userDetailsService()} instead
+	 *
 	 * @return the {@link UserDetailsService}
 	 * @throws Exception
 	 * @see #userDetailsService()
@@ -324,6 +363,7 @@ public abstract class WebSecurityConfigurerAdapter implements WebSecurityConfigu
 	 * {@link #userDetailsServiceBean()} without interacting with the
 	 * {@link ApplicationContext}. Developers should override this method when changing
 	 * the instance of {@link #userDetailsServiceBean()}.
+	 *
 	 * @return the {@link UserDetailsService} to use
 	 */
 	protected UserDetailsService userDetailsService() {
@@ -331,9 +371,15 @@ public abstract class WebSecurityConfigurerAdapter implements WebSecurityConfigu
 		return new UserDetailsServiceDelegator(Arrays.asList(this.localConfigureAuthenticationBldr, globalAuthBuilder));
 	}
 
+	/**
+	 * 初始化阶段，接下来还有 configure 阶段
+	 */
 	@Override
 	public void init(WebSecurity web) throws Exception {
+		// 获得 filter chain 构建器
 		HttpSecurity http = getHttp();
+
+		// 获取 filter chain
 		web.addSecurityFilterChainBuilder(http).postBuildAction(() -> {
 			FilterSecurityInterceptor securityInterceptor = http.getSharedObject(FilterSecurityInterceptor.class);
 			web.securityInterceptor(securityInterceptor);
@@ -343,10 +389,10 @@ public abstract class WebSecurityConfigurerAdapter implements WebSecurityConfigu
 	/**
 	 * Override this method to configure {@link WebSecurity}. For example, if you wish to
 	 * ignore certain requests.
-	 *
+	 * <p>
 	 * Endpoints specified in this method will be ignored by Spring Security, meaning it
 	 * will not protect them from CSRF, XSS, Clickjacking, and so on.
-	 *
+	 * <p>
 	 * Instead, if you want to protect endpoints against common vulnerabilities, then see
 	 * {@link #configure(HttpSecurity)} and the {@link HttpSecurity#authorizeRequests}
 	 * configuration method.
@@ -363,10 +409,11 @@ public abstract class WebSecurityConfigurerAdapter implements WebSecurityConfigu
 	 * <pre>
 	 * http.authorizeRequests().anyRequest().authenticated().and().formLogin().and().httpBasic();
 	 * </pre>
-	 *
+	 * <p>
 	 * Any endpoint that requires defense against common vulnerabilities can be specified
 	 * here, including public ones. See {@link HttpSecurity#authorizeRequests} and the
 	 * `permitAll()` authorization rule for more details on public endpoints.
+	 *
 	 * @param http the {@link HttpSecurity} to modify
 	 * @throws Exception if an error occurs
 	 */
@@ -380,6 +427,7 @@ public abstract class WebSecurityConfigurerAdapter implements WebSecurityConfigu
 
 	/**
 	 * Gets the ApplicationContext
+	 *
 	 * @return the context
 	 */
 	protected final ApplicationContext getApplicationContext() {
@@ -441,6 +489,7 @@ public abstract class WebSecurityConfigurerAdapter implements WebSecurityConfigu
 
 	/**
 	 * Creates the shared objects
+	 *
 	 * @return the shared Objects
 	 */
 	private Map<Class<?>, Object> createSharedObjects() {
@@ -569,6 +618,7 @@ public abstract class WebSecurityConfigurerAdapter implements WebSecurityConfigu
 
 		/**
 		 * Creates a new instance
+		 *
 		 * @param objectPostProcessor the {@link ObjectPostProcessor} instance to use.
 		 */
 		DefaultPasswordEncoderAuthenticationManagerBuilder(ObjectPostProcessor<Object> objectPostProcessor,
@@ -636,8 +686,7 @@ public abstract class WebSecurityConfigurerAdapter implements WebSecurityConfigu
 		private <T> T getBeanOrNull(Class<T> type) {
 			try {
 				return this.applicationContext.getBean(type);
-			}
-			catch (NoSuchBeanDefinitionException ex) {
+			} catch (NoSuchBeanDefinitionException ex) {
 				return null;
 			}
 		}

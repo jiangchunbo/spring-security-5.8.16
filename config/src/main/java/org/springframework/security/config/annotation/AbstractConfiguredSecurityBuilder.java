@@ -54,12 +54,18 @@ import org.springframework.web.filter.DelegatingFilterProxy;
  * 注入会话管理、表单登录、授权等所需的过滤器。
  *
  * @param <O> The object that this builder returns
+ *            <p> 构建出来的东西
  * @param <B> The type of this builder (that is returned by the base class)
+ *            <p> 本构建器类型，也就是自身类型。这个类可能是用于给子类一些链式调用使用的
  * @author Rob Winch
  * @see WebSecurity
  */
 public abstract class AbstractConfiguredSecurityBuilder<O, B extends SecurityBuilder<O>>
 		extends AbstractSecurityBuilder<O> {
+
+	// 泛型 O: 表示能够构建出来一个东西，但是不知道是啥
+
+	// 整个构建两步走 init + configure + build
 
 	private final Log logger = LogFactory.getLog(getClass());
 

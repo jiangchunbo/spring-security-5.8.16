@@ -52,13 +52,16 @@ import org.springframework.web.filter.GenericFilterBean;
  * requests, where it is assumed that the principal has already been authenticated by an
  * external system.
  * <p>
+ * 处理已经进行预认证的认证请求的过滤器的基类，在这种情况下假设主题已经被外部系统完成认证。
+ *
+ * <p>
  * The purpose is then only to extract the necessary information on the principal from the
  * incoming request, rather than to authenticate them. External authentication systems may
  * provide this information via request data such as headers or cookies which the
  * pre-authentication system can extract. It is assumed that the external system is
  * responsible for the accuracy of the data and preventing the submission of forged
  * values.
- *
+ * <p>
  * Subclasses must implement the {@code getPreAuthenticatedPrincipal()} and
  * {@code getPreAuthenticatedCredentials()} methods. Subclasses of this filter are
  * typically used in combination with a {@code PreAuthenticatedAuthenticationProvider},
@@ -90,7 +93,7 @@ public abstract class AbstractPreAuthenticatedProcessingFilter extends GenericFi
 		implements ApplicationEventPublisherAware {
 
 	private SecurityContextHolderStrategy securityContextHolderStrategy = SecurityContextHolder
-		.getContextHolderStrategy();
+			.getContextHolderStrategy();
 
 	private ApplicationEventPublisher eventPublisher = null;
 
@@ -119,8 +122,7 @@ public abstract class AbstractPreAuthenticatedProcessingFilter extends GenericFi
 	public void afterPropertiesSet() {
 		try {
 			super.afterPropertiesSet();
-		}
-		catch (ServletException ex) {
+		} catch (ServletException ex) {
 			// convert to RuntimeException for passivity on afterPropertiesSet signature
 			throw new RuntimeException(ex);
 		}
@@ -137,11 +139,10 @@ public abstract class AbstractPreAuthenticatedProcessingFilter extends GenericFi
 		if (this.requiresAuthenticationRequestMatcher.matches((HttpServletRequest) request)) {
 			if (logger.isDebugEnabled()) {
 				logger.debug(LogMessage
-					.of(() -> "Authenticating " + this.securityContextHolderStrategy.getContext().getAuthentication()));
+						.of(() -> "Authenticating " + this.securityContextHolderStrategy.getContext().getAuthentication()));
 			}
 			doAuthenticate((HttpServletRequest) request, (HttpServletResponse) response);
-		}
-		else {
+		} else {
 			if (logger.isTraceEnabled()) {
 				logger.trace(LogMessage.format("Did not authenticate since request did not match [%s]",
 						this.requiresAuthenticationRequestMatcher));
@@ -164,6 +165,7 @@ public abstract class AbstractPreAuthenticatedProcessingFilter extends GenericFi
 	 * <p>
 	 * Subclasses can override this method to determine when a principal has changed.
 	 * </p>
+	 *
 	 * @param request
 	 * @param currentAuthentication
 	 * @return true if the principal has changed, else false
@@ -199,8 +201,7 @@ public abstract class AbstractPreAuthenticatedProcessingFilter extends GenericFi
 			authenticationRequest.setDetails(this.authenticationDetailsSource.buildDetails(request));
 			Authentication authenticationResult = this.authenticationManager.authenticate(authenticationRequest);
 			successfulAuthentication(request, response, authenticationResult);
-		}
-		catch (AuthenticationException ex) {
+		} catch (AuthenticationException ex) {
 			unsuccessfulAuthentication(request, response, ex);
 			if (!this.continueFilterChainOnUnsuccessfulAuthentication) {
 				throw ex;
@@ -255,8 +256,9 @@ public abstract class AbstractPreAuthenticatedProcessingFilter extends GenericFi
 	 * Sets the {@link SecurityContextRepository} to save the {@link SecurityContext} on
 	 * authentication success. The default action is not to save the
 	 * {@link SecurityContext}.
+	 *
 	 * @param securityContextRepository the {@link SecurityContextRepository} to use.
-	 * Cannot be null.
+	 *                                  Cannot be null.
 	 */
 	public void setSecurityContextRepository(SecurityContextRepository securityContextRepository) {
 		Assert.notNull(securityContextRepository, "securityContextRepository cannot be null");
@@ -288,8 +290,9 @@ public abstract class AbstractPreAuthenticatedProcessingFilter extends GenericFi
 	 * the {@code AuthenticationManager} will be swallowed, and the request will be
 	 * allowed to proceed, potentially using alternative authentication mechanisms. If
 	 * {@code false}, authentication failure will result in an immediate exception.
+	 *
 	 * @param shouldContinue set to {@code true} to allow the request to proceed after a
-	 * failed authentication.
+	 *                       failed authentication.
 	 */
 	public void setContinueFilterChainOnUnsuccessfulAuthentication(boolean shouldContinue) {
 		this.continueFilterChainOnUnsuccessfulAuthentication = shouldContinue;
@@ -300,6 +303,7 @@ public abstract class AbstractPreAuthenticatedProcessingFilter extends GenericFi
 	 * compared against the name of the current <tt>Authentication</tt> object. A check to
 	 * determine if {@link Authentication#getPrincipal()} is equal to the principal will
 	 * also be performed. If a change is detected, the user will be reauthenticated.
+	 *
 	 * @param checkForPrincipalChanges
 	 */
 	public void setCheckForPrincipalChanges(boolean checkForPrincipalChanges) {
@@ -310,8 +314,9 @@ public abstract class AbstractPreAuthenticatedProcessingFilter extends GenericFi
 	 * If <tt>checkForPrincipalChanges</tt> is set, and a change of principal is detected,
 	 * determines whether any existing session should be invalidated before proceeding to
 	 * authenticate the new principal.
+	 *
 	 * @param invalidateSessionOnPrincipalChange <tt>false</tt> to retain the existing
-	 * session. Defaults to <tt>true</tt>.
+	 *                                           session. Defaults to <tt>true</tt>.
 	 */
 	public void setInvalidateSessionOnPrincipalChange(boolean invalidateSessionOnPrincipalChange) {
 		this.invalidateSessionOnPrincipalChange = invalidateSessionOnPrincipalChange;
@@ -370,8 +375,8 @@ public abstract class AbstractPreAuthenticatedProcessingFilter extends GenericFi
 		@Override
 		public boolean matches(HttpServletRequest request) {
 			Authentication currentUser = AbstractPreAuthenticatedProcessingFilter.this.securityContextHolderStrategy
-				.getContext()
-				.getAuthentication();
+					.getContext()
+					.getAuthentication();
 			if (currentUser == null) {
 				return true;
 			}
@@ -382,7 +387,7 @@ public abstract class AbstractPreAuthenticatedProcessingFilter extends GenericFi
 				return false;
 			}
 			AbstractPreAuthenticatedProcessingFilter.this.logger
-				.debug("Pre-authenticated principal has changed and will be reauthenticated");
+					.debug("Pre-authenticated principal has changed and will be reauthenticated");
 			if (AbstractPreAuthenticatedProcessingFilter.this.invalidateSessionOnPrincipalChange) {
 				AbstractPreAuthenticatedProcessingFilter.this.securityContextHolderStrategy.clearContext();
 				HttpSession session = request.getSession(false);

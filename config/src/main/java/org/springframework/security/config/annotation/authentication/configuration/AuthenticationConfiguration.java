@@ -141,15 +141,20 @@ public class AuthenticationConfiguration {
 		if (this.authenticationManagerInitialized) {
 			return this.authenticationManager;
 		}
-
 		// 从容器中找到 AuthenticationManagerBuilder，所以你绝对不要定义多个
 		AuthenticationManagerBuilder authBuilder = this.applicationContext.getBean(AuthenticationManagerBuilder.class);
 		if (this.buildingAuthenticationManager.getAndSet(true)) {
 			return new AuthenticationManagerDelegator(authBuilder);
 		}
+
 		for (GlobalAuthenticationConfigurerAdapter config : this.globalAuthConfigurers) {
+			// 此处会校验 AuthenticationManagerBuilder 状态是否正确，不能是构建状态
 			authBuilder.apply(config);
 		}
+		// 所以，这个配置类，定义了一个 AuthenticationManagerBuilder bean，但是没有调用 build 方法
+
+
+		// 执行构建
 		this.authenticationManager = authBuilder.build();
 		if (this.authenticationManager == null) {
 			this.authenticationManager = getAuthenticationManagerBean();

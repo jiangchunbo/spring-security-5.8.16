@@ -54,6 +54,9 @@ import org.springframework.security.web.session.SessionManagementFilter;
 import org.springframework.web.filter.CorsFilter;
 
 /**
+ *
+ * 要求实现 SecurityBuilder，并且泛型是 DefaultSecurityFilterChain，说明该类用于构建 FilterChain
+ *
  * @param <H>
  * @author Rob Winch
  */

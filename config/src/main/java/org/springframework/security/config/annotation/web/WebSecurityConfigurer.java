@@ -30,10 +30,13 @@ import org.springframework.security.web.SecurityFilterChain;
  * {@link EnableWebSecurity} and create a {@link Configuration} that exposes a
  * {@link SecurityFilterChain} bean. This will automatically be applied to the
  * {@link WebSecurity} by the {@link EnableWebSecurity} annotation.
+ * <p>
+ * 允许靠发着对 WebSecurity 做自定义扩展。
  *
+ * @param <T>
  * @author Rob Winch
- * @since 3.2
  * @see SecurityFilterChain
+ * @since 3.2
  */
 public interface WebSecurityConfigurer<T extends SecurityBuilder<Filter>> extends SecurityConfigurer<Filter, T> {
 
