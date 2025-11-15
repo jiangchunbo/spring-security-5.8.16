@@ -63,14 +63,12 @@ import org.springframework.web.filter.DelegatingFilterProxy;
 public abstract class AbstractConfiguredSecurityBuilder<O, B extends SecurityBuilder<O>>
 		extends AbstractSecurityBuilder<O> {
 
-	// 泛型 O: 表示能够构建出来一个东西，但是不知道是啥
-
 	// 整个构建两步走 init + configure + build
 
 	private final Log logger = LogFactory.getLog(getClass());
 
 	/**
-	 * 核心的成员变量，其中保存了一种一对多的映射，通过特定 Class 可以找到一系列对象
+	 * 核心的成员变量，{@code Class -> List<SecurityConfigurer<O, B>>>}
 	 *
 	 * @see AbstractConfiguredSecurityBuilder#allowConfigurersOfSameType
 	 */

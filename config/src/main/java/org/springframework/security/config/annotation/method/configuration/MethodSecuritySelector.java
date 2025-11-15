@@ -41,27 +41,26 @@ final class MethodSecuritySelector implements ImportSelector {
 
 	@Override
 	public String[] selectImports(@NonNull AnnotationMetadata importMetadata) {
-		// 触发这个 Selector 的类上面必须有 @EnableMethodSecurity
-		// 也就是必须配合使用
+		// 必须由 @EnableMethodSecurity 导入
 		if (!importMetadata.hasAnnotation(EnableMethodSecurity.class.getName())) {
 			return new String[0];
 		}
 
-		//
+		// 总之就是获取注解对象
 		EnableMethodSecurity annotation = importMetadata.getAnnotations().get(EnableMethodSecurity.class).synthesize();
 		List<String> imports = new ArrayList<>(Arrays.asList(this.autoProxy.selectImports(importMetadata)));
 
-		// 这个是默认开启的
+		// prePostEnabled 默认开启的
 		if (annotation.prePostEnabled()) {
 			imports.add(PrePostMethodSecurityConfiguration.class.getName());
 		}
 
-		// 这个默认关闭
+		// securedEnabled 默认关闭
 		if (annotation.securedEnabled()) {
 			imports.add(SecuredMethodSecurityConfiguration.class.getName());
 		}
 
-		// 这个默认关闭
+		// jsr250Enabled 默认关闭
 		if (annotation.jsr250Enabled()) {
 			imports.add(Jsr250MethodSecurityConfiguration.class.getName());
 		}

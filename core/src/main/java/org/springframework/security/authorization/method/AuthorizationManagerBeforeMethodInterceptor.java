@@ -152,6 +152,7 @@ public final class AuthorizationManagerBeforeMethodInterceptor
 	 */
 	@Override
 	public Object invoke(MethodInvocation mi) throws Throwable {
+		// 尝试授权
 		attemptAuthorization(mi);
 		return mi.proceed();
 	}
@@ -206,8 +207,12 @@ public final class AuthorizationManagerBeforeMethodInterceptor
 
 	private void attemptAuthorization(MethodInvocation mi) {
 		this.logger.debug(LogMessage.of(() -> "Authorizing method invocation " + mi));
+
+		// 检查并获得一个授权的结果
 		AuthorizationDecision decision = this.authorizationManager.check(this::getAuthentication, mi);
 		this.eventPublisher.publishAuthorizationEvent(this::getAuthentication, mi, decision);
+
+		// 如果结果是不授权，那么抛出异常
 		if (decision != null && !decision.isGranted()) {
 			this.logger.debug(LogMessage.of(() -> "Failed to authorize " + mi + " with authorization manager "
 					+ this.authorizationManager + " and decision " + decision));

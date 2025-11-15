@@ -16,14 +16,18 @@
 
 package org.springframework.security.config.annotation;
 
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
+
 /**
  * Interface for building an Object
- * <p>
- * 用于构建某个对象的接口
- * <p>
- * 很类似 {@link java.util.function.Supplier} 但是 {@link SecurityBuilder} 支持抛出异常
+ * <p>用于构建某个对象的接口
+ *
+ * <p>类似 {@link java.util.function.Supplier} 但是 {@link SecurityBuilder} 支持抛出异常
+ * 而且，跟踪 {@link WebSecurity#addSecurityFilterChainBuilder(SecurityBuilder)} 该方法的调用者，
+ * 会发现，注册 FilterChain 的时候，直接用的就是 lambda
  *
  * @param <O> The type of the Object being built
+ *            <p>被构建对象的类型
  * @author Rob Winch
  * @since 3.2
  */
@@ -33,6 +37,9 @@ public interface SecurityBuilder<O> {
 	 * Builds the object and returns it or null.
 	 * <p>
 	 * 构建某个对象并返回，或者返回 null
+	 * <p>
+	 * 构建对象对 Spring Security 需要经过 init + configure 阶段，
+	 * 所以这个 build 方法只是一个入口
 	 *
 	 * @return the Object to be built or null if the implementation allows it.
 	 * @throws Exception if an error occurred when building the Object

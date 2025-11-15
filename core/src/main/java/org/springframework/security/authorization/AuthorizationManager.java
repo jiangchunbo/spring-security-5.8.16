@@ -25,8 +25,11 @@ import org.springframework.security.core.Authentication;
 /**
  * An Authorization manager which can determine if an {@link Authentication} has access to
  * a specific object.
+ * <p>
+ * 授权管理器，用于决定是否一个 Authentication 可以访问指定的对象
  *
  * @param <T> the type of object that the authorization check is being done one.
+ *            <p>可能是一个 ServletRequest，也可能是一个方法调用
  * @author Evgeniy Cheban
  */
 @FunctionalInterface
@@ -34,8 +37,9 @@ public interface AuthorizationManager<T> {
 
 	/**
 	 * Determines if access should be granted for a specific authentication and object.
+	 *
 	 * @param authentication the {@link Supplier} of the {@link Authentication} to check
-	 * @param object the {@link T} object to check
+	 * @param object         the {@link T} object to check
 	 * @throws AccessDeniedException if access is not granted
 	 */
 	default void verify(Supplier<Authentication> authentication, T object) {
@@ -47,8 +51,9 @@ public interface AuthorizationManager<T> {
 
 	/**
 	 * Determines if access is granted for a specific authentication and object.
+	 *
 	 * @param authentication the {@link Supplier} of the {@link Authentication} to check
-	 * @param object the {@link T} object to check
+	 * @param object         the {@link T} object to check
 	 * @return an {@link AuthorizationDecision} or null if no decision could be made
 	 */
 	@Nullable

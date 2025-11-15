@@ -36,7 +36,7 @@ public abstract class AbstractSecurityBuilder<O> implements SecurityBuilder<O> {
 
 	@Override
 	public final O build() throws Exception {
-		// 只是为了避免多线程执行
+		// 为了避免多次执行该方法产生错误
 		if (this.building.compareAndSet(false, true)) {
 
 			// 这里面会调用到 performBuild()
@@ -44,6 +44,8 @@ public abstract class AbstractSecurityBuilder<O> implements SecurityBuilder<O> {
 
 			return this.object;
 		}
+
+		// 如果真的发生多次调用 build 方法，可以即时发现问题
 		throw new AlreadyBuiltException("This object has already been built");
 	}
 
@@ -56,9 +58,12 @@ public abstract class AbstractSecurityBuilder<O> implements SecurityBuilder<O> {
 	 * @return the Object that was built
 	 */
 	public final O getObject() {
+		// 如果还没构建，即时抛出异常
 		if (!this.building.get()) {
 			throw new IllegalStateException("This object has not been built");
 		}
+
+		// 返回制品
 		return this.object;
 	}
 

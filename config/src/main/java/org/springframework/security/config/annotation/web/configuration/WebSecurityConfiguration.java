@@ -76,10 +76,16 @@ public class WebSecurityConfiguration implements ImportAware, BeanClassLoaderAwa
 
 	private Boolean debugEnabled;
 
+	/**
+	 * 其实大概率是为了 WebSecurityConfigurerAdapter 实现类在这里注入的
+	 */
 	private List<SecurityConfigurer<Filter, WebSecurity>> webSecurityConfigurers;
 
 	private List<SecurityFilterChain> securityFilterChains = Collections.emptyList();
 
+	/**
+	 * WebSecurity 的定制器，虽然与 WebSecurityConfigurerAdapter 很像，但是 WebSecurityConfigurerAdapter 更多的是为了注册自己的 FilterChain
+	 */
 	private List<WebSecurityCustomizer> webSecurityCustomizers = Collections.emptyList();
 
 	private ClassLoader beanClassLoader;
@@ -109,15 +115,18 @@ public class WebSecurityConfiguration implements ImportAware, BeanClassLoaderAwa
 	@Bean(name = AbstractSecurityWebApplicationInitializer.DEFAULT_FILTER_NAME)
 	public Filter springSecurityFilterChain() throws Exception {
 
-		// configurers 有没有配置，是不是空
 		boolean hasConfigurers = this.webSecurityConfigurers != null && !this.webSecurityConfigurers.isEmpty();
-
-		// filter chain 是不是空
 		boolean hasFilterChain = !this.securityFilterChains.isEmpty();
+
+		// 1. webSecurityConfigurers 能够对 WebSecurity 进行 init 和 configure，因此有机会添加 FilterChain
+		// 2. securityFilterChains 是显式地注册 FilterChain
+		// 两者不能同时存在，否则 Spring Security 觉得你的意图不清晰 (但是可以同时不存在)
+
 		Assert.state(!(hasConfigurers && hasFilterChain),
 				"Found WebSecurityConfigurerAdapter as well as SecurityFilterChain. Please select just one.");
 
-		// 如果什么都没有，也会给你有一些默认的配置
+		// 路径 1: 如果你没有配置任何 WebSecurity 配置器，也没有配置任何 FilterChain
+		//		  那么，这里使用已经不推荐使用的 WebSecurityConfigurerAdapter 为你配置一些默认行为(包括有一个 FilterChain)
 		if (!hasConfigurers && !hasFilterChain) {
 			WebSecurityConfigurerAdapter adapter = this.objectObjectPostProcessor
 					.postProcess(new WebSecurityConfigurerAdapter() {
@@ -126,13 +135,14 @@ public class WebSecurityConfiguration implements ImportAware, BeanClassLoaderAwa
 			this.webSecurity.apply(adapter);
 		}
 
-		// 遍历每个 filter chain
+		// 路径2: 如果显式配置了 FilterChain，直接放进 WebSecurity
 		for (SecurityFilterChain securityFilterChain : this.securityFilterChains) {
 
-			// 添加一个函数
+			// 添加 SecurityBuilder 构建器
+			// (不过此处直接将一个构建完毕的 FilterChain 作为返回值)
 			this.webSecurity.addSecurityFilterChainBuilder(() -> securityFilterChain);
 
-			// 都是一些过时的逻辑
+			// 只找到第一个 (待研究)
 			for (Filter filter : securityFilterChain.getFilters()) {
 				if (filter instanceof FilterSecurityInterceptor) {
 					this.webSecurity.securityInterceptor((FilterSecurityInterceptor) filter);
@@ -141,7 +151,7 @@ public class WebSecurityConfiguration implements ImportAware, BeanClassLoaderAwa
 			}
 		}
 
-		// 自定义逻辑
+		// WebSecurity 定制化器，不管上面走什么策略，该逻辑一定会执行
 		for (WebSecurityCustomizer customizer : this.webSecurityCustomizers) {
 			customizer.customize(this.webSecurity);
 		}

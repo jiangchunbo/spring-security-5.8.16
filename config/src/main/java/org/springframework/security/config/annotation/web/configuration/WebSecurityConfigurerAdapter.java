@@ -117,6 +117,8 @@ import org.springframework.web.accept.HeaderContentNegotiationStrategy;
 @Deprecated
 public abstract class WebSecurityConfigurerAdapter implements WebSecurityConfigurer<WebSecurity> {
 
+	// 从这个类实现 WebSecurityConfigurer<WebSecurity> 就可以知道，该类是用于初始化和配置 WebSecurity
+
 	private final Log logger = LogFactory.getLog(WebSecurityConfigurerAdapter.class);
 
 	private ApplicationContext context;
@@ -376,7 +378,9 @@ public abstract class WebSecurityConfigurerAdapter implements WebSecurityConfigu
 	 */
 	@Override
 	public void init(WebSecurity web) throws Exception {
-		// 获得 filter chain 构建器
+		// 子类可能可以重写这个方法，但是如果没有重写，将使用以下代码的行为
+
+		// 获取本类策略的 HttpSecurity (FilterChain 的构建器)
 		HttpSecurity http = getHttp();
 
 		// 获取 filter chain

@@ -25,6 +25,9 @@ import javax.servlet.http.HttpServletRequest;
  * Defines a filter chain which is capable of being matched against an
  * {@code HttpServletRequest}. in order to decide whether it applies to that request.
  * <p>
+ * 定义一条 filter chain，能够匹配请求，用于决定是否能够用在这个请求上。
+ *
+ * <p>
  * Used to configure a {@code FilterChainProxy}.
  *
  * @author Luke Taylor
