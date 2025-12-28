@@ -245,7 +245,7 @@ public abstract class AbstractAuthenticationProcessingFilter extends GenericFilt
 				return;
 			}
 
-			// 认证成功，执行会话的一些策略逻辑
+			// CompositeSessionAuthenticationStrategy 如果开启 Spring Security 的会话管理
 			this.sessionStrategy.onAuthentication(authenticationResult, request, response);
 
 			// Authentication success
@@ -347,14 +347,11 @@ public abstract class AbstractAuthenticationProcessingFilter extends GenericFilt
 			Authentication authResult) throws IOException, ServletException {
 		// >>> 成功认证
 
-		// 创建一个空的 Context
+		// 创建一个 EmptyContext 并设置 Authentication
 		SecurityContext context = this.securityContextHolderStrategy.createEmptyContext();
-		// 设置 Authentication 认证之后的对象
 		context.setAuthentication(authResult);
 
-		// 把 Context 存起来，一般就是存储到 ThreadLocal 里面
-		// 但是 Spring Security 还不是存储的一个简单的 value
-		// 存储的是一个 lambda，返回值是 context
+		// 用 lambda 捕获 context 并存储到 ThreadLocal
 		this.securityContextHolderStrategy.setContext(context);
 
 		// 把 Context 存到仓库

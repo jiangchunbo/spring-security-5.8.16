@@ -139,8 +139,7 @@ public abstract class AbstractUserDetailsAuthenticationProvider
 			// 没有用到缓存，缓存没找到
 			cacheWasUsed = false;
 			try {
-				// 从数据库加载 UserDetails
-				user = retrieveUser(username, (UsernamePasswordAuthenticationToken) authentication);
+				user = retrieveUser(username, (UsernamePasswordAuthenticationToken) authentication); // 第一次抓取 UserDetails
 			} catch (UsernameNotFoundException ex) {
 				// 这个异常一般由 UserDetailsService 抛出
 				this.logger.debug("Failed to find user '" + username + "'");
@@ -176,7 +175,7 @@ public abstract class AbstractUserDetailsAuthenticationProvider
 
 			// 若使用了缓存，那么还会从数据库拿一次，因为可能缓存是有问题的
 			cacheWasUsed = false;
-			user = retrieveUser(username, (UsernamePasswordAuthenticationToken) authentication);
+			user = retrieveUser(username, (UsernamePasswordAuthenticationToken) authentication);  // 因为走了缓存，再次尝试抓取 UserDetails
 
 			// 这两个方法跟上面一样
 			this.preAuthenticationChecks.check(user);
