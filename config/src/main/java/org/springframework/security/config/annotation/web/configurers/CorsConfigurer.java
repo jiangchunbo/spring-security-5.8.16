@@ -61,11 +61,16 @@ public class CorsConfigurer<H extends HttpSecurityBuilder<H>> extends AbstractHt
 		return this;
 	}
 
+	/**
+	 * Configure 方法需要仔细看
+	 */
 	@Override
 	public void configure(H http) {
-		// 从 Context 中获取 CorsFilter
+		// 获取 ApplicationContext -> 获取 CorsFilter
 		ApplicationContext context = http.getSharedObject(ApplicationContext.class);
+
 		CorsFilter corsFilter = getCorsFilter(context);
+
 		Assert.state(corsFilter != null, () -> "Please configure either a " + CORS_FILTER_BEAN_NAME + " bean or a "
 				+ CORS_CONFIGURATION_SOURCE_BEAN_NAME + "bean.");
 
@@ -73,20 +78,30 @@ public class CorsConfigurer<H extends HttpSecurityBuilder<H>> extends AbstractHt
 		http.addFilter(corsFilter);
 	}
 
+	/**
+	 * (私有方法) 获取 CorsFilter [可能直接来自于容器，也可能通过 configuration 新建]
+	 */
 	private CorsFilter getCorsFilter(ApplicationContext context) {
+		// 1. 优先级最高，用户配置了 configurationSource 新建 CorsFilter
 		if (this.configurationSource != null) {
 			return new CorsFilter(this.configurationSource);
 		}
+
+		// 2. 从容器中获取 CorsFilter
 		boolean containsCorsFilter = context.containsBeanDefinition(CORS_FILTER_BEAN_NAME);
 		if (containsCorsFilter) {
 			return context.getBean(CORS_FILTER_BEAN_NAME, CorsFilter.class);
 		}
+
+		// 3. 从容器中获取 CorsConfigurationSource 新建 CorsFilter
 		boolean containsCorsSource = context.containsBean(CORS_CONFIGURATION_SOURCE_BEAN_NAME);
 		if (containsCorsSource) {
 			CorsConfigurationSource configurationSource = context.getBean(CORS_CONFIGURATION_SOURCE_BEAN_NAME,
 					CorsConfigurationSource.class);
 			return new CorsFilter(configurationSource);
 		}
+
+		// 4. MvcCorsFilter ?
 		boolean mvcPresent = ClassUtils.isPresent(HANDLER_MAPPING_INTROSPECTOR, context.getClassLoader());
 		if (mvcPresent) {
 			return MvcCorsFilter.getMvcCorsFilter(context);
@@ -101,6 +116,7 @@ public class CorsConfigurer<H extends HttpSecurityBuilder<H>> extends AbstractHt
 		/**
 		 * This needs to be isolated into a separate class as Spring MVC is an optional
 		 * dependency and will potentially cause ClassLoading issues
+		 *
 		 * @param context
 		 * @return
 		 */
