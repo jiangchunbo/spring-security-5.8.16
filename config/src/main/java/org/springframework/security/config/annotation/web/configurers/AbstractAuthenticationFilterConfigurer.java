@@ -16,11 +16,6 @@
 
 package org.springframework.security.config.annotation.web.configurers;
 
-import java.util.Arrays;
-import java.util.Collections;
-
-import javax.servlet.http.HttpServletRequest;
-
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationDetailsSource;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -47,6 +42,10 @@ import org.springframework.security.web.util.matcher.RequestHeaderRequestMatcher
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.accept.ContentNegotiationStrategy;
 import org.springframework.web.accept.HeaderContentNegotiationStrategy;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.Arrays;
+import java.util.Collections;
 
 /**
  * Base class for configuring {@link AbstractAuthenticationFilterConfigurer}. This is
@@ -252,7 +251,7 @@ public abstract class AbstractAuthenticationFilterConfigurer<B extends HttpSecur
 
 	@Override
 	public void init(B http) throws Exception {
-		updateAuthenticationDefaults();
+		updateAuthenticationDefaults(); // init() 更新
 		updateAccessDefaults(http);
 		registerDefaultAuthenticationEntryPoint(http);
 	}
@@ -333,7 +332,6 @@ public abstract class AbstractAuthenticationFilterConfigurer<B extends HttpSecur
 		}
 		this.authFilter.setSecurityContextHolderStrategy(getSecurityContextHolderStrategy());
 		F filter = postProcess(this.authFilter);
-
 
 		// 把 Filter 添加到 httpSecurity 中，如果找不到 Filter 实现类的 Class 对应的 order 就会报错
 		http.addFilter(filter);
@@ -423,16 +421,23 @@ public abstract class AbstractAuthenticationFilterConfigurer<B extends HttpSecur
 
 	/**
 	 * Updates the default values for authentication.
-	 *
-	 * @throws Exception
+	 * <p>
+	 * 当设置 login page 时，会调用这个方法，或者在 configurer init (初始化)时
+	 * <p>
+	 * configurer 里面的参数 loginPage 可以通过添加 query 参数的方式，转变成 error 以及 logout
 	 */
 	protected final void updateAuthenticationDefaults() {
+		// loginPage 可以作为没有配置 login processing url 的后备
 		if (this.loginProcessingUrl == null) {
 			loginProcessingUrl(this.loginPage);
 		}
+
+		// loginPage 可以作为没有配置 authentication failure handler 的后备
 		if (this.failureHandler == null) {
 			failureUrl(this.loginPage + "?error");
 		}
+
+		// loginPage 可以作为没有自定义 logout 时的后备
 		LogoutConfigurer<B> logoutConfigurer = getBuilder().getConfigurer(LogoutConfigurer.class);
 		if (logoutConfigurer != null && !logoutConfigurer.isCustomLogoutSuccess()) {
 			logoutConfigurer.logoutSuccessUrl(this.loginPage + "?logout");
