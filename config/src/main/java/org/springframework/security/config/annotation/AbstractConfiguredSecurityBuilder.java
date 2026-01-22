@@ -168,7 +168,7 @@ public abstract class AbstractConfiguredSecurityBuilder<O, B extends SecurityBui
 	 * @throws Exception
 	 */
 	public <C extends SecurityConfigurer<O, B>> C apply(C configurer) throws Exception {
-		add(configurer);
+		add(configurer); // 把 configurer 添加到 builder 中
 		return configurer;
 	}
 
@@ -214,7 +214,9 @@ public abstract class AbstractConfiguredSecurityBuilder<O, B extends SecurityBui
 		Assert.notNull(configurer, "configurer cannot be null");
 		Class<? extends SecurityConfigurer<O, B>> clazz = (Class<? extends SecurityConfigurer<O, B>>) configurer
 				.getClass();
+
 		synchronized (this.configurers) {
+			// 如果已经执行过 build 了，那么说明已经构建结束，此时再添加 configurer 会报错
 			if (this.buildState.isConfigured()) {
 				throw new IllegalStateException("Cannot apply " + configurer + " to already built object");
 			}
@@ -418,6 +420,13 @@ public abstract class AbstractConfiguredSecurityBuilder<O, B extends SecurityBui
 		}
 	}
 
+	/**
+	 * Spring Security 的好几个组件都会走这个模式，包括：
+	 * - AuthenticationManagerBuilder 通过 GlobalAuthenticationConfigurerAdapter 配置
+	 * - HttpSecurity 通过 AbstractHttpConfigurer 配置
+	 *
+	 * @throws Exception 异常
+	 */
 	@SuppressWarnings("unchecked")
 	private void configure() throws Exception {
 		// 再次从 Map 中获取所有 Value 构造了一个集合

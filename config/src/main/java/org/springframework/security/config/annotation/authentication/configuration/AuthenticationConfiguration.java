@@ -73,6 +73,9 @@ public class AuthenticationConfiguration {
 
 	private boolean authenticationManagerInitialized;
 
+	/**
+	 * 该属性通过 @Autowired 覆盖注入
+	 */
 	private List<GlobalAuthenticationConfigurerAdapter> globalAuthConfigurers = Collections.emptyList();
 
 	private ObjectPostProcessor<Object> objectPostProcessor;
@@ -90,15 +93,17 @@ public class AuthenticationConfiguration {
 		// 惰性地从 bean factory 获取 PasswordEncoder
 		LazyPasswordEncoder defaultPasswordEncoder = new LazyPasswordEncoder(context);
 
-		// 事件发布器
-		AuthenticationEventPublisher authenticationEventPublisher = getAuthenticationEventPublisher(context);
-
 		// AuthenticationManagerBuilder 需要 3 个东西：后置处理器、密码编码器、事件发布器
 		DefaultPasswordEncoderAuthenticationManagerBuilder result = new DefaultPasswordEncoderAuthenticationManagerBuilder(
 				objectPostProcessor, defaultPasswordEncoder);
+
+		// 设置与认证有关的事件发布器 AuthenticationEventPublisher
+		AuthenticationEventPublisher authenticationEventPublisher = getAuthenticationEventPublisher(context);
 		if (authenticationEventPublisher != null) {
 			result.authenticationEventPublisher(authenticationEventPublisher);
 		}
+
+		// 记住，这里只是 Builder 创建出来了，真正的 AuthenticationManager 还需要丰富这个 Builder
 		return result;
 	}
 
@@ -137,24 +142,31 @@ public class AuthenticationConfiguration {
 		return new InitializeAuthenticationProviderBeanManagerConfigurer(context);
 	}
 
+	/**
+	 * 这是一个公开方法，意味着任何人都可以通过注入 AuthenticationConfiguration 调用此方法获取一个全局的 AuthenticationManager
+	 *
+	 * @return AuthenticationManager
+	 * @throws Exception 异常
+	 */
 	public AuthenticationManager getAuthenticationManager() throws Exception {
 		if (this.authenticationManagerInitialized) {
 			return this.authenticationManager;
 		}
+
 		// 从容器中找到 AuthenticationManagerBuilder，所以你绝对不要定义多个
 		AuthenticationManagerBuilder authBuilder = this.applicationContext.getBean(AuthenticationManagerBuilder.class);
 		if (this.buildingAuthenticationManager.getAndSet(true)) {
 			return new AuthenticationManagerDelegator(authBuilder);
 		}
 
+		// 注册每一个 GlobalAuthenticationConfigurerAdapter (globalAuthConfigurers 通过 @Autowired 注入)
 		for (GlobalAuthenticationConfigurerAdapter config : this.globalAuthConfigurers) {
 			// 此处会校验 AuthenticationManagerBuilder 状态是否正确，不能是构建状态
 			authBuilder.apply(config);
 		}
 		// 所以，这个配置类，定义了一个 AuthenticationManagerBuilder bean，但是没有调用 build 方法
 
-
-		// 执行构建
+		// 执行构建 (上面的 GlobalAuthenticationConfigurerAdapter 会被调动起来)
 		this.authenticationManager = authBuilder.build();
 		if (this.authenticationManager == null) {
 			this.authenticationManager = getAuthenticationManagerBean();
@@ -165,7 +177,7 @@ public class AuthenticationConfiguration {
 
 	@Autowired(required = false)
 	public void setGlobalAuthenticationConfigurers(List<GlobalAuthenticationConfigurerAdapter> configurers) {
-		configurers.sort(AnnotationAwareOrderComparator.INSTANCE);
+		configurers.sort(AnnotationAwareOrderComparator.INSTANCE); // 其实应该会排序
 		this.globalAuthConfigurers = configurers;
 	}
 
@@ -272,6 +284,9 @@ public class AuthenticationConfiguration {
 	 */
 	static final class AuthenticationManagerDelegator implements AuthenticationManager {
 
+		/**
+		 * 当并发调用时，会将可能还初始化的 AuthenticationManagerBuilder 先传过来
+		 */
 		private AuthenticationManagerBuilder delegateBuilder;
 
 		private AuthenticationManager delegate;
@@ -345,6 +360,9 @@ public class AuthenticationConfiguration {
 
 		private ApplicationContext applicationContext;
 
+		/**
+		 * 内部使用的 PasswordEncoder，但是不会迫切加载，而是在调用实际方法时才会寻找
+		 */
 		private PasswordEncoder passwordEncoder;
 
 		LazyPasswordEncoder(ApplicationContext applicationContext) {
