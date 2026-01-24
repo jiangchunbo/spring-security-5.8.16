@@ -42,11 +42,14 @@ public abstract class AbstractDaoAuthenticationConfigurer<B extends ProviderMana
 
 	/**
 	 * Creates a new instance
-	 * @param userDetailsService
+	 *
+	 * @param userDetailsService 用户传入的 UserDetailsService
 	 */
 	AbstractDaoAuthenticationConfigurer(U userDetailsService) {
 		this.userDetailsService = userDetailsService;
 		this.provider.setUserDetailsService(userDetailsService);
+
+		// 针对于 InMemoryUserDetailsManager
 		if (userDetailsService instanceof UserDetailsPasswordService) {
 			this.provider.setUserDetailsPasswordService((UserDetailsPasswordService) userDetailsService);
 		}
@@ -54,6 +57,7 @@ public abstract class AbstractDaoAuthenticationConfigurer<B extends ProviderMana
 
 	/**
 	 * Adds an {@link ObjectPostProcessor} for this class.
+	 *
 	 * @param objectPostProcessor
 	 * @return the {@link AbstractDaoAuthenticationConfigurer} for further customizations
 	 */
@@ -66,6 +70,7 @@ public abstract class AbstractDaoAuthenticationConfigurer<B extends ProviderMana
 	/**
 	 * Allows specifying the {@link PasswordEncoder} to use with the
 	 * {@link DaoAuthenticationProvider}. The default is to use plain text.
+	 *
 	 * @param passwordEncoder The {@link PasswordEncoder} to use.
 	 * @return the {@link AbstractDaoAuthenticationConfigurer} for further customizations
 	 */
@@ -89,6 +94,7 @@ public abstract class AbstractDaoAuthenticationConfigurer<B extends ProviderMana
 	/**
 	 * Gets the {@link UserDetailsService} that is used with the
 	 * {@link DaoAuthenticationProvider}
+	 *
 	 * @return the {@link UserDetailsService} that is used with the
 	 * {@link DaoAuthenticationProvider}
 	 */

@@ -81,7 +81,9 @@ public class AuthenticationConfiguration {
 	private ObjectPostProcessor<Object> objectPostProcessor;
 
 	/**
-	 * 用于构建得到 AuthenticationManager 的构建器
+	 * 创建 Spring Security 默认的 AuthenticationManagerBuilder
+	 *
+	 * DefaultPasswordEncoderAuthenticationManagerBuilder vs AuthenticationManagerBuilder
 	 *
 	 * @param objectPostProcessor 后置处理器
 	 * @param context             应用上下文
@@ -110,9 +112,9 @@ public class AuthenticationConfiguration {
 	// 下面全都是 GlobalAuthenticationConfigurerAdapter 的实现类
 
 	/**
-	 * 通过这个配置器，将具有 {@link EnableGlobalAuthentication} 注解的 bean 全都创建出来
-	 *
-	 * @return 定义的返回类型是抽象类 GlobalAuthenticationConfigurerAdapter，实际上是 EnableGlobalAuthenticationAutowiredConfigurer
+	 * 具有 {@link EnableGlobalAuthentication} 注解的 bean 立即创建
+	 * <p>
+	 * 作用：大概是为了防止过早的创建 AuthenticationManager 可能存在部分 bean 还没有创建
 	 */
 	@Bean
 	public static GlobalAuthenticationConfigurerAdapter enableGlobalAuthenticationAutowiredConfigurer(

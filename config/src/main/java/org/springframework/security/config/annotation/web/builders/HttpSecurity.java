@@ -3322,8 +3322,12 @@ public final class HttpSecurity extends AbstractConfiguredSecurityBuilder<Defaul
 		return this;
 	}
 
+	/**
+	 * 向 AuthenticationManagerBuilder 注册 UserDetailsService
+	 */
 	@Override
 	public HttpSecurity userDetailsService(UserDetailsService userDetailsService) throws Exception {
+		// 虽然返回值是 DaoAuthenticationConfigurer 似乎可以定制化这个组件，但是此方法的调用无法操作它(因为没暴露)
 		getAuthenticationRegistry().userDetailsService(userDetailsService);
 		return this;
 	}

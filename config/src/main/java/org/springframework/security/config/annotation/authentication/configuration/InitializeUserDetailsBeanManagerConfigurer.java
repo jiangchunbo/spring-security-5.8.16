@@ -44,15 +44,13 @@ class InitializeUserDetailsBeanManagerConfigurer extends GlobalAuthenticationCon
 
 	private final ApplicationContext context;
 
-	/**
-	 * @param context
-	 */
 	InitializeUserDetailsBeanManagerConfigurer(ApplicationContext context) {
 		this.context = context;
 	}
 
 	@Override
 	public void init(AuthenticationManagerBuilder auth) throws Exception {
+		// 先添加到 configurer 中等待配置
 		auth.apply(new InitializeUserDetailsManagerConfigurer());
 	}
 
