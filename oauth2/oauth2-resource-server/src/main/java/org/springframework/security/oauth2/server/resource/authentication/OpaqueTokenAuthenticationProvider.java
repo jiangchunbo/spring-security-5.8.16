@@ -105,7 +105,11 @@ public final class OpaqueTokenAuthenticationProvider implements AuthenticationPr
 			return null;
 		}
 		BearerTokenAuthenticationToken bearer = (BearerTokenAuthenticationToken) authentication;
+
+		// 调用接口 内省 token 得到结果 (如果内省失败，则会抛出异常)
 		OAuth2AuthenticatedPrincipal principal = getOAuth2AuthenticatedPrincipal(bearer);
+
+		// 默认的 Converter 返回不可能是 null
 		Authentication result = this.authenticationConverter.convert(bearer.getToken(), principal);
 		if (result == null) {
 			return null;
@@ -146,8 +150,11 @@ public final class OpaqueTokenAuthenticationProvider implements AuthenticationPr
 	 */
 	static BearerTokenAuthentication convert(String introspectedToken,
 			OAuth2AuthenticatedPrincipal authenticatedPrincipal) {
+		// 获取 map 属性 iat issue at
 		Instant iat = authenticatedPrincipal.getAttribute(OAuth2TokenIntrospectionClaimNames.IAT);
+		// 获取 map 属性 exp expire
 		Instant exp = authenticatedPrincipal.getAttribute(OAuth2TokenIntrospectionClaimNames.EXP);
+		// 把 token 字符串封装成 OAuth2AccessToken (包含 issue at、expire)
 		OAuth2AccessToken accessToken = new OAuth2AccessToken(OAuth2AccessToken.TokenType.BEARER, introspectedToken,
 				iat, exp);
 		return new BearerTokenAuthentication(authenticatedPrincipal, accessToken,

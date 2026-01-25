@@ -102,7 +102,10 @@ public class NimbusOpaqueTokenIntrospector implements OpaqueTokenIntrospector {
 
 	private Converter<String, RequestEntity<?>> defaultRequestEntityConverter(URI introspectionUri) {
 		return (token) -> {
+			// 设置 accept appliaction/json
 			HttpHeaders headers = requestHeaders();
+
+			// {"token": token}
 			MultiValueMap<String, String> body = requestBody(token);
 			return new RequestEntity<>(body, headers, HttpMethod.POST, introspectionUri);
 		};
@@ -126,9 +129,17 @@ public class NimbusOpaqueTokenIntrospector implements OpaqueTokenIntrospector {
 		if (requestEntity == null) {
 			throw new OAuth2IntrospectionException("requestEntityConverter returned a null entity");
 		}
+
+		// 调用请求
 		ResponseEntity<String> responseEntity = makeRequest(requestEntity);
+
+		// 将 Spring ResponseEntity 适配为 HTTPResponse
 		HTTPResponse httpResponse = adaptToNimbusResponse(responseEntity);
+
+		// 解析得到 TokenIntrospectionResponse
 		TokenIntrospectionResponse introspectionResponse = parseNimbusResponse(httpResponse);
+
+		// 检查是否是 Nimbus error response，即时抛异常
 		TokenIntrospectionSuccessResponse introspectionSuccessResponse = castToNimbusSuccess(introspectionResponse);
 		// relying solely on the authorization server to validate this token (not checking
 		// 'exp', for example)

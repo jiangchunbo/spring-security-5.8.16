@@ -40,6 +40,7 @@ public class JwtAuthenticationConverter implements Converter<Jwt, AbstractAuthen
 
 	@Override
 	public final AbstractAuthenticationToken convert(Jwt jwt) {
+		// 从 JWT 中解析出 authority，不过 authority 可能很多，jwt 未免太大了
 		Collection<GrantedAuthority> authorities = extractAuthorities(jwt);
 
 		String principalClaimValue = jwt.getClaimAsString(this.principalClaimName);
