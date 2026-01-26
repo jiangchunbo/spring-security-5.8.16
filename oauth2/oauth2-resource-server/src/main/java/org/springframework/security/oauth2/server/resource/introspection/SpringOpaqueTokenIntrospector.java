@@ -71,15 +71,20 @@ public class SpringOpaqueTokenIntrospector implements OpaqueTokenIntrospector {
 
 	/**
 	 * Creates a {@code OpaqueTokenAuthenticationProvider} with the provided parameters
+	 *
 	 * @param introspectionUri The introspection endpoint uri
-	 * @param clientId The client id authorized to introspect
-	 * @param clientSecret The client's secret
+	 * @param clientId         The client id authorized to introspect
+	 * @param clientSecret     The client's secret
 	 */
 	public SpringOpaqueTokenIntrospector(String introspectionUri, String clientId, String clientSecret) {
 		Assert.notNull(introspectionUri, "introspectionUri cannot be null");
 		Assert.notNull(clientId, "clientId cannot be null");
 		Assert.notNull(clientSecret, "clientSecret cannot be null");
+
+		// 这是一个标准的 spring converter，用于将 token 转换为 RequestEntity (请求体)，也就是拿到一个 token 就得到一个请求体等待去请求内省
 		this.requestEntityConverter = this.defaultRequestEntityConverter(URI.create(introspectionUri));
+
+		// 创建 RestTemplate (这里也没有使用 RestTemplateBuilder)
 		RestTemplate restTemplate = new RestTemplate();
 		restTemplate.getInterceptors().add(new BasicAuthenticationInterceptor(clientId, clientSecret));
 		this.restOperations = restTemplate;
@@ -87,11 +92,12 @@ public class SpringOpaqueTokenIntrospector implements OpaqueTokenIntrospector {
 
 	/**
 	 * Creates a {@code OpaqueTokenAuthenticationProvider} with the provided parameters
-	 *
+	 * <p>
 	 * The given {@link RestOperations} should perform its own client authentication
 	 * against the introspection endpoint.
+	 *
 	 * @param introspectionUri The introspection endpoint uri
-	 * @param restOperations The client for performing the introspection request
+	 * @param restOperations   The client for performing the introspection request
 	 */
 	public SpringOpaqueTokenIntrospector(String introspectionUri, RestOperations restOperations) {
 		Assert.notNull(introspectionUri, "introspectionUri cannot be null");
@@ -120,22 +126,35 @@ public class SpringOpaqueTokenIntrospector implements OpaqueTokenIntrospector {
 		return body;
 	}
 
+	/**
+	 * introspect token 关键逻辑
+	 *
+	 * @param token the token to introspect
+	 * @return OAuth2AuthenticatedPrincipal
+	 */
 	@Override
 	public OAuth2AuthenticatedPrincipal introspect(String token) {
 		RequestEntity<?> requestEntity = this.requestEntityConverter.convert(token);
 		if (requestEntity == null) {
 			throw new OAuth2IntrospectionException("requestEntityConverter returned a null entity");
 		}
+
+		// 发出 http 请求
 		ResponseEntity<Map<String, Object>> responseEntity = makeRequest(requestEntity);
+
+		// 将 response 转换为 claims
 		Map<String, Object> claims = adaptToNimbusResponse(responseEntity);
+
+		// 再将 claims 转换为 OAuth2AuthenticatedPrincipal
 		return convertClaimsSet(claims);
 	}
 
 	/**
 	 * Sets the {@link Converter} used for converting the OAuth 2.0 access token to a
 	 * {@link RequestEntity} representation of the OAuth 2.0 token introspection request.
+	 *
 	 * @param requestEntityConverter the {@link Converter} used for converting to a
-	 * {@link RequestEntity} representation of the token introspection request
+	 *                               {@link RequestEntity} representation of the token introspection request
 	 */
 	public void setRequestEntityConverter(Converter<String, RequestEntity<?>> requestEntityConverter) {
 		Assert.notNull(requestEntityConverter, "requestEntityConverter cannot be null");
@@ -145,8 +164,7 @@ public class SpringOpaqueTokenIntrospector implements OpaqueTokenIntrospector {
 	private ResponseEntity<Map<String, Object>> makeRequest(RequestEntity<?> requestEntity) {
 		try {
 			return this.restOperations.exchange(requestEntity, STRING_OBJECT_MAP);
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			throw new OAuth2IntrospectionException(ex.getMessage(), ex);
 		}
 	}
@@ -163,6 +181,7 @@ public class SpringOpaqueTokenIntrospector implements OpaqueTokenIntrospector {
 			return Collections.emptyMap();
 		}
 
+		// 将 active 字段转换成正确的类型 boolean，然后判断 token 是否 active
 		boolean active = (boolean) claims.compute(OAuth2TokenIntrospectionClaimNames.ACTIVE, (k, v) -> {
 			if (v instanceof String) {
 				return Boolean.parseBoolean((String) v);

@@ -118,6 +118,7 @@ public class BearerTokenAuthenticationFilter extends OncePerRequestFilter {
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws ServletException, IOException {
+		// 从请求中解析出 token (Bearer 形式)
 		String token;
 		try {
 			token = this.bearerTokenResolver.resolve(request);
@@ -127,6 +128,8 @@ public class BearerTokenAuthenticationFilter extends OncePerRequestFilter {
 			this.authenticationEntryPoint.commence(request, response, invalid);
 			return;
 		}
+
+		// 如果解析没有出错，但是就是没有 token (比如当前不支持 parameter token，但是客户端使用 parameter 传递 token)
 		if (token == null) {
 			this.logger.trace("Did not process request since did not find bearer token");
 			filterChain.doFilter(request, response);

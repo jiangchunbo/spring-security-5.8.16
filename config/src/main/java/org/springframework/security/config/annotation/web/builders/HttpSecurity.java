@@ -3030,9 +3030,12 @@ public final class HttpSecurity extends AbstractConfiguredSecurityBuilder<Defaul
 	 */
 	public HttpSecurity oauth2ResourceServer(
 			Customizer<OAuth2ResourceServerConfigurer<HttpSecurity>> oauth2ResourceServerCustomizer) throws Exception {
-		OAuth2ResourceServerConfigurer<HttpSecurity> configurer = getOrApply(
-				new OAuth2ResourceServerConfigurer<>(getContext()));
+		OAuth2ResourceServerConfigurer<HttpSecurity> configurer = getOrApply(new OAuth2ResourceServerConfigurer<>(getContext()));
+
+		// 在这个地方调用该方法有些奇怪
 		this.postProcess(configurer);
+
+		// 使用 customizer 处理 configurer
 		oauth2ResourceServerCustomizer.customize(configurer);
 		return HttpSecurity.this;
 	}

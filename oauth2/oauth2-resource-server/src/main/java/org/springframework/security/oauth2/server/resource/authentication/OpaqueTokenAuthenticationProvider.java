@@ -104,6 +104,7 @@ public final class OpaqueTokenAuthenticationProvider implements AuthenticationPr
 		if (!(authentication instanceof BearerTokenAuthenticationToken)) {
 			return null;
 		}
+		// BearerTokenAuthenticationToken 这个类型是 oauth2 包定义的
 		BearerTokenAuthenticationToken bearer = (BearerTokenAuthenticationToken) authentication;
 
 		// 调用接口 内省 token 得到结果 (如果内省失败，则会抛出异常)
@@ -124,6 +125,11 @@ public final class OpaqueTokenAuthenticationProvider implements AuthenticationPr
 		return result;
 	}
 
+	/**
+	 * 传入一个 Bearer Token
+	 * @param bearer
+	 * @return
+	 */
 	private OAuth2AuthenticatedPrincipal getOAuth2AuthenticatedPrincipal(BearerTokenAuthenticationToken bearer) {
 		try {
 			return this.introspector.introspect(bearer.getToken());

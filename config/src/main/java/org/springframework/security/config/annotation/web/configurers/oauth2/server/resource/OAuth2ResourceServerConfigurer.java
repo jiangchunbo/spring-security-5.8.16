@@ -394,11 +394,17 @@ public final class OAuth2ResourceServerConfigurer<H extends HttpSecurityBuilder<
 			return this;
 		}
 
+		/**
+		 * 设置自定义的 Jwt 解码器
+		 */
 		public JwtConfigurer decoder(JwtDecoder decoder) {
 			this.decoder = decoder;
 			return this;
 		}
 
+		/**
+		 * 配置 Jwk Set Uri 公钥地址，去访问 Uri 得到公钥自己验证签名
+		 */
 		public JwtConfigurer jwkSetUri(String uri) {
 			this.decoder = NimbusJwtDecoder.withJwkSetUri(uri).build();
 			return this;
@@ -478,6 +484,9 @@ public final class OAuth2ResourceServerConfigurer<H extends HttpSecurityBuilder<
 			return this;
 		}
 
+		/**
+		 * 设置 introspectionUri，需要与下面的 clientId 和 clientSecret 配合
+		 */
 		public OpaqueTokenConfigurer introspectionUri(String introspectionUri) {
 			Assert.notNull(introspectionUri, "introspectionUri cannot be null");
 			this.introspectionUri = introspectionUri;
@@ -486,6 +495,9 @@ public final class OAuth2ResourceServerConfigurer<H extends HttpSecurityBuilder<
 			return this;
 		}
 
+		/**
+		 * 设置 clientId 和 clientSecret，需要与上面的 introspectionUri 配合
+		 */
 		public OpaqueTokenConfigurer introspectionClientCredentials(String clientId, String clientSecret) {
 			Assert.notNull(clientId, "clientId cannot be null");
 			Assert.notNull(clientSecret, "clientSecret cannot be null");
