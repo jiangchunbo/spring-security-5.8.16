@@ -43,25 +43,13 @@ import org.springframework.util.Assert;
 final class AutowireBeanFactoryObjectPostProcessor
 		implements ObjectPostProcessor<Object>, DisposableBean, SmartInitializingSingleton {
 
-	// 由于可能需要后处理的对象类型很多，因此该后处理器必须支持 Object 类型。
-
-	// 协助调用这些对象的方法，但是这些对象始终不是 bean
-
 	private final Log logger = LogFactory.getLog(getClass());
 
-	/**
-	 * 借助 bean factory 的力量
-	 */
+	/* BeanFactory */
 	private final AutowireCapableBeanFactory autowireBeanFactory;
 
-	/**
-	 * 需要完成 destroy 声明周期的对象
-	 */
 	private final List<DisposableBean> disposableBeans = new ArrayList<>();
 
-	/**
-	 * 需要在所有非懒加载的单例 bean 创建之后执行一些动作的 bean
-	 */
 	private final List<SmartInitializingSingleton> smartSingletons = new ArrayList<>();
 
 	AutowireBeanFactoryObjectPostProcessor(AutowireCapableBeanFactory autowireBeanFactory) {

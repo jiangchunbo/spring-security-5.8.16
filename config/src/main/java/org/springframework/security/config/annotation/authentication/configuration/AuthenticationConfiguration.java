@@ -63,8 +63,6 @@ import org.springframework.util.Assert;
 @Import(ObjectPostProcessorConfiguration.class)
 public class AuthenticationConfiguration {
 
-	// 主要就是配置 AuthenticationManagerBuilder
-
 	private AtomicBoolean buildingAuthenticationManager = new AtomicBoolean();
 
 	private ApplicationContext applicationContext;
@@ -82,7 +80,7 @@ public class AuthenticationConfiguration {
 
 	/**
 	 * 创建 Spring Security 默认的 AuthenticationManagerBuilder
-	 *
+	 * <p>
 	 * DefaultPasswordEncoderAuthenticationManagerBuilder vs AuthenticationManagerBuilder
 	 *
 	 * @param objectPostProcessor 后置处理器
@@ -145,7 +143,7 @@ public class AuthenticationConfiguration {
 	}
 
 	/**
-	 * 这是一个公开方法，意味着任何人都可以通过注入 AuthenticationConfiguration 调用此方法获取一个全局的 AuthenticationManager
+	 * 获取一个全局的 AuthenticationManager
 	 *
 	 * @return AuthenticationManager
 	 * @throws Exception 异常
