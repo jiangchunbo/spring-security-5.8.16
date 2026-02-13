@@ -46,7 +46,8 @@ import static org.springframework.security.config.Customizer.withDefaults;
 /**
  * {@link Configuration} that exposes the {@link HttpSecurity} bean.
  * <p>
- * 暴露 HttpSecurity bean 的配置类
+ * <strong>用于暴露(提供) HttpSecurity bean @Configuration 的配置类
+ * </strong>
  *
  * @author Eleftheria Stein
  * @since 5.4

@@ -65,8 +65,7 @@ final class AutowireBeanFactoryObjectPostProcessor
 		}
 
 		// 调用 initializeBean 方法
-		// 如类注释所说，调用 Aware 方法
-		T result = null;
+		T result;
 		try {
 			result = (T) this.autowireBeanFactory.initializeBean(object, object.toString());
 		} catch (RuntimeException ex) {
@@ -75,19 +74,14 @@ final class AutowireBeanFactoryObjectPostProcessor
 		}
 
 		// 调用 autowireBean 方法
-		// 内部调用 populateBean 方法
 		this.autowireBeanFactory.autowireBean(object);
 
 		// 添加到 disposableBeans
-		// 因为该 bean 本身实现了 DisposableBean，它只是把这些对象收集起来
-		// 当它自己调用 destroy 时，再依次调用这些 bean 的 destroy
 		if (result instanceof DisposableBean) {
 			this.disposableBeans.add((DisposableBean) result);
 		}
 
 		// 添加到 smartSingletons
-		// 因为该 bean 本身就是 SmartInitializingSingleton，他只是把这些对象收集起来
-		// 当它自己调用 afterSingletonsInstantiated 时，再依次调用这些 bean 的 afterSingletonsInstantiated
 		if (result instanceof SmartInitializingSingleton) {
 			this.smartSingletons.add((SmartInitializingSingleton) result);
 		}

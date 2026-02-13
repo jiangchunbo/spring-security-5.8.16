@@ -103,6 +103,11 @@ import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
  * namespace configuration. It allows configuring web based security for specific http
  * requests. By default it will be applied to all requests, but can be restricted using
  * {@link #requestMatcher(RequestMatcher)} or other similar methods.
+ * <p>
+ * <strong>HttpSecurity 类似于 Spring Security 命名空间配置中的 XML &lt;http&gt; 元素。
+ * 它允许针对特定的 HTTP 请求配置基于 Web 的安全性。
+ * 默认情况下，它将应用于所有请求，但可以使用 requestMatcher(RequestMatcher) 或其他类似方法进行限制
+ * </strong>
  *
  * <h2>Example Usage</h2>
  * <p>
@@ -153,16 +158,12 @@ public final class HttpSecurity extends AbstractConfiguredSecurityBuilder<Defaul
 
 	private final RequestMatcherConfigurer requestMatcherConfigurer;
 
-	/**
-	 * 所有的 Filter，而且都是有序的
-	 */
+	/* 所有的 Filter，支持排序 */
 	private List<OrderedFilter> filters = new ArrayList<>();
 
 	private RequestMatcher requestMatcher = AnyRequestMatcher.INSTANCE;
 
-	/**
-	 * 从中可以获取一些特定 Filter 的 order
-	 */
+	/* Filter order 注册表 */
 	private FilterOrderRegistration filterOrders = new FilterOrderRegistration();
 
 	private AuthenticationManager authenticationManager;
@@ -3299,16 +3300,19 @@ public final class HttpSecurity extends AbstractConfiguredSecurityBuilder<Defaul
 	@Override
 	protected DefaultSecurityFilterChain performBuild() {
 
-		// 获取 AuthorizeHttpRequestsConfigurer 授权配置器 --> 只能有一个存在
+		// ExpressionUrlAuthorizationConfigurer
 		ExpressionUrlAuthorizationConfigurer<?> expressionConfigurer = getConfigurer(
 				ExpressionUrlAuthorizationConfigurer.class);
 
 		AuthorizeHttpRequestsConfigurer<?> httpConfigurer = getConfigurer(AuthorizeHttpRequestsConfigurer.class);
 
+		// 只能配置其中一个
 		boolean oneConfigurerPresent = expressionConfigurer == null ^ httpConfigurer == null;
 
 		Assert.state((expressionConfigurer == null && httpConfigurer == null) || oneConfigurerPresent,
 				"authorizeHttpRequests cannot be used in conjunction with authorizeRequests. Please select just one.");
+
+		// 过滤器排序
 		this.filters.sort(OrderComparator.INSTANCE);
 		List<Filter> sortedFilters = new ArrayList<>(this.filters.size());
 		for (Filter filter : this.filters) {

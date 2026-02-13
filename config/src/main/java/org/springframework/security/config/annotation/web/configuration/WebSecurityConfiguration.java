@@ -138,11 +138,10 @@ public class WebSecurityConfiguration implements ImportAware, BeanClassLoaderAwa
 		// 路径2: 如果显式配置了 FilterChain，直接放进 WebSecurity
 		for (SecurityFilterChain securityFilterChain : this.securityFilterChains) {
 
-			// 添加 SecurityBuilder 构建器
-			// (不过此处直接将一个构建完毕的 FilterChain 作为返回值)
+			// 所有 HttpSecurity 构建出来的 FilterChain
 			this.webSecurity.addSecurityFilterChainBuilder(() -> securityFilterChain);
 
-			// 只找到第一个 (待研究)
+			// 只找到第一个 FilterSecurityInterceptor
 			for (Filter filter : securityFilterChain.getFilters()) {
 				if (filter instanceof FilterSecurityInterceptor) {
 					this.webSecurity.securityInterceptor((FilterSecurityInterceptor) filter);

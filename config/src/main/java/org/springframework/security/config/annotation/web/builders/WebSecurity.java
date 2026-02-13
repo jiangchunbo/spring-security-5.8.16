@@ -313,7 +313,10 @@ public final class WebSecurity extends AbstractConfiguredSecurityBuilder<Filter,
 						+ "Typically this is done by exposing a SecurityFilterChain bean. "
 						+ "More advanced users can invoke " + WebSecurity.class.getSimpleName()
 						+ ".addSecurityFilterChainBuilder directly");
+
+		// 寻找所有的 SecurityFilterChain (两个来源: ignoredRequests、securityFilterChainBuilders)
 		int chainSize = this.ignoredRequests.size() + this.securityFilterChainBuilders.size();
+
 		List<SecurityFilterChain> securityFilterChains = new ArrayList<>(chainSize);
 		List<RequestMatcherEntry<List<WebInvocationPrivilegeEvaluator>>> requestMatcherPrivilegeEvaluatorsEntries = new ArrayList<>();
 		for (RequestMatcher ignoredRequest : this.ignoredRequests) {
@@ -325,7 +328,7 @@ public final class WebSecurity extends AbstractConfiguredSecurityBuilder<Filter,
 					.add(getRequestMatcherPrivilegeEvaluatorsEntry(securityFilterChain));
 		}
 
-		// 遍历一些函数
+		// 收集从 HttpSecurity 构建出来的 FilterChain
 		for (SecurityBuilder<? extends SecurityFilterChain> securityFilterChainBuilder : this.securityFilterChainBuilders) {
 			SecurityFilterChain securityFilterChain = securityFilterChainBuilder.build();
 			securityFilterChains.add(securityFilterChain);

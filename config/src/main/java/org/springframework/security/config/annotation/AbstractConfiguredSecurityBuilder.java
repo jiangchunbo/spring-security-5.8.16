@@ -76,6 +76,8 @@ public abstract class AbstractConfiguredSecurityBuilder<O, B extends SecurityBui
 
 	/**
 	 * init 过程中添加的配置器
+	 * <p>
+	 * 注意：这是一个 private 属性
 	 */
 	private final List<SecurityConfigurer<O, B>> configurersAddedInInitializing = new ArrayList<>();
 
@@ -142,9 +144,9 @@ public abstract class AbstractConfiguredSecurityBuilder<O, B extends SecurityBui
 	 * Applies a {@link SecurityConfigurerAdapter} to this {@link SecurityBuilder} and
 	 * invokes {@link SecurityConfigurerAdapter#setBuilder(SecurityBuilder)}.
 	 *
-	 * @param configurer
+	 * @param configurer configurer
 	 * @return the {@link SecurityConfigurerAdapter} for further customizations
-	 * @throws Exception
+	 * @throws Exception exception
 	 */
 	@SuppressWarnings("unchecked")
 	public <C extends SecurityConfigurerAdapter<O, B>> C apply(C configurer) throws Exception {
@@ -404,17 +406,15 @@ public abstract class AbstractConfiguredSecurityBuilder<O, B extends SecurityBui
 
 	@SuppressWarnings("unchecked")
 	private void init() throws Exception {
-		// 获取所有的 configurer，这是一个全新的对象
+		// 收集所有配置器 configurer
 		Collection<SecurityConfigurer<O, B>> configurers = getConfigurers();
 
-		// 调用所有 configurer 的 init
+		// 调用 configurer 的初始化方法
 		for (SecurityConfigurer<O, B> configurer : configurers) {
 			configurer.init((B) this);
 		}
 
-		// 如果在上面的循环中 init 方法调用了 add(C configurer)，会出现循环中操作集合的并发异常 ConcurrentModificationException 吗 ??? 不会!
-
-		// 如果是 init 阶段添加了新的 SecurityConfigurer，那么还可以在这里再次调用一次
+		// 允许 init 阶段添加 SecurityConfigurer
 		for (SecurityConfigurer<O, B> configurer : this.configurersAddedInInitializing) {
 			configurer.init((B) this);
 		}
@@ -429,7 +429,7 @@ public abstract class AbstractConfiguredSecurityBuilder<O, B extends SecurityBui
 	 */
 	@SuppressWarnings("unchecked")
 	private void configure() throws Exception {
-		// 再次从 Map 中获取所有 Value 构造了一个集合
+		// 与 init 一样，收集所有 SecurityConfigurer
 		Collection<SecurityConfigurer<O, B>> configurers = getConfigurers();
 
 		// 调用所有 configurer 的 configure 方法

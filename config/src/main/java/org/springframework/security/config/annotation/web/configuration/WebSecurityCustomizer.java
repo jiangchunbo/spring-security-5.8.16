@@ -20,10 +20,10 @@ import org.springframework.security.config.annotation.web.builders.WebSecurity;
 
 /**
  * Callback interface for customizing {@link WebSecurity}.
- *
+ * <p>
  * Beans of this type will automatically be used by {@link WebSecurityConfiguration} to
  * customize {@link WebSecurity}.
- *
+ * <p>
  * Example usage:
  *
  * <pre>
@@ -41,6 +41,7 @@ public interface WebSecurityCustomizer {
 
 	/**
 	 * Performs the customizations on {@link WebSecurity}.
+	 *
 	 * @param web the instance of {@link WebSecurity} to apply to customizations to
 	 */
 	void customize(WebSecurity web);

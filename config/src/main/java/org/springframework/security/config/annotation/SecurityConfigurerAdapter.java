@@ -31,7 +31,7 @@ import org.springframework.util.Assert;
  *
  * @param <O> The Object being built by B
  * @param <B> The Builder that is building O and is configured by
- * {@link SecurityConfigurerAdapter}
+ *            {@link SecurityConfigurerAdapter}
  * @author Rob Winch
  * @author Wallace Wadge
  */
@@ -52,6 +52,7 @@ public abstract class SecurityConfigurerAdapter<O, B extends SecurityBuilder<O>>
 	/**
 	 * Return the {@link SecurityBuilder} when done using the {@link SecurityConfigurer}.
 	 * This is useful for method chaining.
+	 *
 	 * @return the {@link SecurityBuilder} for further customizations
 	 */
 	public B and() {
@@ -60,6 +61,7 @@ public abstract class SecurityConfigurerAdapter<O, B extends SecurityBuilder<O>>
 
 	/**
 	 * Gets the {@link SecurityBuilder}. Cannot be null.
+	 *
 	 * @return the {@link SecurityBuilder}
 	 * @throws IllegalStateException if {@link SecurityBuilder} is null
 	 */
@@ -71,6 +73,7 @@ public abstract class SecurityConfigurerAdapter<O, B extends SecurityBuilder<O>>
 	/**
 	 * Performs post processing of an object. The default is to delegate to the
 	 * {@link ObjectPostProcessor}.
+	 *
 	 * @param object the Object to post process
 	 * @return the possibly modified Object to use
 	 */
@@ -83,6 +86,7 @@ public abstract class SecurityConfigurerAdapter<O, B extends SecurityBuilder<O>>
 	 * Adds an {@link ObjectPostProcessor} to be used for this
 	 * {@link SecurityConfigurerAdapter}. The default implementation does nothing to the
 	 * object.
+	 *
 	 * @param objectPostProcessor the {@link ObjectPostProcessor} to use
 	 */
 	public void addObjectPostProcessor(ObjectPostProcessor<?> objectPostProcessor) {
@@ -92,6 +96,7 @@ public abstract class SecurityConfigurerAdapter<O, B extends SecurityBuilder<O>>
 	/**
 	 * Sets the {@link SecurityBuilder} to be used. This is automatically set when using
 	 * {@link AbstractConfiguredSecurityBuilder#apply(SecurityConfigurerAdapter)}
+	 *
 	 * @param builder the {@link SecurityBuilder} to set
 	 */
 	public void setBuilder(B builder) {
@@ -109,10 +114,11 @@ public abstract class SecurityConfigurerAdapter<O, B extends SecurityBuilder<O>>
 		private List<ObjectPostProcessor<?>> postProcessors = new ArrayList<>();
 
 		@Override
-		@SuppressWarnings({ "rawtypes", "unchecked" })
+		@SuppressWarnings({"rawtypes", "unchecked"})
 		public Object postProcess(Object object) {
 			for (ObjectPostProcessor opp : this.postProcessors) {
 				Class<?> oppClass = opp.getClass();
+				// 解析 ObjectPostProcessor 的泛型类型
 				Class<?> oppType = GenericTypeResolver.resolveTypeArgument(oppClass, ObjectPostProcessor.class);
 				if (oppType == null || oppType.isAssignableFrom(object.getClass())) {
 					object = opp.postProcess(object);
@@ -123,12 +129,15 @@ public abstract class SecurityConfigurerAdapter<O, B extends SecurityBuilder<O>>
 
 		/**
 		 * Adds an {@link ObjectPostProcessor} to use
+		 * <p>
+		 * 添加要使用的 ObjectPostProcessor
+		 *
 		 * @param objectPostProcessor the {@link ObjectPostProcessor} to add
 		 * @return true if the {@link ObjectPostProcessor} was added, else false
 		 */
 		private boolean addObjectPostProcessor(ObjectPostProcessor<?> objectPostProcessor) {
 			boolean result = this.postProcessors.add(objectPostProcessor);
-			this.postProcessors.sort(AnnotationAwareOrderComparator.INSTANCE);
+			this.postProcessors.sort(AnnotationAwareOrderComparator.INSTANCE); // 添加之后保证有序性
 			return result;
 		}
 

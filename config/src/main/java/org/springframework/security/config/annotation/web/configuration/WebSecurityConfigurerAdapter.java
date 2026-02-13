@@ -71,6 +71,8 @@ import org.springframework.web.accept.HeaderContentNegotiationStrategy;
 /**
  * Provides a convenient base class for creating a {@link WebSecurityConfigurer} instance.
  * The implementation allows customization by overriding methods.
+ * <p>
+ * <strong>为创建 WebSecurityConfigurer 提供了一个便捷的基类。实现类允许通过重写方法定制化。</strong>
  *
  * <p>
  * Will automatically apply the result of looking up {@link AbstractHttpConfigurer} from
@@ -78,8 +80,11 @@ import org.springframework.web.accept.HeaderContentNegotiationStrategy;
  * you must create a class that extends AbstractHttpConfigurer and then create a file in
  * the classpath at "META-INF/spring.factories" that looks something like:
  * </p>
- *
- * 能够从 spring.factories 中找到的 AbstractHttpConfigurer 并使用他们
+ * <p>
+ * <strong>该类会自动查找并应用从 SpringFactoriesLoader 中获取的 AbstractHttpConfigurer 结果，
+ * 以允许开发者扩展默认配置。
+ * 为此，你必须创建一个继承自 AbstractHttpConfigurer 的类，然后在类路径下的 META-INF/spring.factories 文件中创建一个类似如下内容
+ * </strong>
  *
  * <pre>
  * org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer = sample.MyClassThatExtendsAbstractHttpConfigurer

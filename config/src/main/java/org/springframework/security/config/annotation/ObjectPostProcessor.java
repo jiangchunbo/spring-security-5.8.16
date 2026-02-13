@@ -24,6 +24,10 @@ import org.springframework.beans.factory.InitializingBean;
  * Allows initialization of Objects. Typically this is used to call the {@link Aware}
  * methods, {@link InitializingBean#afterPropertiesSet()}, and ensure that
  * {@link DisposableBean#destroy()} has been invoked.
+ * <p>
+ * <strong>允许对对象进行初始化。通常用于调用 Aware 系列方法、InitializingBean#afterPropertiesSet()，
+ * 确保 DisposableBean#destroy() 方法能够被触发 (这里就是处理对象的生命周期回调)
+ * </strong>
  *
  * @param <T> the bound of the types of Objects this {@link ObjectPostProcessor} supports.
  * @author Rob Winch
@@ -34,6 +38,10 @@ public interface ObjectPostProcessor<T> {
 	/**
 	 * Initialize the object possibly returning a modified instance that should be used
 	 * instead.
+	 * <p>
+	 * <strong>初始化对象，并可能返回一个修改后的实例以替换原始实例使用。
+	 * </strong>
+	 *
 	 * @param object the object to initialize
 	 * @return the initialized version of the object
 	 */
