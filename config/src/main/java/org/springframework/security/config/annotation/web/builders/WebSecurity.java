@@ -98,6 +98,7 @@ public final class WebSecurity extends AbstractConfiguredSecurityBuilder<Filter,
 
 	private FilterSecurityInterceptor filterSecurityInterceptor;
 
+	/* HTTP 防火墙 */
 	private HttpFirewall httpFirewall;
 
 	private RequestRejectedHandler requestRejectedHandler;

@@ -200,6 +200,7 @@ public class FilterChainProxy extends GenericFilterBean {
 					(RequestRejectedException) requestRejectedException);
 		}
 		finally {
+			// 清空 Context
 			this.securityContextHolderStrategy.clearContext();
 			request.removeAttribute(FILTER_APPLIED);
 		}

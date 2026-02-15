@@ -186,8 +186,7 @@ public class WebSecurityConfiguration implements ImportAware, BeanClassLoaderAwa
 	public void setFilterChainProxySecurityConfigurer(ObjectPostProcessor<Object> objectPostProcessor,
 			ConfigurableListableBeanFactory beanFactory) throws Exception {
 
-		// 把 objectPostProcessor 传给 WebSecurity ???
-		// 然后又用 objectPostProcessor 处理了 WebSecurity
+		// objectPostProcessor 传递使用
 		this.webSecurity = objectPostProcessor.postProcess(new WebSecurity(objectPostProcessor));
 
 		if (this.debugEnabled != null) {

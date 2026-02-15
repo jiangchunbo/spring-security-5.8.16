@@ -120,6 +120,7 @@ public abstract class SecurityConfigurerAdapter<O, B extends SecurityBuilder<O>>
 				Class<?> oppClass = opp.getClass();
 				// 解析 ObjectPostProcessor 的泛型类型
 				Class<?> oppType = GenericTypeResolver.resolveTypeArgument(oppClass, ObjectPostProcessor.class);
+
 				if (oppType == null || oppType.isAssignableFrom(object.getClass())) {
 					object = opp.postProcess(object);
 				}
