@@ -67,18 +67,12 @@ import org.springframework.util.Assert;
 @Configuration(proxyBeanMethods = false)
 public class WebSecurityConfiguration implements ImportAware, BeanClassLoaderAware {
 
-	/**
-	 * 这是一个 null 对象，它是如何注入的呢？其实是直接 new 出来的
-	 * <p>
-	 * 请关注 {@link #setFilterChainProxySecurityConfigurer(ObjectPostProcessor, ConfigurableListableBeanFactory)}
-	 */
+	/* 将会被 new 创建出来 */
 	private WebSecurity webSecurity;
 
 	private Boolean debugEnabled;
 
-	/**
-	 * 其实大概率是为了 WebSecurityConfigurerAdapter 实现类在这里注入的
-	 */
+	/* 用于配置 WebSecurity 的 Configurer */
 	private List<SecurityConfigurer<Filter, WebSecurity>> webSecurityConfigurers;
 
 	private List<SecurityFilterChain> securityFilterChains = Collections.emptyList();
@@ -176,7 +170,7 @@ public class WebSecurityConfiguration implements ImportAware, BeanClassLoaderAwa
 	 * @param objectPostProcessor the {@link ObjectPostProcessor} used to create a
 	 *                            {@link WebSecurity} instance
 	 *                            <p>
-	 *                            框架内有不少实现了 ObjectPostProcessor，但是只需要关注 {@link org.springframework.security.config.annotation.configuration.AutowireBeanFactoryObjectPostProcessor}
+	 *                            特指 AutowireBeanFactoryObjectPostProcessor
 	 * @param beanFactory         the bean factory to use to retrieve the relevant
 	 *                            {@code <SecurityConfigurer<FilterChainProxy, WebSecurityBuilder>} instances used to
 	 *                            create the web configuration
@@ -193,13 +187,12 @@ public class WebSecurityConfiguration implements ImportAware, BeanClassLoaderAwa
 			this.webSecurity.debug(this.debugEnabled);
 		}
 
-		// 找到 SecurityConfigurer<Filter, WebSecurity>> 所有的 bean
-		// --> 这么说，每个人可以实现这个类型，定制自己的 configurer
-		List<SecurityConfigurer<Filter, WebSecurity>> webSecurityConfigurers = new AutowiredWebSecurityConfigurersIgnoreParents(
-				beanFactory)
-				.getWebSecurityConfigurers();
+		// 找到专用于 WebSecurity 的 Configurer
+		List<SecurityConfigurer<Filter, WebSecurity>> webSecurityConfigurers =
+				new AutowiredWebSecurityConfigurersIgnoreParents(beanFactory)
+						.getWebSecurityConfigurers();
 
-		webSecurityConfigurers.sort(AnnotationAwareOrderComparator.INSTANCE); // 排序不看了
+		webSecurityConfigurers.sort(AnnotationAwareOrderComparator.INSTANCE); // 排序
 
 		// 顺序禁止相等，否则可能出现一些不明确的歧义现象
 		Integer previousOrder = null;

@@ -26,6 +26,12 @@ import org.springframework.security.config.annotation.authentication.builders.Au
  * {@link AuthenticationManagerBuilder}. Beans of this type are automatically used by
  * {@link AuthenticationConfiguration} to configure the global
  * {@link AuthenticationManagerBuilder}.
+ * <p>
+ * <strong>一种可作为 Bean 暴露的 {@link SecurityConfigurer}，用于配置全局的</strong>
+ * <strong>{@link AuthenticationManagerBuilder}。</strong>
+ * <p>
+ * <strong>该类型的 Bean 会被 {@link AuthenticationConfiguration} 自动使用，</strong>
+ * <strong>以配置全局 {@link AuthenticationManagerBuilder}。</strong>
  *
  * @author Rob Winch
  * @since 5.0

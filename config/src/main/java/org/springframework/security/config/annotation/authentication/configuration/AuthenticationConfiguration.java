@@ -71,11 +71,10 @@ public class AuthenticationConfiguration {
 
 	private boolean authenticationManagerInitialized;
 
-	/**
-	 * 该属性通过 @Autowired 覆盖注入
-	 */
+	/* AuthenticationManagerBuilder 专属的 Configurer。通过 @Autowired 注入 */
 	private List<GlobalAuthenticationConfigurerAdapter> globalAuthConfigurers = Collections.emptyList();
 
+	/* 特指 AutowireBeanFactoryObjectPostProcessor */
 	private ObjectPostProcessor<Object> objectPostProcessor;
 
 	/**
@@ -83,8 +82,8 @@ public class AuthenticationConfiguration {
 	 * <p>
 	 * DefaultPasswordEncoderAuthenticationManagerBuilder vs AuthenticationManagerBuilder
 	 *
-	 * @param objectPostProcessor 后置处理器
-	 * @param context             应用上下文
+	 * @param objectPostProcessor 特指 AutowireBeanFactoryObjectPostProcessor
+	 * @param context             Spring Context
 	 * @return AuthenticationManagerBuilder
 	 */
 	@Bean
@@ -97,13 +96,13 @@ public class AuthenticationConfiguration {
 		DefaultPasswordEncoderAuthenticationManagerBuilder result = new DefaultPasswordEncoderAuthenticationManagerBuilder(
 				objectPostProcessor, defaultPasswordEncoder);
 
-		// 设置与认证有关的事件发布器 AuthenticationEventPublisher
+		// 设置与认证有关的事件发布器 AuthenticationEventPublisher (仅当容器内有一个时)
 		AuthenticationEventPublisher authenticationEventPublisher = getAuthenticationEventPublisher(context);
 		if (authenticationEventPublisher != null) {
 			result.authenticationEventPublisher(authenticationEventPublisher);
 		}
 
-		// 记住，这里只是 Builder 创建出来了，真正的 AuthenticationManager 还需要丰富这个 Builder
+		// 这里只是 Builder 创建出来了，真正的 AuthenticationManager 还需要丰富这个 Builder
 		return result;
 	}
 

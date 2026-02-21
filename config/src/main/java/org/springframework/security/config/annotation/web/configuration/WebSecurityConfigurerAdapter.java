@@ -239,6 +239,7 @@ public abstract class WebSecurityConfigurerAdapter implements WebSecurityConfigu
 	 */
 	@SuppressWarnings({"rawtypes", "unchecked"})
 	protected final HttpSecurity getHttp() throws Exception {
+		// 确保只会创建一次
 		if (this.http != null) {
 			return this.http;
 		}
@@ -379,12 +380,10 @@ public abstract class WebSecurityConfigurerAdapter implements WebSecurityConfigu
 	}
 
 	/**
-	 * 初始化阶段，接下来还有 configure 阶段
+	 * 标准 SecurityBuilder 的 init 阶段
 	 */
 	@Override
 	public void init(WebSecurity web) throws Exception {
-		// 子类可能可以重写这个方法，但是如果没有重写，将使用以下代码的行为
-
 		// 获取本类策略的 HttpSecurity (FilterChain 的构建器)
 		HttpSecurity http = getHttp();
 

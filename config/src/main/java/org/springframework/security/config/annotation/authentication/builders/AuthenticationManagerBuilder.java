@@ -55,8 +55,10 @@ public class AuthenticationManagerBuilder
 
 	private final Log logger = LogFactory.getLog(getClass());
 
+	/* parent 认证管理器。支持父子认证 */
 	private AuthenticationManager parentAuthenticationManager;
 
+	/* ProviderManager 管理的多种认证方式提供者 */
 	private List<AuthenticationProvider> authenticationProviders = new ArrayList<>();
 
 	private UserDetailsService defaultUserDetailsService;

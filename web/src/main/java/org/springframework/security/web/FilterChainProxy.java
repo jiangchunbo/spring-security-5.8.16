@@ -151,8 +151,10 @@ public class FilterChainProxy extends GenericFilterBean {
 	private SecurityContextHolderStrategy securityContextHolderStrategy = SecurityContextHolder
 		.getContextHolderStrategy();
 
+	/* 注册的 FilterChain */
 	private List<SecurityFilterChain> filterChains;
 
+	/* FilterChain 校验器 */
 	private FilterChainValidator filterChainValidator = new NullFilterChainValidator();
 
 	private HttpFirewall firewall = new StrictHttpFirewall();
@@ -194,6 +196,8 @@ public class FilterChainProxy extends GenericFilterBean {
 			Throwable[] causeChain = this.throwableAnalyzer.determineCauseChain(ex);
 			Throwable requestRejectedException = this.throwableAnalyzer
 				.getFirstThrowableOfType(RequestRejectedException.class, causeChain);
+
+			// RequestRejectedException 是由 HttpFirewall 包装的请求抛出的
 			if (!(requestRejectedException instanceof RequestRejectedException)) {
 				throw ex;
 			}
@@ -213,7 +217,7 @@ public class FilterChainProxy extends GenericFilterBean {
 		FirewalledRequest firewallRequest = this.firewall.getFirewalledRequest((HttpServletRequest) request);
 		HttpServletResponse firewallResponse = this.firewall.getFirewalledResponse((HttpServletResponse) response);
 
-		// 找 filters
+		// 找到匹配的第一个 FilterChain，获取其 filters
 		List<Filter> filters = getFilters(firewallRequest);
 		if (filters == null || filters.size() == 0) {
 			if (logger.isTraceEnabled()) {
@@ -227,7 +231,7 @@ public class FilterChainProxy extends GenericFilterBean {
 			logger.debug(LogMessage.of(() -> "Securing " + requestLine(firewallRequest)));
 		}
 
-		// 需要额外执行的 filters
+		// 执行 additionalFilters，然后回到原来的轨道
 		VirtualFilterChain virtualFilterChain = new VirtualFilterChain(firewallRequest, chain, filters);
 		virtualFilterChain.doFilter(firewallRequest, firewallResponse);
 	}
@@ -238,7 +242,9 @@ public class FilterChainProxy extends GenericFilterBean {
 	 * @return an ordered array of Filters defining the filter chain
 	 */
 	private List<Filter> getFilters(HttpServletRequest request) {
-		int count = 0;
+		int count = 0; // 给 logger trace 使用
+
+		// 命中第一个就返回
 		for (SecurityFilterChain chain : this.filterChains) {
 			if (logger.isTraceEnabled()) {
 				logger.trace(LogMessage.format("Trying to match request against %s (%d/%d)", chain, ++count,

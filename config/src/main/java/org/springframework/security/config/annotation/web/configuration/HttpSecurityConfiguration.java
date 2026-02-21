@@ -74,8 +74,7 @@ class HttpSecurityConfiguration {
 
 	@Autowired
 	void setObjectPostProcessor(ObjectPostProcessor<Object> objectPostProcessor) {
-		// 自动注入用于后置处理对象的 ObjectPostProcessor<Object>
-		this.objectPostProcessor = objectPostProcessor;
+		this.objectPostProcessor = objectPostProcessor; // 特指 AutowireBeanFactoryObjectPostProcessor
 	}
 
 	void setAuthenticationManager(AuthenticationManager authenticationManager) {
@@ -105,6 +104,7 @@ class HttpSecurityConfiguration {
 	@Bean(HTTPSECURITY_BEAN_NAME)
 	@Scope("prototype")
 	HttpSecurity httpSecurity() throws Exception {
+		// 创建 PasswordEncoder
 		WebSecurityConfigurerAdapter.LazyPasswordEncoder passwordEncoder = new WebSecurityConfigurerAdapter.LazyPasswordEncoder(
 				this.context);
 		AuthenticationManagerBuilder authenticationBuilder = new WebSecurityConfigurerAdapter.DefaultPasswordEncoderAuthenticationManagerBuilder(

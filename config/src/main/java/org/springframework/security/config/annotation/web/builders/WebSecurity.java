@@ -342,12 +342,18 @@ public final class WebSecurity extends AbstractConfiguredSecurityBuilder<Filter,
 					requestMatcherPrivilegeEvaluatorsEntries);
 		}
 		FilterChainProxy filterChainProxy = new FilterChainProxy(securityFilterChains);
+
+		// HttpFirewall 防火墙类型
 		if (this.httpFirewall != null) {
 			filterChainProxy.setFirewall(this.httpFirewall);
 		}
+
+		// 过滤器 doFilter 抛出异常如何处理
 		if (this.requestRejectedHandler != null) {
 			filterChainProxy.setRequestRejectedHandler(this.requestRejectedHandler);
 		}
+
+		// 手动调用 afterPropertiesSet
 		filterChainProxy.afterPropertiesSet();
 
 		Filter result = filterChainProxy;

@@ -16,19 +16,18 @@
 
 package org.springframework.security.config.annotation.web.configuration;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import javax.servlet.Filter;
-
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.security.config.annotation.SecurityConfigurer;
 import org.springframework.security.config.annotation.web.WebSecurityConfigurer;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.util.Assert;
+
+import javax.servlet.Filter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * A class used to get all the {@link WebSecurityConfigurer} instances from the current
@@ -49,7 +48,7 @@ public final class AutowiredWebSecurityConfigurersIgnoreParents {
 	public List<SecurityConfigurer<Filter, WebSecurity>> getWebSecurityConfigurers() {
 		List<SecurityConfigurer<Filter, WebSecurity>> webSecurityConfigurers = new ArrayList<>();
 
-		// 其实就是按类型找 bean WebSecurityConfigurer
+		// 找到所有 WebSecurity 的 Configurer
 		Map<String, WebSecurityConfigurer> beansOfType = this.beanFactory.getBeansOfType(WebSecurityConfigurer.class);
 
 		// 把找到的 bean 放到 List 中返回

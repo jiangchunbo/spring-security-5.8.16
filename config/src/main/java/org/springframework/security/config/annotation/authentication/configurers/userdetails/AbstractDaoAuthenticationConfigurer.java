@@ -47,9 +47,11 @@ public abstract class AbstractDaoAuthenticationConfigurer<B extends ProviderMana
 	 */
 	AbstractDaoAuthenticationConfigurer(U userDetailsService) {
 		this.userDetailsService = userDetailsService;
+
+		// 用户查找用户信息
 		this.provider.setUserDetailsService(userDetailsService);
 
-		// 针对于 InMemoryUserDetailsManager
+		// 用于更新用户密码
 		if (userDetailsService instanceof UserDetailsPasswordService) {
 			this.provider.setUserDetailsPasswordService((UserDetailsPasswordService) userDetailsService);
 		}

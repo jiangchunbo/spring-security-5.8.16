@@ -524,6 +524,8 @@ public class StrictHttpFirewall implements HttpFirewall {
 
 		// serverName 检测
 		rejectedUntrustedHosts(request);
+
+		// 各种路径表示这个请求不正常
 		if (!isNormalized(request)) {
 			throw new RequestRejectedException("The request was rejected because the URL was not normalized.");
 		}
@@ -534,6 +536,7 @@ public class StrictHttpFirewall implements HttpFirewall {
 	}
 
 	private void rejectNonPrintableAsciiCharactersInFieldName(String toCheck, String propertyName) {
+		// 包含了不可打印的 ASCII 字符
 		if (!containsOnlyPrintableAsciiCharacters(toCheck)) {
 			throw new RequestRejectedException(String
 					.format("The %s was rejected because it can only contain printable ASCII characters.", propertyName));
