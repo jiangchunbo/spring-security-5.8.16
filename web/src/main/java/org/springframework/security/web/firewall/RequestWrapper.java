@@ -84,12 +84,16 @@ final class RequestWrapper extends FirewalledRequest {
 			}
 		}
 		StringTokenizer tokenizer = new StringTokenizer(path, "/");
+
+		// 申请一些字符空间 StringBuilder
 		StringBuilder stripped = new StringBuilder(path.length());
 		if (path.charAt(0) == '/') {
 			stripped.append('/');
 		}
 		while (tokenizer.hasMoreTokens()) {
 			String segment = tokenizer.nextToken();
+
+			// 如果发现片段中出现 ; 就忽略这个片段 ; 后面的内容
 			semicolonIndex = segment.indexOf(';');
 			if (semicolonIndex >= 0) {
 				segment = segment.substring(0, semicolonIndex);

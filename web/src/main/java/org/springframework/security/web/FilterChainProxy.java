@@ -180,6 +180,7 @@ public class FilterChainProxy extends GenericFilterBean {
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
 			throws IOException, ServletException {
+		// 是否要清除 context (只有入口处才能清除)
 		boolean clearContext = request.getAttribute(FILTER_APPLIED) == null;
 		if (!clearContext) {
 			doFilterInternal(request, response, chain);
@@ -212,8 +213,7 @@ public class FilterChainProxy extends GenericFilterBean {
 		FirewalledRequest firewallRequest = this.firewall.getFirewalledRequest((HttpServletRequest) request);
 		HttpServletResponse firewallResponse = this.firewall.getFirewalledResponse((HttpServletResponse) response);
 
-		// FilterChainProxy 里面许多 FilterChain
-		// 如果匹配本次请求，那么就返回对应 FilterChain 所有 Filter，也就是 Filters
+		// 找 filters
 		List<Filter> filters = getFilters(firewallRequest);
 		if (filters == null || filters.size() == 0) {
 			if (logger.isTraceEnabled()) {
@@ -226,6 +226,8 @@ public class FilterChainProxy extends GenericFilterBean {
 		if (logger.isDebugEnabled()) {
 			logger.debug(LogMessage.of(() -> "Securing " + requestLine(firewallRequest)));
 		}
+
+		// 需要额外执行的 filters
 		VirtualFilterChain virtualFilterChain = new VirtualFilterChain(firewallRequest, chain, filters);
 		virtualFilterChain.doFilter(firewallRequest, firewallResponse);
 	}
@@ -328,14 +330,18 @@ public class FilterChainProxy extends GenericFilterBean {
 	 */
 	private static final class VirtualFilterChain implements FilterChain {
 
+		/* 原始 servlet 容器的 FilterChain */
 		private final FilterChain originalChain;
 
+		/* 对于本次请求需要额外执行的 filter */
 		private final List<Filter> additionalFilters;
 
 		private final FirewalledRequest firewalledRequest;
 
+		/* additionalFilters size 计算结果 */
 		private final int size;
 
+		/* filters 当前坐标 */
 		private int currentPosition = 0;
 
 		private VirtualFilterChain(FirewalledRequest firewalledRequest, FilterChain chain,
@@ -348,6 +354,7 @@ public class FilterChainProxy extends GenericFilterBean {
 
 		@Override
 		public void doFilter(ServletRequest request, ServletResponse response) throws IOException, ServletException {
+			// 如果 filters 已经全部执行结束，将 request 重新引导到原来的 chain
 			if (this.currentPosition == this.size) {
 				if (logger.isDebugEnabled()) {
 					logger.debug(LogMessage.of(() -> "Secured " + requestLine(this.firewalledRequest)));
