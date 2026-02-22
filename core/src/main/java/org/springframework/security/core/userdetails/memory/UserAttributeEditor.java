@@ -37,9 +37,14 @@ public class UserAttributeEditor extends PropertyEditorSupport {
 			setValue(null);
 			return;
 		}
+//      properties value 示例
+//		password,ROLE_USER
+//		password,enabled,ROLE_USER,ROLE_ADMIN
+//		password,disabled,ROLE_USER
+
 		String[] tokens = StringUtils.commaDelimitedListToStringArray(s);
 		UserAttribute userAttrib = new UserAttribute();
-		List<String> authoritiesAsStrings = new ArrayList<>();
+		List<String> authoritiesAsStrings = new ArrayList<>(); // 权限
 		for (int i = 0; i < tokens.length; i++) {
 			String currentToken = tokens[i].trim();
 			if (i == 0) {

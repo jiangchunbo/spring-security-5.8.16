@@ -42,20 +42,29 @@ import org.springframework.util.Assert;
 
 /**
  * Models core user information retrieved by a {@link UserDetailsService}.
+ * <br><strong>表示由 {@link UserDetailsService} 检索到的核心用户信息。</strong>
  * <p>
  * Developers may use this class directly, subclass it, or write their own
  * {@link UserDetails} implementation from scratch.
+ * <br><strong>开发者可以直接使用该类、继承该类，或从零开始编写自己的 {@link UserDetails} 实现。</strong>
  * <p>
  * {@code equals} and {@code hashcode} implementations are based on the {@code username}
  * property only, as the intention is that lookups of the same user principal object (in a
  * user registry, for example) will match where the objects represent the same user, not
  * just when all the properties (authorities, password for example) are the same.
+ * <br><strong>{@code equals} 和 {@code hashcode} 的实现仅基于 {@code username} 属性，因为设计意图是：</strong>
+ * <br><strong>当对象表示同一用户主体时（例如在用户注册表中的查找），应当判定为匹配，</strong>
+ * <br><strong>而不是只有在所有属性（如权限、密码）都相同时才匹配。</strong>
  * <p>
  * Note that this implementation is not immutable. It implements the
  * {@code CredentialsContainer} interface, in order to allow the password to be erased
  * after authentication. This may cause side-effects if you are storing instances
  * in-memory and reusing them. If so, make sure you return a copy from your
  * {@code UserDetailsService} each time it is invoked.
+ * <br><strong>请注意，此实现并非不可变。</strong>
+ * <br><strong>它实现了 {@code CredentialsContainer} 接口，以便在认证后擦除密码。</strong>
+ * <br><strong>如果你在内存中存储并复用这些实例，这可能会产生副作用。</strong>
+ * <br><strong>因此，请确保每次调用 {@code UserDetailsService} 时都返回一个副本。</strong>
  *
  * @author Ben Alex
  * @author Luke Taylor
@@ -66,22 +75,31 @@ public class User implements UserDetails, CredentialsContainer {
 
 	private static final Log logger = LogFactory.getLog(User.class);
 
+	/* encode 之后的密码 */
 	private String password;
 
+	/* 用户名。按照设计意图，用户名应该可以唯一确定一个用户。 */
 	private final String username;
 
+	/* 用户的权限 */
 	private final Set<GrantedAuthority> authorities;
 
+	/* 账户是否未过期 */
 	private final boolean accountNonExpired;
 
+	/* 账户是否未锁定 */
 	private final boolean accountNonLocked;
 
+	/* 密码是否未过期 */
 	private final boolean credentialsNonExpired;
 
+	/* 账户是否启用 */
 	private final boolean enabled;
 
 	/**
 	 * Calls the more complex constructor with all boolean arguments set to {@code true}.
+	 * <p>
+	 * 调用更复杂的构造函数，并将所有布尔参数设置为 true。
 	 */
 	public User(String username, String password, Collection<? extends GrantedAuthority> authorities) {
 		this(username, password, true, true, true, true, authorities);
@@ -90,23 +108,28 @@ public class User implements UserDetails, CredentialsContainer {
 	/**
 	 * Construct the <code>User</code> with the details required by
 	 * {@link org.springframework.security.authentication.dao.DaoAuthenticationProvider}.
-	 * @param username the username presented to the
-	 * <code>DaoAuthenticationProvider</code>
-	 * @param password the password that should be presented to the
-	 * <code>DaoAuthenticationProvider</code>
-	 * @param enabled set to <code>true</code> if the user is enabled
-	 * @param accountNonExpired set to <code>true</code> if the account has not expired
+	 *
+	 * @param username              the username presented to the
+	 *                              <code>DaoAuthenticationProvider</code>
+	 *                              <p>呈现给<code>DaoAuthenticationProvider</code>的用户名
+	 * @param password              the password that should be presented to the
+	 *                              <code>DaoAuthenticationProvider</code>
+	 *                              <p>应该呈现给 <code>DaoAuthenticationProvider</code> 的密码
+	 * @param enabled               set to <code>true</code> if the user is enabled
+	 * @param accountNonExpired     set to <code>true</code> if the account has not expired
 	 * @param credentialsNonExpired set to <code>true</code> if the credentials have not
-	 * expired
-	 * @param accountNonLocked set to <code>true</code> if the account is not locked
-	 * @param authorities the authorities that should be granted to the caller if they
-	 * presented the correct username and password and the user is enabled. Not null.
+	 *                              expired
+	 * @param accountNonLocked      set to <code>true</code> if the account is not locked
+	 * @param authorities           the authorities that should be granted to the caller if they
+	 *                              presented the correct username and password and the user is enabled. Not null.
 	 * @throws IllegalArgumentException if a <code>null</code> value was passed either as
-	 * a parameter or as an element in the <code>GrantedAuthority</code> collection
+	 *                                  a parameter or as an element in the <code>GrantedAuthority</code> collection
 	 */
 	public User(String username, String password, boolean enabled, boolean accountNonExpired,
 			boolean credentialsNonExpired, boolean accountNonLocked,
 			Collection<? extends GrantedAuthority> authorities) {
+		// username 必须有值 (非 null 非空串)
+		// password 不能是 null
 		Assert.isTrue(username != null && !"".equals(username) && password != null,
 				"Cannot pass null or empty values to constructor");
 		this.username = username;
@@ -115,7 +138,7 @@ public class User implements UserDetails, CredentialsContainer {
 		this.accountNonExpired = accountNonExpired;
 		this.credentialsNonExpired = credentialsNonExpired;
 		this.accountNonLocked = accountNonLocked;
-		this.authorities = Collections.unmodifiableSet(sortAuthorities(authorities));
+		this.authorities = Collections.unmodifiableSet(sortAuthorities(authorities)); // 将权限排序之后存储
 	}
 
 	@Override
@@ -158,12 +181,19 @@ public class User implements UserDetails, CredentialsContainer {
 		this.password = null;
 	}
 
+	/**
+	 * 对 GrantedAuthority 进行排序，确保顺序是可预测的
+	 */
 	private static SortedSet<GrantedAuthority> sortAuthorities(Collection<? extends GrantedAuthority> authorities) {
+		// 权限集合不能是 null，至少也必须是一个空的集合
 		Assert.notNull(authorities, "Cannot pass a null GrantedAuthority collection");
+
 		// Ensure array iteration order is predictable (as per
 		// UserDetails.getAuthorities() contract and SEC-717)
+
 		SortedSet<GrantedAuthority> sortedAuthorities = new TreeSet<>(new AuthorityComparator());
 		for (GrantedAuthority grantedAuthority : authorities) {
+			// 每个权限项禁止是 null (但是权限字符串)
 			Assert.notNull(grantedAuthority, "GrantedAuthority list cannot contain any null elements");
 			sortedAuthorities.add(grantedAuthority);
 		}
@@ -209,6 +239,7 @@ public class User implements UserDetails, CredentialsContainer {
 
 	/**
 	 * Creates a UserBuilder with a specified user name
+	 *
 	 * @param username the username to use
 	 * @return the UserBuilder
 	 */
@@ -218,6 +249,7 @@ public class User implements UserDetails, CredentialsContainer {
 
 	/**
 	 * Creates a UserBuilder
+	 *
 	 * @return the UserBuilder
 	 */
 	public static UserBuilder builder() {
@@ -244,7 +276,7 @@ public class User implements UserDetails, CredentialsContainer {
 	 * // outputs {bcrypt}$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG
 	 * System.out.println(user.getPassword());
 	 * </code> </pre>
-	 *
+	 * <p>
 	 * This is not safe for production (it is intended for getting started experience)
 	 * because the password "password" is compiled into the source code and then is
 	 * included in memory at the time of creation. This means there are still ways to
@@ -252,7 +284,7 @@ public class User implements UserDetails, CredentialsContainer {
 	 * improvement to using plain text passwords since the UserDetails password is
 	 * securely hashed. This means if the UserDetails password is accidentally exposed,
 	 * the password is securely stored.
-	 *
+	 * <p>
 	 * In a production setting, it is recommended to hash the password ahead of time. For
 	 * example:
 	 *
@@ -271,6 +303,7 @@ public class User implements UserDetails, CredentialsContainer {
 	 *     .roles("USER")
 	 *     .build();
 	 * </code> </pre>
+	 *
 	 * @return a UserBuilder that automatically encodes the password with the default
 	 * PasswordEncoder
 	 * @deprecated Using this method is not considered safe for production, but is
@@ -283,6 +316,9 @@ public class User implements UserDetails, CredentialsContainer {
 	public static UserBuilder withDefaultPasswordEncoder() {
 		logger.warn("User.withDefaultPasswordEncoder() is considered unsafe for production "
 				+ "and is only intended for sample applications.");
+
+		// createDelegatingPasswordEncoder 意味着选择了 bcrypt 加密方式，所以 password() 必须使用明文
+
 		PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
 		return builder().passwordEncoder(encoder::encode);
 	}
@@ -308,15 +344,17 @@ public class User implements UserDetails, CredentialsContainer {
 			// Neither should ever be null as each entry is checked before adding it to
 			// the set. If the authority is null, it is a custom authority and should
 			// precede others.
-			if (g2.getAuthority() == null) {
+
+			// GrantedAuthority 对象本身不可能 null，因为 sort 阶段放进集合之前会检查
+			// 但是权限字符串可能是 null
+			if (g2.getAuthority() == null) { // null 权限要排在前面
 				return -1;
 			}
-			if (g1.getAuthority() == null) {
+			if (g1.getAuthority() == null) { // null 权限要排在前面
 				return 1;
 			}
 			return g1.getAuthority().compareTo(g2.getAuthority());
 		}
-
 	}
 
 	/**
@@ -327,6 +365,7 @@ public class User implements UserDetails, CredentialsContainer {
 
 		private String username;
 
+		/* 密码。加密/不加密 */
 		private String password;
 
 		private List<GrantedAuthority> authorities;
@@ -339,6 +378,7 @@ public class User implements UserDetails, CredentialsContainer {
 
 		private boolean disabled;
 
+		/* 密码的编码方式，本质上可以看作 PasswordEncoder.encode 方法(仅编码职责) */
 		private Function<String, String> passwordEncoder = (password) -> password;
 
 		/**
@@ -349,18 +389,20 @@ public class User implements UserDetails, CredentialsContainer {
 
 		/**
 		 * Populates the username. This attribute is required.
+		 *
 		 * @param username the username. Cannot be null.
 		 * @return the {@link UserBuilder} for method chaining (i.e. to populate
 		 * additional attributes for this user)
 		 */
 		public UserBuilder username(String username) {
-			Assert.notNull(username, "username cannot be null");
+			Assert.notNull(username, "username cannot be null"); // 此处又宽松到可以是空串
 			this.username = username;
 			return this;
 		}
 
 		/**
 		 * Populates the password. This attribute is required.
+		 *
 		 * @param password the password. Cannot be null.
 		 * @return the {@link UserBuilder} for method chaining (i.e. to populate
 		 * additional attributes for this user)
@@ -374,6 +416,7 @@ public class User implements UserDetails, CredentialsContainer {
 		/**
 		 * Encodes the current password (if non-null) and any future passwords supplied to
 		 * {@link #password(String)}.
+		 *
 		 * @param encoder the encoder to use
 		 * @return the {@link UserBuilder} for method chaining (i.e. to populate
 		 * additional attributes for this user)
@@ -390,26 +433,28 @@ public class User implements UserDetails, CredentialsContainer {
 		 * "ROLE_". This means the following:
 		 *
 		 * <code>
-		 *     builder.roles("USER","ADMIN");
+		 * builder.roles("USER","ADMIN");
 		 * </code>
-		 *
+		 * <p>
 		 * is equivalent to
 		 *
 		 * <code>
-		 *     builder.authorities("ROLE_USER","ROLE_ADMIN");
+		 * builder.authorities("ROLE_USER","ROLE_ADMIN");
 		 * </code>
 		 *
 		 * <p>
 		 * This attribute is required, but can also be populated with
 		 * {@link #authorities(String...)}.
 		 * </p>
+		 *
 		 * @param roles the roles for this user (i.e. USER, ADMIN, etc). Cannot be null,
-		 * contain null values or start with "ROLE_"
+		 *              contain null values or start with "ROLE_"
 		 * @return the {@link UserBuilder} for method chaining (i.e. to populate
 		 * additional attributes for this user)
 		 */
 		public UserBuilder roles(String... roles) {
 			List<GrantedAuthority> authorities = new ArrayList<>(roles.length);
+			// 如果权限是角色，角色字符串不能以 ROLE_ 开头
 			for (String role : roles) {
 				Assert.isTrue(!role.startsWith("ROLE_"),
 						() -> role + " cannot start with ROLE_ (it is automatically added)");
@@ -420,8 +465,9 @@ public class User implements UserDetails, CredentialsContainer {
 
 		/**
 		 * Populates the authorities. This attribute is required.
+		 *
 		 * @param authorities the authorities for this user. Cannot be null, or contain
-		 * null values
+		 *                    null values
 		 * @return the {@link UserBuilder} for method chaining (i.e. to populate
 		 * additional attributes for this user)
 		 * @see #roles(String...)
@@ -432,8 +478,9 @@ public class User implements UserDetails, CredentialsContainer {
 
 		/**
 		 * Populates the authorities. This attribute is required.
+		 *
 		 * @param authorities the authorities for this user. Cannot be null, or contain
-		 * null values
+		 *                    null values
 		 * @return the {@link UserBuilder} for method chaining (i.e. to populate
 		 * additional attributes for this user)
 		 * @see #roles(String...)
@@ -445,8 +492,9 @@ public class User implements UserDetails, CredentialsContainer {
 
 		/**
 		 * Populates the authorities. This attribute is required.
+		 *
 		 * @param authorities the authorities for this user (i.e. ROLE_USER, ROLE_ADMIN,
-		 * etc). Cannot be null, or contain null values
+		 *                    etc). Cannot be null, or contain null values
 		 * @return the {@link UserBuilder} for method chaining (i.e. to populate
 		 * additional attributes for this user)
 		 * @see #roles(String...)
@@ -457,6 +505,7 @@ public class User implements UserDetails, CredentialsContainer {
 
 		/**
 		 * Defines if the account is expired or not. Default is false.
+		 *
 		 * @param accountExpired true if the account is expired, false otherwise
 		 * @return the {@link UserBuilder} for method chaining (i.e. to populate
 		 * additional attributes for this user)
@@ -468,6 +517,7 @@ public class User implements UserDetails, CredentialsContainer {
 
 		/**
 		 * Defines if the account is locked or not. Default is false.
+		 *
 		 * @param accountLocked true if the account is locked, false otherwise
 		 * @return the {@link UserBuilder} for method chaining (i.e. to populate
 		 * additional attributes for this user)
@@ -479,6 +529,7 @@ public class User implements UserDetails, CredentialsContainer {
 
 		/**
 		 * Defines if the credentials are expired or not. Default is false.
+		 *
 		 * @param credentialsExpired true if the credentials are expired, false otherwise
 		 * @return the {@link UserBuilder} for method chaining (i.e. to populate
 		 * additional attributes for this user)
@@ -490,6 +541,7 @@ public class User implements UserDetails, CredentialsContainer {
 
 		/**
 		 * Defines if the account is disabled or not. Default is false.
+		 *
 		 * @param disabled true if the account is disabled, false otherwise
 		 * @return the {@link UserBuilder} for method chaining (i.e. to populate
 		 * additional attributes for this user)
@@ -500,7 +552,9 @@ public class User implements UserDetails, CredentialsContainer {
 		}
 
 		public UserDetails build() {
+			// 将 password 编码之后存储
 			String encodedPassword = this.passwordEncoder.apply(this.password);
+
 			return new User(this.username, encodedPassword, !this.disabled, !this.accountExpired,
 					!this.credentialsExpired, !this.accountLocked, this.authorities);
 		}

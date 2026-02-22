@@ -37,14 +37,28 @@ public interface GrantedAuthority extends Serializable {
 	 * access control decision by an {@link AccessDecisionManager} (or delegate), this
 	 * method should return such a <code>String</code>.
 	 * <p>
+	 * <strong>如果 <code>GrantedAuthority</code> 可以表示为一个 <code>String</code>，
+	 * 并且该 <code>String</code> 具有足够的精度可以被 {@link AccessDecisionManager}（或委托）
+	 * 用于访问控制决策，则此方法应该返回这样的 <code>String</code>。</strong>
+	 *
+	 * <p>
 	 * If the <code>GrantedAuthority</code> cannot be expressed with sufficient precision
 	 * as a <code>String</code>, <code>null</code> should be returned. Returning
 	 * <code>null</code> will require an <code>AccessDecisionManager</code> (or delegate)
 	 * to specifically support the <code>GrantedAuthority</code> implementation, so
 	 * returning <code>null</code> should be avoided unless actually required.
+	 * <p>
+	 * <strong>如果 <code>GrantedAuthority</code> 无法以足够的精度表示为 <code>String</code>，
+	 * 则应该返回 <code>null</code>。返回 <code>null</code> 将要求 <code>AccessDecisionManager</code>
+	 * （或委托）专门支持该 <code>GrantedAuthority</code> 实现，因此除非确实需要，
+	 * 否则应该避免返回 <code>null</code>。</strong>
+	 *
 	 * @return a representation of the granted authority (or <code>null</code> if the
 	 * granted authority cannot be expressed as a <code>String</code> with sufficient
 	 * precision).
+	 * <p>
+	 * <strong>授予权限的表示形式（如果授予的权限无法以足够精度表示为 <code>String</code>，
+	 * 则返回 <code>null</code>）。</strong>
 	 */
 	String getAuthority();
 

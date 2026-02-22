@@ -18,14 +18,22 @@ package org.springframework.security.core.userdetails;
 
 /**
  * Core interface which loads user-specific data.
+ * <br>
+ * <strong>用于加载用户特定数据的核心接口。</strong>
  * <p>
  * It is used throughout the framework as a user DAO and is the strategy used by the
  * {@link org.springframework.security.authentication.dao.DaoAuthenticationProvider
  * DaoAuthenticationProvider}.
+ * <p>
+ * <strong>该接口在框架中作为用户 DAO 使用，并且是</strong>
+ * {@link org.springframework.security.authentication.dao.DaoAuthenticationProvider
+ * DaoAuthenticationProvider} <strong>采用的策略接口。</strong>
  *
  * <p>
  * The interface requires only one read-only method, which simplifies support for new
  * data-access strategies.
+ * <br>
+ * <strong>该接口仅要求一个只读方法，从而简化了对新数据访问策略的支持。</strong>
  *
  * @author Ben Alex
  * @see org.springframework.security.authentication.dao.DaoAuthenticationProvider
@@ -40,12 +48,18 @@ public interface UserDetailsService {
 	 * object that comes back may have a username that is of a different case than what
 	 * was actually requested.
 	 * <p>
+	 * <strong>根据用户名定位用户。具体实现中的查询可能区分大小写，也可能不区分大小写，这取决于实现实例的配置。
+	 * 因此，返回的 <code>UserDetails</code> 对象中的用户名大小写可能与请求时传入的用户名不一致。</strong>
 	 *
 	 * @param username the username identifying the user whose data is required.
-	 * @return a fully populated user record (never <code>null</code>)
+	 *                 <p>
+	 *                 <strong>用于标识目标用户的用户名。</strong>
+	 * @return a fully populated user record (never <code>null</code>). <strong>完整填充的用户记录（绝不会为 <code>null</code>）。</strong>
 	 * @throws UsernameNotFoundException if the user could not be found or the user has no
 	 *                                   GrantedAuthority
-	 *                                   这个异常表示出外部需要关注这个异常
+	 *                                   <p>
+	 *                                   <strong>当用户不存在，或用户未被授予任何</strong>
+	 *                                   <strong>GrantedAuthority 时抛出。</strong>
 	 */
 	UserDetails loadUserByUsername(String username) throws UsernameNotFoundException;
 

@@ -55,6 +55,7 @@ public class InMemoryUserDetailsManager implements UserDetailsManager, UserDetai
 
 	protected final Log logger = LogFactory.getLog(getClass());
 
+	/* 基于内存的 UserDetails 管理 */
 	private final Map<String, MutableUserDetails> users = new HashMap<>();
 
 	private SecurityContextHolderStrategy securityContextHolderStrategy = SecurityContextHolder
@@ -81,8 +82,8 @@ public class InMemoryUserDetailsManager implements UserDetailsManager, UserDetai
 		Enumeration<?> names = users.propertyNames();
 		UserAttributeEditor editor = new UserAttributeEditor();
 		while (names.hasMoreElements()) {
-			String name = (String) names.nextElement();
-			editor.setAsText(users.getProperty(name));
+			String name = (String) names.nextElement(); // 用户名
+			editor.setAsText(users.getProperty(name)); // 属性值转换为 UserAttribute
 			UserAttribute attr = (UserAttribute) editor.getValue();
 			Assert.notNull(attr,
 					() -> "The entry with username '" + name + "' could not be converted to an UserDetails");

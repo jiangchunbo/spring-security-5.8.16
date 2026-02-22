@@ -201,11 +201,15 @@ public class JdbcUserDetailsManager extends JdbcDaoImpl implements UserDetailsMa
 	@Override
 	public void createUser(final UserDetails user) {
 		validateUserDetails(user);
+
+		// createUserSql 默认是 3 参数 SQL
 		getJdbcTemplate().update(this.createUserSql, (ps) -> {
 			ps.setString(1, user.getUsername());
 			ps.setString(2, user.getPassword());
 			ps.setBoolean(3, user.isEnabled());
 			int paramCount = ps.getParameterMetaData().getParameterCount();
+
+			// 如果是 6 个参数，那么需要填充更多 ps 的参数
 			if (paramCount > 3) {
 				// NOTE: acc_locked, acc_expired and creds_expired are also to be inserted
 				ps.setBoolean(4, !user.isAccountNonLocked());
@@ -213,6 +217,8 @@ public class JdbcUserDetailsManager extends JdbcDaoImpl implements UserDetailsMa
 				ps.setBoolean(6, !user.isCredentialsNonExpired());
 			}
 		});
+
+		// 如果启用权限功能，那么插入权限
 		if (getEnableAuthorities()) {
 			insertUserAuthorities(user);
 		}
@@ -225,6 +231,8 @@ public class JdbcUserDetailsManager extends JdbcDaoImpl implements UserDetailsMa
 			ps.setString(1, user.getPassword());
 			ps.setBoolean(2, user.isEnabled());
 			int paramCount = ps.getParameterMetaData().getParameterCount();
+
+			// 不管是 3 个参数，还是 6 个参数，最后一个总是 username
 			if (paramCount == 3) {
 				ps.setString(3, user.getUsername());
 			}
