@@ -45,7 +45,7 @@ import org.springframework.util.Assert;
  * and "authorities".
  *
  * <h4>The Users table</h4>
- *
+ * <p>
  * This table contains the login name, password and enabled status of the user.
  *
  * <table summary="The Users Table">
@@ -76,7 +76,7 @@ import org.springframework.util.Assert;
  * <td>authority</td>
  * </tr>
  * </table>
- *
+ * <p>
  * If you are using an existing schema you will have to set the queries
  * <tt>usersByUsernameQuery</tt> and <tt>authoritiesByUsernameQuery</tt> to match your
  * database setup (see {@link #DEF_USERS_BY_USERNAME_QUERY} and
@@ -112,18 +112,21 @@ public class JdbcDaoImpl extends JdbcDaoSupport implements UserDetailsService, M
 
 	public static final String DEFAULT_USER_SCHEMA_DDL_LOCATION = "org/springframework/security/core/userdetails/jdbc/users.ddl";
 
+	/* 根据 username 查询用户信息 */
 	// @formatter:off
 	public static final String DEF_USERS_BY_USERNAME_QUERY = "select username,password,enabled "
 			+ "from users "
 			+ "where username = ?";
 	// @formatter:on
 
+	/* 根据 username 查询用户权限 */
 	// @formatter:off
 	public static final String DEF_AUTHORITIES_BY_USERNAME_QUERY = "select username,authority "
 			+ "from authorities "
 			+ "where username = ?";
 	// @formatter:on
 
+	/* 权限组 */
 	// @formatter:off
 	public static final String DEF_GROUP_AUTHORITIES_BY_USERNAME_QUERY = "select g.id, g.group_name, ga.authority "
 			+ "from groups g, group_members gm, group_authorities ga "
@@ -132,18 +135,24 @@ public class JdbcDaoImpl extends JdbcDaoSupport implements UserDetailsService, M
 
 	protected MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();
 
+	/* 根据 username 查询用户信息 */
+	private String usersByUsernameQuery;
+
+	/* 根据 username 查询用户权限 */
 	private String authoritiesByUsernameQuery;
 
+	/* 根据 username 所属权限组查询用户权限 */
 	private String groupAuthoritiesByUsernameQuery;
-
-	private String usersByUsernameQuery;
 
 	private String rolePrefix = "";
 
+	/* 是否以 username 作为主键 */
 	private boolean usernameBasedPrimaryKey = true;
 
+	/* 开启 username 直接获取用户权限方式 */
 	private boolean enableAuthorities = true;
 
+	/* 开启 username 所属权限组获取用户权限方式 */
 	private boolean enableGroups;
 
 	public JdbcDaoImpl() {
@@ -162,9 +171,10 @@ public class JdbcDaoImpl extends JdbcDaoSupport implements UserDetailsService, M
 	/**
 	 * Allows subclasses to add their own granted authorities to the list to be returned
 	 * in the <tt>UserDetails</tt>.
-	 * @param username the username, for use by finder methods
+	 *
+	 * @param username    the username, for use by finder methods
 	 * @param authorities the current granted authorities, as populated from the
-	 * <code>authoritiesByUsername</code> mapping
+	 *                    <code>authoritiesByUsername</code> mapping
 	 */
 	protected void addCustomAuthorities(String username, List<GrantedAuthority> authorities) {
 	}
@@ -175,35 +185,39 @@ public class JdbcDaoImpl extends JdbcDaoSupport implements UserDetailsService, M
 
 	@Override
 	protected void initDao() throws ApplicationContextException {
+		// 检查是否开启了任何一个获取权限的方式
 		Assert.isTrue(this.enableAuthorities || this.enableGroups,
 				"Use of either authorities or groups must be enabled");
 	}
 
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-		// 从数据库查询
+		// 根据 username 查询用户信息
 		List<UserDetails> users = loadUsersByUsername(username);
 		if (users.size() == 0) {
 			this.logger.debug("Query returned no results for user '" + username + "'");
 			throw new UsernameNotFoundException(this.messages.getMessage("JdbcDaoImpl.notFound",
-					new Object[] { username }, "Username {0} not found"));
+					new Object[]{username}, "Username {0} not found"));
 		}
 
 		// 取第 1 个
 		UserDetails user = users.get(0); // contains no GrantedAuthority[]
 		Set<GrantedAuthority> dbAuthsSet = new HashSet<>();
 		if (this.enableAuthorities) {
-			dbAuthsSet.addAll(loadUserAuthorities(user.getUsername()));
+			dbAuthsSet.addAll(loadUserAuthorities(user.getUsername())); // 直接获取权限
 		}
 		if (this.enableGroups) {
-			dbAuthsSet.addAll(loadGroupAuthorities(user.getUsername()));
+			dbAuthsSet.addAll(loadGroupAuthorities(user.getUsername())); // 从权限组获取权限
 		}
+
 		List<GrantedAuthority> dbAuths = new ArrayList<>(dbAuthsSet);
+
+		// 自定义权限
 		addCustomAuthorities(user.getUsername(), dbAuths);
 		if (dbAuths.size() == 0) {
 			this.logger.debug("User '" + username + "' has no authorities and will be treated as 'not found'");
 			throw new UsernameNotFoundException(this.messages.getMessage("JdbcDaoImpl.noAuthority",
-					new Object[] { username }, "User {0} has no GrantedAuthority"));
+					new Object[]{username}, "User {0} has no GrantedAuthority"));
 		}
 
 		// Spring Security 这里是从数据库取出 UserDetails 又创建了一个新的 UserDetails
@@ -217,7 +231,7 @@ public class JdbcDaoImpl extends JdbcDaoSupport implements UserDetailsService, M
 	protected List<UserDetails> loadUsersByUsername(String username) {
 		// @formatter:off
 		RowMapper<UserDetails> mapper = (rs, rowNum) -> {
-			String username1 = rs.getString(1);
+			String username1 = rs.getString(1); // 第一列是主键？用户名？
 			String password = rs.getString(2);
 			boolean enabled = rs.getBoolean(3);
 			return new User(username1, password, enabled, true, true, true, AuthorityUtils.NO_AUTHORITIES);
@@ -228,10 +242,11 @@ public class JdbcDaoImpl extends JdbcDaoSupport implements UserDetailsService, M
 
 	/**
 	 * Loads authorities by executing the SQL from <tt>authoritiesByUsernameQuery</tt>.
+	 *
 	 * @return a list of GrantedAuthority objects for the user
 	 */
 	protected List<GrantedAuthority> loadUserAuthorities(String username) {
-		return getJdbcTemplate().query(this.authoritiesByUsernameQuery, new String[] { username }, (rs, rowNum) -> {
+		return getJdbcTemplate().query(this.authoritiesByUsernameQuery, new String[]{username}, (rs, rowNum) -> {
 			String roleName = JdbcDaoImpl.this.rolePrefix + rs.getString(2);
 			return new SimpleGrantedAuthority(roleName);
 		});
@@ -240,10 +255,11 @@ public class JdbcDaoImpl extends JdbcDaoSupport implements UserDetailsService, M
 	/**
 	 * Loads authorities by executing the SQL from
 	 * <tt>groupAuthoritiesByUsernameQuery</tt>.
+	 *
 	 * @return a list of GrantedAuthority objects for the user
 	 */
 	protected List<GrantedAuthority> loadGroupAuthorities(String username) {
-		return getJdbcTemplate().query(this.groupAuthoritiesByUsernameQuery, new String[] { username },
+		return getJdbcTemplate().query(this.groupAuthoritiesByUsernameQuery, new String[]{username},
 				(rs, rowNum) -> {
 					String roleName = getRolePrefix() + rs.getString(3);
 					return new SimpleGrantedAuthority(roleName);
@@ -253,14 +269,16 @@ public class JdbcDaoImpl extends JdbcDaoSupport implements UserDetailsService, M
 	/**
 	 * Can be overridden to customize the creation of the final UserDetailsObject which is
 	 * returned by the <tt>loadUserByUsername</tt> method.
-	 * @param username the name originally passed to loadUserByUsername
-	 * @param userFromUserQuery the object returned from the execution of the
+	 *
+	 * @param username            the name originally passed to loadUserByUsername
+	 * @param userFromUserQuery   the object returned from the execution of the
 	 * @param combinedAuthorities the combined array of authorities from all the authority
-	 * loading queries.
+	 *                            loading queries.
 	 * @return the final UserDetails which should be used in the system.
 	 */
 	protected UserDetails createUserDetails(String username, UserDetails userFromUserQuery,
 			List<GrantedAuthority> combinedAuthorities) {
+		// userFromUserQuery.getUsername 可能返回的是主键，要替换成真实的 username
 		String returnUsername = userFromUserQuery.getUsername();
 		if (!this.usernameBasedPrimaryKey) {
 			returnUsername = username;
@@ -276,6 +294,7 @@ public class JdbcDaoImpl extends JdbcDaoSupport implements UserDetailsService, M
 	 * query is {@link #DEF_AUTHORITIES_BY_USERNAME_QUERY}; when modifying this query,
 	 * ensure that all returned columns are mapped back to the same column positions as in
 	 * the default query.
+	 *
 	 * @param queryString The SQL query string to set
 	 */
 	public void setAuthoritiesByUsernameQuery(String queryString) {
@@ -292,6 +311,7 @@ public class JdbcDaoImpl extends JdbcDaoSupport implements UserDetailsService, M
 	 * default query is {@link #DEF_GROUP_AUTHORITIES_BY_USERNAME_QUERY}; when modifying
 	 * this query, ensure that all returned columns are mapped back to the same column
 	 * positions as in the default query.
+	 *
 	 * @param queryString The SQL query string to set
 	 */
 	public void setGroupAuthoritiesByUsernameQuery(String queryString) {
@@ -304,6 +324,7 @@ public class JdbcDaoImpl extends JdbcDaoSupport implements UserDetailsService, M
 	 * example be used to add the <tt>ROLE_</tt> prefix expected to exist in role names
 	 * (by default) by some other Spring Security classes, in the case that the prefix is
 	 * not already present in the db.
+	 *
 	 * @param rolePrefix the new prefix
 	 */
 	public void setRolePrefix(String rolePrefix) {
@@ -322,9 +343,10 @@ public class JdbcDaoImpl extends JdbcDaoSupport implements UserDetailsService, M
 	 * <code>UserDetails</code>. If <code>false</code>, the class will use the
 	 * {@link #loadUserByUsername(String)} derived username in the returned
 	 * <code>UserDetails</code>.
+	 *
 	 * @param usernameBasedPrimaryKey <code>true</code> if the mapping queries return the
-	 * username <code>String</code>, or <code>false</code> if the mapping returns a
-	 * database primary key.
+	 *                                username <code>String</code>, or <code>false</code> if the mapping returns a
+	 *                                database primary key.
 	 */
 	public void setUsernameBasedPrimaryKey(boolean usernameBasedPrimaryKey) {
 		this.usernameBasedPrimaryKey = usernameBasedPrimaryKey;
@@ -345,6 +367,7 @@ public class JdbcDaoImpl extends JdbcDaoSupport implements UserDetailsService, M
 	 * <pre>
 	 * &quot;select username,password,'true' as enabled from users where username = ?&quot;
 	 * </pre>
+	 *
 	 * @param usersByUsernameQueryString The query string to set
 	 */
 	public void setUsersByUsernameQuery(String usersByUsernameQueryString) {
@@ -368,6 +391,7 @@ public class JdbcDaoImpl extends JdbcDaoSupport implements UserDetailsService, M
 
 	/**
 	 * Enables support for group authorities. Defaults to false
+	 *
 	 * @param enableGroups
 	 */
 	public void setEnableGroups(boolean enableGroups) {

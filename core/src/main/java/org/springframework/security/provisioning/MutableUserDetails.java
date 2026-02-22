@@ -19,6 +19,8 @@ package org.springframework.security.provisioning;
 import org.springframework.security.core.userdetails.UserDetails;
 
 /**
+ * 这个类没有用 public 修饰，也就是只是被 package 内部使用
+ *
  * @author Luke Taylor
  * @since 3.1
  */

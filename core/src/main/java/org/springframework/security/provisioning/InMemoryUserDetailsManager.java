@@ -119,14 +119,20 @@ public class InMemoryUserDetailsManager implements UserDetailsManager, UserDetai
 
 	@Override
 	public void changePassword(String oldPassword, String newPassword) {
+		// 当前线程必须在安全上下文中
 		Authentication currentUser = this.securityContextHolderStrategy.getContext().getAuthentication();
 		if (currentUser == null) {
 			// This would indicate bad coding somewhere
 			throw new AccessDeniedException(
 					"Can't change password as no Authentication object found in context " + "for current user.");
 		}
+
+		// 获取安全上下文的用户 username
 		String username = currentUser.getName();
 		this.logger.debug(LogMessage.format("Changing password for user '%s'", username));
+
+
+		// 必须确保用户知道 oldPassword
 		// If an authentication manager has been set, re-authenticate the user with the
 		// supplied password.
 		if (this.authenticationManager != null) {

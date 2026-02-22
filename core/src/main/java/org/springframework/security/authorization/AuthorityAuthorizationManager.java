@@ -51,6 +51,7 @@ public final class AuthorityAuthorizationManager<T> implements AuthorizationMana
 	/**
 	 * Sets the {@link RoleHierarchy} to be used. Default is {@link NullRoleHierarchy}.
 	 * Cannot be null.
+	 *
 	 * @param roleHierarchy the {@link RoleHierarchy} to use
 	 * @since 5.8
 	 */
@@ -62,9 +63,10 @@ public final class AuthorityAuthorizationManager<T> implements AuthorizationMana
 	/**
 	 * Creates an instance of {@link AuthorityAuthorizationManager} with the provided
 	 * authority.
+	 *
 	 * @param role the authority to check for prefixed with "ROLE_". Role should not start
-	 * with "ROLE_" since it is automatically prepended already.
-	 * @param <T> the type of object being authorized
+	 *             with "ROLE_" since it is automatically prepended already.
+	 * @param <T>  the type of object being authorized
 	 * @return the new instance
 	 */
 	public static <T> AuthorityAuthorizationManager<T> hasRole(String role) {
@@ -77,8 +79,9 @@ public final class AuthorityAuthorizationManager<T> implements AuthorizationMana
 	/**
 	 * Creates an instance of {@link AuthorityAuthorizationManager} with the provided
 	 * authority.
+	 *
 	 * @param authority the authority to check for
-	 * @param <T> the type of object being authorized
+	 * @param <T>       the type of object being authorized
 	 * @return the new instance
 	 */
 	public static <T> AuthorityAuthorizationManager<T> hasAuthority(String authority) {
@@ -89,9 +92,10 @@ public final class AuthorityAuthorizationManager<T> implements AuthorizationMana
 	/**
 	 * Creates an instance of {@link AuthorityAuthorizationManager} with the provided
 	 * authorities.
+	 *
 	 * @param roles the authorities to check for prefixed with "ROLE_". Each role should
-	 * not start with "ROLE_" since it is automatically prepended already.
-	 * @param <T> the type of object being authorized
+	 *              not start with "ROLE_" since it is automatically prepended already.
+	 * @param <T>   the type of object being authorized
 	 * @return the new instance
 	 */
 	public static <T> AuthorityAuthorizationManager<T> hasAnyRole(String... roles) {
@@ -101,9 +105,10 @@ public final class AuthorityAuthorizationManager<T> implements AuthorizationMana
 	/**
 	 * Creates an instance of {@link AuthorityAuthorizationManager} with the provided
 	 * authorities.
+	 *
 	 * @param rolePrefix the role prefix for <code>roles</code>
-	 * @param roles the authorities to check for prefixed with <code>rolePrefix</code>
-	 * @param <T> the type of object being authorized
+	 * @param roles      the authorities to check for prefixed with <code>rolePrefix</code>
+	 * @param <T>        the type of object being authorized
 	 * @return the new instance
 	 */
 	public static <T> AuthorityAuthorizationManager<T> hasAnyRole(String rolePrefix, String[] roles) {
@@ -116,8 +121,9 @@ public final class AuthorityAuthorizationManager<T> implements AuthorizationMana
 	/**
 	 * Creates an instance of {@link AuthorityAuthorizationManager} with the provided
 	 * authorities.
+	 *
 	 * @param authorities the authorities to check for
-	 * @param <T> the type of object being authorized
+	 * @param <T>         the type of object being authorized
 	 * @return the new instance
 	 */
 	public static <T> AuthorityAuthorizationManager<T> hasAnyAuthority(String... authorities) {
@@ -141,8 +147,9 @@ public final class AuthorityAuthorizationManager<T> implements AuthorizationMana
 	/**
 	 * Determines if the current user is authorized by evaluating if the
 	 * {@link Authentication} contains a specified authority.
+	 *
 	 * @param authentication the {@link Supplier} of the {@link Authentication} to check
-	 * @param object the {@link T} object to check
+	 * @param object         the {@link T} object to check
 	 * @return an {@link AuthorizationDecision}
 	 */
 	@Override
@@ -166,6 +173,7 @@ public final class AuthorityAuthorizationManager<T> implements AuthorizationMana
 	}
 
 	private Collection<? extends GrantedAuthority> getGrantedAuthorities(Authentication authentication) {
+		// 角色层次
 		return this.roleHierarchy.getReachableGrantedAuthorities(authentication.getAuthorities());
 	}
 

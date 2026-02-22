@@ -124,6 +124,7 @@ public class JdbcUserDetailsManager extends JdbcDaoImpl implements UserDetailsMa
 
 	private String userExistsSql = DEF_USER_EXISTS_SQL;
 
+	/* 仅修改密码 */
 	private String changePasswordSql = DEF_CHANGE_PASSWORD_SQL;
 
 	private String findAllGroupsSql = DEF_FIND_GROUPS_SQL;
@@ -244,10 +245,15 @@ public class JdbcUserDetailsManager extends JdbcDaoImpl implements UserDetailsMa
 				ps.setString(6, user.getUsername());
 			}
 		});
+
+		// 启用权限，删除关联的权限数据
 		if (getEnableAuthorities()) {
+			// 清空 + 重建
 			deleteUserAuthorities(user.getUsername());
 			insertUserAuthorities(user);
 		}
+
+		// 删除缓存
 		this.userCache.removeUserFromCache(user.getUsername());
 	}
 
@@ -259,10 +265,15 @@ public class JdbcUserDetailsManager extends JdbcDaoImpl implements UserDetailsMa
 
 	@Override
 	public void deleteUser(String username) {
+		// 删除用户关联的权限
 		if (getEnableAuthorities()) {
 			deleteUserAuthorities(username);
 		}
+
+		// 删除用户
 		getJdbcTemplate().update(this.deleteUserSql, username);
+
+		// 删除缓存
 		this.userCache.removeUserFromCache(username);
 	}
 
@@ -290,11 +301,17 @@ public class JdbcUserDetailsManager extends JdbcDaoImpl implements UserDetailsMa
 			this.logger.debug("No authentication manager set. Password won't be re-checked.");
 		}
 		this.logger.debug("Changing password for user '" + username + "'");
+
+		// 执行修改密码 SQL
 		getJdbcTemplate().update(this.changePasswordSql, newPassword, username);
+
+		// 密码修改完毕需要刷新 SecurityContext
 		Authentication authentication = createNewAuthentication(currentUser, newPassword);
 		SecurityContext context = this.securityContextHolderStrategy.createEmptyContext();
 		context.setAuthentication(authentication);
 		this.securityContextHolderStrategy.setContext(context);
+
+		// 删除缓存
 		this.userCache.removeUserFromCache(username);
 	}
 
