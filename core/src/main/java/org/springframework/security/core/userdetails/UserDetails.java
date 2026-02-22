@@ -36,6 +36,7 @@ import org.springframework.security.core.GrantedAuthority;
  * <strong>实现类不会被 Spring Security 直接用于安全决策，而是用于存储用户信息，随后会封装进
  * {@link Authentication} 对象的用户信息。这使得邮箱、电话等与安全无直接关系的信息
  * 也能集中存放在一个方便的位置。</strong>
+ *
  * <p>
  * Concrete implementations must take particular care to ensure the non-null contract
  * detailed for each method is enforced. See

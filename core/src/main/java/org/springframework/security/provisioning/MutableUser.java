@@ -30,6 +30,7 @@ class MutableUser implements MutableUserDetails {
 
 	private static final long serialVersionUID = SpringSecurityCoreVersion.SERIAL_VERSION_UID;
 
+	/* 密码。从 user 初始化，后续读写该字段 */
 	private String password;
 
 	private final UserDetails delegate;
