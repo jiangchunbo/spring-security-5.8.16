@@ -80,6 +80,7 @@ public class InMemoryUserDetailsManager implements UserDetailsManager, UserDetai
 
 	public InMemoryUserDetailsManager(Properties users) {
 		Enumeration<?> names = users.propertyNames();
+		// UserAttributeEditor 能够解析文本，并得到一个 UserAttribute
 		UserAttributeEditor editor = new UserAttributeEditor();
 		while (names.hasMoreElements()) {
 			String name = (String) names.nextElement(); // 用户名

@@ -140,13 +140,10 @@ public abstract class WebSecurityConfigurerAdapter implements WebSecurityConfigu
 
 	private AuthenticationConfiguration authenticationConfiguration;
 
-	/**
-	 * 两个 Builder。其一
-	 */
 	private AuthenticationManagerBuilder authenticationBuilder;
 
 	/**
-	 * 两个 Builder。其二，用于本地构建
+	 * 当前 configurer 持有的 AuthenticationManagerBuilder
 	 */
 	private AuthenticationManagerBuilder localConfigureAuthenticationBldr;
 
@@ -161,6 +158,7 @@ public abstract class WebSecurityConfigurerAdapter implements WebSecurityConfigu
 
 	private AuthenticationTrustResolver trustResolver = new AuthenticationTrustResolverImpl();
 
+	/* 用于产生 FilterChain。只会创建一次 */
 	private HttpSecurity http;
 
 	private boolean disableDefaults;
@@ -233,13 +231,15 @@ public abstract class WebSecurityConfigurerAdapter implements WebSecurityConfigu
 
 	/**
 	 * Creates the {@link HttpSecurity} or returns the current instance
+	 * <p>
+	 * 创建或者返回当前的 HttpSecurity
 	 *
 	 * @return the {@link HttpSecurity}
 	 * @throws Exception
 	 */
 	@SuppressWarnings({"rawtypes", "unchecked"})
 	protected final HttpSecurity getHttp() throws Exception {
-		// 确保只会创建一次
+		// 确保只会创建一次 HttpSecurity
 		if (this.http != null) {
 			return this.http;
 		}
@@ -445,12 +445,18 @@ public abstract class WebSecurityConfigurerAdapter implements WebSecurityConfigu
 	@Autowired
 	public void setApplicationContext(ApplicationContext context) {
 		this.context = context;
+
+		// AutowireBeanFactoryObjectPostProcessor
 		ObjectPostProcessor<Object> objectPostProcessor = context.getBean(ObjectPostProcessor.class);
+
+		// 准备 LazyPasswordEncoder
 		LazyPasswordEncoder passwordEncoder = new LazyPasswordEncoder(context);
-		this.authenticationBuilder = new DefaultPasswordEncoderAuthenticationManagerBuilder(objectPostProcessor,
-				passwordEncoder);
-		this.localConfigureAuthenticationBldr = new DefaultPasswordEncoderAuthenticationManagerBuilder(
-				objectPostProcessor, passwordEncoder) {
+
+		// 共享
+		this.authenticationBuilder = new DefaultPasswordEncoderAuthenticationManagerBuilder(objectPostProcessor, passwordEncoder);
+
+		// 本地使用
+		this.localConfigureAuthenticationBldr = new DefaultPasswordEncoderAuthenticationManagerBuilder(objectPostProcessor, passwordEncoder) {
 
 			@Override
 			public AuthenticationManagerBuilder eraseCredentials(boolean eraseCredentials) {
@@ -459,8 +465,7 @@ public abstract class WebSecurityConfigurerAdapter implements WebSecurityConfigu
 			}
 
 			@Override
-			public AuthenticationManagerBuilder authenticationEventPublisher(
-					AuthenticationEventPublisher eventPublisher) {
+			public AuthenticationManagerBuilder authenticationEventPublisher(AuthenticationEventPublisher eventPublisher) {
 				WebSecurityConfigurerAdapter.this.authenticationBuilder.authenticationEventPublisher(eventPublisher);
 				return super.authenticationEventPublisher(eventPublisher);
 			}

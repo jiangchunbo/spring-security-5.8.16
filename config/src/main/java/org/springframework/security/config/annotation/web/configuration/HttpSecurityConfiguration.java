@@ -105,10 +105,10 @@ class HttpSecurityConfiguration {
 	@Scope("prototype")
 	HttpSecurity httpSecurity() throws Exception {
 		// 创建 PasswordEncoder
-		WebSecurityConfigurerAdapter.LazyPasswordEncoder passwordEncoder = new WebSecurityConfigurerAdapter.LazyPasswordEncoder(
-				this.context);
-		AuthenticationManagerBuilder authenticationBuilder = new WebSecurityConfigurerAdapter.DefaultPasswordEncoderAuthenticationManagerBuilder(
-				this.objectPostProcessor, passwordEncoder);
+		WebSecurityConfigurerAdapter.LazyPasswordEncoder passwordEncoder = new WebSecurityConfigurerAdapter.LazyPasswordEncoder(this.context);
+
+		// AuthenticationManagerBuilder
+		AuthenticationManagerBuilder authenticationBuilder = new WebSecurityConfigurerAdapter.DefaultPasswordEncoderAuthenticationManagerBuilder(this.objectPostProcessor, passwordEncoder);
 		authenticationBuilder.parentAuthenticationManager(authenticationManager());
 		authenticationBuilder.authenticationEventPublisher(getAuthenticationEventPublisher());
 		HttpSecurity http = new HttpSecurity(this.objectPostProcessor, authenticationBuilder, createSharedObjects());

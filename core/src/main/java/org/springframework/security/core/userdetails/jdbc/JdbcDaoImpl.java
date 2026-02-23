@@ -280,7 +280,7 @@ public class JdbcDaoImpl extends JdbcDaoSupport implements UserDetailsService, M
 			List<GrantedAuthority> combinedAuthorities) {
 		// userFromUserQuery.getUsername 可能返回的是主键，要替换成真实的 username
 		String returnUsername = userFromUserQuery.getUsername();
-		if (!this.usernameBasedPrimaryKey) {
+		if (!this.usernameBasedPrimaryKey) { // usernameBasedPrimaryKey==false
 			returnUsername = username;
 		}
 		return new User(returnUsername, userFromUserQuery.getPassword(), userFromUserQuery.isEnabled(),

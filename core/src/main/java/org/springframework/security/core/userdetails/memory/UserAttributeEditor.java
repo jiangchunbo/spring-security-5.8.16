@@ -31,6 +31,9 @@ import org.springframework.util.StringUtils;
  */
 public class UserAttributeEditor extends PropertyEditorSupport {
 
+	/**
+	 * setValue 以字符串的形式
+	 */
 	@Override
 	public void setAsText(String s) throws IllegalArgumentException {
 		if (!StringUtils.hasText(s)) {

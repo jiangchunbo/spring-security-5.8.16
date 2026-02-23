@@ -109,8 +109,7 @@ public class User implements UserDetails, CredentialsContainer {
 	 * Construct the <code>User</code> with the details required by
 	 * {@link org.springframework.security.authentication.dao.DaoAuthenticationProvider}.
 	 *
-	 * @param username              the username presented to the
-	 *                              <code>DaoAuthenticationProvider</code>
+	 * @param username              the username presented to the <code>DaoAuthenticationProvider</code>
 	 *                              <p>呈现给<code>DaoAuthenticationProvider</code>的用户名
 	 * @param password              the password that should be presented to the
 	 *                              <code>DaoAuthenticationProvider</code>
@@ -128,8 +127,8 @@ public class User implements UserDetails, CredentialsContainer {
 	public User(String username, String password, boolean enabled, boolean accountNonExpired,
 			boolean credentialsNonExpired, boolean accountNonLocked,
 			Collection<? extends GrantedAuthority> authorities) {
-		// username 必须有值 (非 null 非空串)
-		// password 不能是 null
+		// username 必须有值 (not null + not empty)
+		// password not null
 		Assert.isTrue(username != null && !"".equals(username) && password != null,
 				"Cannot pass null or empty values to constructor");
 		this.username = username;
