@@ -99,22 +99,21 @@ import org.springframework.web.accept.HeaderContentNegotiationStrategy;
  * @see EnableWebSecurity
  * @deprecated Use a {@link org.springframework.security.web.SecurityFilterChain} Bean to
  * configure {@link HttpSecurity} or a {@link WebSecurityCustomizer} Bean to configure
- * {@link WebSecurity}. <pre>
- *     &#64;Bean
- *     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
- *         http
- *             .authorizeHttpRequests((authz) ->
- *                 authz.anyRequest().authenticated()
- *             );
- *             // ...
- *         return http.build();
- *     }
+ * {@link WebSecurity}.
+ * <pre>{@code
+ * @Bean
+ * public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+ *     http.authorizeHttpRequests((authz) -> authz.anyRequest().authenticated());
+ *     // ...
+ *     return http.build();
+ * }
  *
- *    &#64;Bean
- *    public WebSecurityCustomizer webSecurityCustomizer() {
- *        return (web) -> web.ignoring().antMatchers("/resources/**");
- *    }
- * </pre> See the <a href=
+ * @Bean
+ * public WebSecurityCustomizer webSecurityCustomizer() {
+ *     return (web) -> web.ignoring().antMatchers("/resources/**");
+ * }
+ * }</pre>
+ * See the <a href=
  * "https://spring.io/blog/2022/02/21/spring-security-without-the-websecurityconfigureradapter">Spring
  * Security without WebSecurityConfigurerAdapter</a> for more details.
  */
@@ -140,10 +139,13 @@ public abstract class WebSecurityConfigurerAdapter implements WebSecurityConfigu
 
 	private AuthenticationConfiguration authenticationConfiguration;
 
+	/**
+	 * 子 AuthenticationManager
+	 */
 	private AuthenticationManagerBuilder authenticationBuilder;
 
 	/**
-	 * 当前 configurer 持有的 AuthenticationManagerBuilder
+	 * local AuthenticationManagerBuilder 用户可以定制
 	 */
 	private AuthenticationManagerBuilder localConfigureAuthenticationBldr;
 
@@ -187,6 +189,9 @@ public abstract class WebSecurityConfigurerAdapter implements WebSecurityConfigu
 	 * to obtain an {@link AuthenticationManager}. If overridden, the
 	 * {@link AuthenticationManagerBuilder} should be used to specify the
 	 * {@link AuthenticationManager}.
+	 *
+	 * 用于 authenticationManager() 默认实现尝试获取 AuthenticationManager。
+	 * 如果你重写了这个方法，应当使用传入的 AuthenticationManagerBuilder 来指定 AuthenticationManager。
 	 *
 	 * <p>
 	 * The {@link #authenticationManagerBean()} method can be used to expose the resulting
@@ -244,11 +249,11 @@ public abstract class WebSecurityConfigurerAdapter implements WebSecurityConfigu
 			return this.http;
 		}
 
-		// 事件发布
+		// 给 local builder 设置 eventPublisher
 		AuthenticationEventPublisher eventPublisher = getAuthenticationEventPublisher();
 		this.localConfigureAuthenticationBldr.authenticationEventPublisher(eventPublisher);
 
-		// 构建/获取 AuthenticationManager
+		// 获取 AuthenticationManager (默认获取 local builder 构建的)
 		AuthenticationManager authenticationManager = authenticationManager();
 
 		// 设置作为 parent 认证器
@@ -261,17 +266,18 @@ public abstract class WebSecurityConfigurerAdapter implements WebSecurityConfigu
 		this.http = new HttpSecurity(this.objectPostProcessor, this.authenticationBuilder, sharedObjects);
 
 		if (!this.disableDefaults) {
+			// 设置一些默认的 http 过滤器
 			applyDefaultConfiguration(this.http);
+
 			ClassLoader classLoader = this.context.getClassLoader();
-			// 找到所有的 AbstractHttpConfigurer，并使用他们
-			List<AbstractHttpConfigurer> defaultHttpConfigurers = SpringFactoriesLoader
-					.loadFactories(AbstractHttpConfigurer.class, classLoader);
+			// 发现所有 HttpSecurity 的 configurer，并 apply 它们
+			List<AbstractHttpConfigurer> defaultHttpConfigurers = SpringFactoriesLoader.loadFactories(AbstractHttpConfigurer.class, classLoader);
 			for (AbstractHttpConfigurer configurer : defaultHttpConfigurers) {
 				this.http.apply(configurer);
 			}
 		}
 
-		// 配置 httpFilter
+		// 默认所有接口都需要认证，开启 form 和 http basic 认证
 		configure(this.http);
 		return this.http;
 	}
@@ -455,7 +461,7 @@ public abstract class WebSecurityConfigurerAdapter implements WebSecurityConfigu
 		// 共享
 		this.authenticationBuilder = new DefaultPasswordEncoderAuthenticationManagerBuilder(objectPostProcessor, passwordEncoder);
 
-		// 本地使用
+		// 本地使用 (桥接两个配置: 密码擦除、认证事件发布)
 		this.localConfigureAuthenticationBldr = new DefaultPasswordEncoderAuthenticationManagerBuilder(objectPostProcessor, passwordEncoder) {
 
 			@Override

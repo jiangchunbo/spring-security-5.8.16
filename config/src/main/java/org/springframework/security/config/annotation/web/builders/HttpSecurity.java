@@ -189,11 +189,15 @@ public final class HttpSecurity extends AbstractConfiguredSecurityBuilder<Defaul
 
 		Assert.notNull(authenticationBuilder, "authenticationBuilder cannot be null");
 
-		// 设置一个 AuthenticationManagerBuilder ? builder ?
+		// 设置共享对象 AuthenticationManagerBuilder
 		setSharedObject(AuthenticationManagerBuilder.class, authenticationBuilder);
+
+		// 设置其他共享对象
 		for (Map.Entry<Class<?>, Object> entry : sharedObjects.entrySet()) {
 			setSharedObject((Class<Object>) entry.getKey(), entry.getValue());
 		}
+
+		// sharedObjects 必须包含 ApplicationContext
 		ApplicationContext context = (ApplicationContext) sharedObjects.get(ApplicationContext.class);
 		this.requestMatcherConfigurer = new RequestMatcherConfigurer(context);
 	}

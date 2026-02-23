@@ -208,6 +208,8 @@ public class ProviderManager implements AuthenticationManager, MessageSourceAwar
 				lastException = ex;
 			}
 		}
+
+		// child 没有办法认证才交给 parent
 		if (result == null && this.parent != null) {
 			// Allow the parent to try.
 			try {

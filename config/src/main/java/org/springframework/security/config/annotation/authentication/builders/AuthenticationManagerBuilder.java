@@ -88,6 +88,7 @@ public class AuthenticationManagerBuilder
 	 * authentication
 	 */
 	public AuthenticationManagerBuilder parentAuthenticationManager(AuthenticationManager authenticationManager) {
+		// 保持父子的密码擦除策略一致
 		if (authenticationManager instanceof ProviderManager) {
 			eraseCredentials(((ProviderManager) authenticationManager).isEraseCredentialsAfterAuthentication());
 		}
@@ -243,9 +244,13 @@ public class AuthenticationManagerBuilder
 		// 得到的就是 ProviderManager
 		ProviderManager providerManager = new ProviderManager(this.authenticationProviders,
 				this.parentAuthenticationManager);
+
+		// 设置在认证之后擦除密码
 		if (this.eraseCredentials != null) {
 			providerManager.setEraseCredentialsAfterAuthentication(this.eraseCredentials);
 		}
+
+		// 设置 eventPublisher
 		if (this.eventPublisher != null) {
 			providerManager.setAuthenticationEventPublisher(this.eventPublisher);
 		}
