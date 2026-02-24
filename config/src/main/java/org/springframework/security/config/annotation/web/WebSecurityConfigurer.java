@@ -44,12 +44,6 @@ import org.springframework.security.web.SecurityFilterChain;
  */
 public interface WebSecurityConfigurer<T extends SecurityBuilder<Filter>> extends SecurityConfigurer<Filter, T> {
 
-	// 这个类设计出来用于表示实现类能够 build 出一个用于 Web 安全的 Filter
-
-	// 或者，也可以认为专门就是为了 WebSecurity 这个 builder 设计的
-
-	// WebSecurityConfigurerAdapter 进一步固定了泛型参数 T 为 WebSecurity
-
-	// 因此这个接口大概率是为了 WebSecurityConfigurerAdapter (现已经不推荐)
+	// 现在已经非常不推荐使用了
 
 }
