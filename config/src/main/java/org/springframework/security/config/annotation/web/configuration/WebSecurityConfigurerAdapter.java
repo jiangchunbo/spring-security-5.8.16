@@ -279,6 +279,7 @@ public abstract class WebSecurityConfigurerAdapter implements WebSecurityConfigu
 
 		// 默认所有接口都需要认证，开启 form 和 http basic 认证
 		configure(this.http);
+
 		return this.http;
 	}
 
@@ -466,12 +467,14 @@ public abstract class WebSecurityConfigurerAdapter implements WebSecurityConfigu
 
 			@Override
 			public AuthenticationManagerBuilder eraseCredentials(boolean eraseCredentials) {
+				// 设置密码擦除
 				WebSecurityConfigurerAdapter.this.authenticationBuilder.eraseCredentials(eraseCredentials);
 				return super.eraseCredentials(eraseCredentials);
 			}
 
 			@Override
 			public AuthenticationManagerBuilder authenticationEventPublisher(AuthenticationEventPublisher eventPublisher) {
+				// 设置认证事件发布
 				WebSecurityConfigurerAdapter.this.authenticationBuilder.authenticationEventPublisher(eventPublisher);
 				return super.authenticationEventPublisher(eventPublisher);
 			}

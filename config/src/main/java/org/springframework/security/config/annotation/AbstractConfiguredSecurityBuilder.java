@@ -68,28 +68,35 @@ public abstract class AbstractConfiguredSecurityBuilder<O, B extends SecurityBui
 	private final Log logger = LogFactory.getLog(getClass());
 
 	/**
-	 * 核心的成员变量，{@code Class -> List<SecurityConfigurer<O, B>>>}
+	 * 配置器注册表
 	 *
 	 * @see AbstractConfiguredSecurityBuilder#allowConfigurersOfSameType
 	 */
 	private final LinkedHashMap<Class<? extends SecurityConfigurer<O, B>>, List<SecurityConfigurer<O, B>>> configurers = new LinkedHashMap<>();
 
 	/**
-	 * init 过程中添加的配置器
-	 * <p>
-	 * 注意：这是一个 private 属性
+	 * 初始化过程中添加的 Configurer
 	 */
 	private final List<SecurityConfigurer<O, B>> configurersAddedInInitializing = new ArrayList<>();
 
+	/**
+	 * 共享对象池
+	 */
 	private final Map<Class<?>, Object> sharedObjects = new HashMap<>();
 
 	/**
-	 * 是否允许配置相同类型的 configurer
+	 * 是否允许配置相同类型的 Configurer
 	 */
 	private final boolean allowConfigurersOfSameType;
 
+	/**
+	 * 构建状态
+	 */
 	private BuildState buildState = BuildState.UNBUILT;
 
+	/**
+	 * 特指 AutowireBeanFactoryObjectPostProcessor
+	 */
 	private ObjectPostProcessor<Object> objectPostProcessor;
 
 	/**

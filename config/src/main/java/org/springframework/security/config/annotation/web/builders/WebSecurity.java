@@ -92,6 +92,7 @@ public final class WebSecurity extends AbstractConfiguredSecurityBuilder<Filter,
 
 	private final List<RequestMatcher> ignoredRequests = new ArrayList<>();
 
+	// SecurityFilterChainBuilder 注册表。里面全都是 HttpSecurity
 	private final List<SecurityBuilder<? extends SecurityFilterChain>> securityFilterChainBuilders = new ArrayList<>();
 
 	private IgnoredRequestConfigurer ignoredRequestRegistry;
@@ -134,6 +135,11 @@ public final class WebSecurity extends AbstractConfiguredSecurityBuilder<Filter,
 	 * requests that are registered should be that of only static resources. For requests
 	 * that are dynamic, consider mapping the request to allow all users instead.
 	 * </p>
+	 *
+	 * 添加 spring security 应该忽略的请求。
+	 *
+	 * 典型的是一些静态资源。动态请求，考虑
+	 *
 	 * <p>
 	 * Example Usage:
 	 *
@@ -331,6 +337,8 @@ public final class WebSecurity extends AbstractConfiguredSecurityBuilder<Filter,
 
 		// 收集从 HttpSecurity 构建出来的 FilterChain
 		for (SecurityBuilder<? extends SecurityFilterChain> securityFilterChainBuilder : this.securityFilterChainBuilders) {
+			// 如果是 @Bean SecurityFilterChain 方式，直接 lambda 得到最终的 SecurityFilterChain
+			// 如果是 Adapter 方式，需要走一个 build 过程
 			SecurityFilterChain securityFilterChain = securityFilterChainBuilder.build();
 			securityFilterChains.add(securityFilterChain);
 			requestMatcherPrivilegeEvaluatorsEntries

@@ -226,6 +226,7 @@ public class ProviderManager implements AuthenticationManager, MessageSourceAwar
 			}
 		}
 		if (result != null) {
+			// 如果设置了认证之后擦除密码
 			if (this.eraseCredentialsAfterAuthentication && (result instanceof CredentialsContainer)) {
 				// Authentication is complete. Remove credentials and other secret data
 				// from authentication
