@@ -97,10 +97,10 @@ public class SessionManagementFilter extends GenericFilterBean {
 		// 设置属性，标记已经执行过
 		request.setAttribute(FILTER_APPLIED, Boolean.TRUE);
 
-		//
+		// 请求不包含 SecurityContext (要不就是没有登录，要不就是刚刚登录)
 		if (!this.securityContextRepository.containsContext(request)) {
 
-			// 获取认证信息
+			// 获取认证信息，如果能够获取到说明刚刚登录
 			Authentication authentication = this.securityContextHolderStrategy.getContext().getAuthentication();
 			if (authentication != null && !this.trustResolver.isAnonymous(authentication)) {
 				// The user has been authenticated during the current request, so call the

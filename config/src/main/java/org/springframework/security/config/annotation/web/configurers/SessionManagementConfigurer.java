@@ -355,6 +355,7 @@ public final class SessionManagementConfigurer<H extends HttpSecurityBuilder<H>>
 
 	/**
 	 * 初始化逻辑
+	 *
 	 * @param http
 	 */
 	@Override
@@ -417,6 +418,8 @@ public final class SessionManagementConfigurer<H extends HttpSecurityBuilder<H>>
 			return null;
 		}
 		SecurityContextRepository securityContextRepository = http.getSharedObject(SecurityContextRepository.class);
+
+		// SessionManagementFilter 管理认证之后做一些与 session 有关的事情， SessionAuthenticationStrategy 是一个 composite
 		SessionManagementFilter sessionManagementFilter = new SessionManagementFilter(securityContextRepository,
 				getSessionAuthenticationStrategy(http));
 		if (this.sessionAuthenticationErrorUrl != null) {
@@ -547,7 +550,7 @@ public final class SessionManagementConfigurer<H extends HttpSecurityBuilder<H>>
 	 * {@link #sessionAuthenticationStrategy(SessionAuthenticationStrategy)} was
 	 * specified. Otherwise creates a default {@link SessionAuthenticationStrategy}.
 	 *
-	 * @return the {@link SessionAuthenticationStrategy} to use
+	 * @return the {@link SessionAuthenticationStrategy} to use 通常返回 CompositeSessionAuthenticationStrategy 类型
 	 */
 	private SessionAuthenticationStrategy getSessionAuthenticationStrategy(H http) {
 		// 其实这是一个缓存字段
@@ -557,6 +560,8 @@ public final class SessionManagementConfigurer<H extends HttpSecurityBuilder<H>>
 
 		//
 		List<SessionAuthenticationStrategy> delegateStrategies = this.sessionAuthenticationStrategies;
+
+		// 默认的 Session 认证策略，总之就 1 个，如果用户没有指定，那么默认就是 ChangeSessionIdAuthenticationStrategy -> 认证之后修改 sessionId
 		SessionAuthenticationStrategy defaultSessionAuthenticationStrategy;
 		if (this.providedSessionAuthenticationStrategy == null) {
 			// If the user did not provide a SessionAuthenticationStrategy
@@ -651,6 +656,8 @@ public final class SessionManagementConfigurer<H extends HttpSecurityBuilder<H>>
 		/**
 		 * Specifies that a new session should be created, but the session attributes from
 		 * the original {@link HttpSession} should not be retained.
+		 * <p>
+		 * 与下面的 migrateSession 用的是同一个组件
 		 *
 		 * @return the {@link SessionManagementConfigurer} for further customizations
 		 */
@@ -664,10 +671,13 @@ public final class SessionManagementConfigurer<H extends HttpSecurityBuilder<H>>
 		/**
 		 * Specifies that a new session should be created and the session attributes from
 		 * the original {@link HttpSession} should be retained.
+		 * <p>
+		 * 与上面 newSession 用的是同一个组件
 		 *
 		 * @return the {@link SessionManagementConfigurer} for further customizations
 		 */
 		public SessionManagementConfigurer<H> migrateSession() {
+			// 这其实是一种 SessionAuthenticationStrategy
 			setSessionFixationAuthenticationStrategy(new SessionFixationProtectionStrategy());
 			return SessionManagementConfigurer.this;
 		}

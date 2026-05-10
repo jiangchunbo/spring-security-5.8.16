@@ -80,6 +80,9 @@ public class SessionFixationProtectionStrategy extends AbstractSessionFixationPr
 		return createMigratedAttributeMap(session);
 	}
 
+	/**
+	 * 实际上是一种 copy session
+	 */
 	@Override
 	final HttpSession applySessionFixation(HttpServletRequest request) {
 		HttpSession session = request.getSession();
@@ -87,18 +90,18 @@ public class SessionFixationProtectionStrategy extends AbstractSessionFixationPr
 		this.logger.debug(LogMessage.of(() -> "Invalidating session with Id '" + originalSessionId + "' "
 				+ (this.migrateSessionAttributes ? "and" : "without") + " migrating attributes."));
 
-		// 获取 session 里面的属性、超时时间
+		// 获取 Session 属性
 		Map<String, Object> attributesToMigrate = extractAttributes(session);
 		int maxInactiveIntervalToMigrate = session.getMaxInactiveInterval();
 
 		// 让 session 失效
 		session.invalidate();
 
-		// 再获取一个新的 session
+		// 创建新的 Session
 		session = request.getSession(true); // we now have a new session
 		this.logger.debug(LogMessage.format("Started new session: %s", session.getId()));
 
-		// 迁移属性
+		// setAttribute 迁移属性
 		transferAttributes(attributesToMigrate, session);
 		if (this.migrateSessionAttributes) {
 			session.setMaxInactiveInterval(maxInactiveIntervalToMigrate);
@@ -119,6 +122,8 @@ public class SessionFixationProtectionStrategy extends AbstractSessionFixationPr
 
 	@SuppressWarnings("unchecked")
 	private HashMap<String, Object> createMigratedAttributeMap(HttpSession session) {
+		// 属性可以不迁移，但是 Spring Security 要迁移
+
 		HashMap<String, Object> attributesToMigrate = new HashMap<>();
 		Enumeration<String> enumeration = session.getAttributeNames();
 		while (enumeration.hasMoreElements()) {
