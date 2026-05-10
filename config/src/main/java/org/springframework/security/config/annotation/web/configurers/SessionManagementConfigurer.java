@@ -103,6 +103,11 @@ import org.springframework.util.CollectionUtils;
 public final class SessionManagementConfigurer<H extends HttpSecurityBuilder<H>>
 		extends AbstractHttpConfigurer<SessionManagementConfigurer<H>, H> {
 
+	/**
+	 * 默认策略是 ChangeSessionIdAuthenticationStrategy，所以认证之后会修改 SessionId
+	 * <p>
+	 * 也就是可能你没登录的时候就有了一个 SessionId，登录之后 SessionId 会改变
+	 */
 	private final SessionAuthenticationStrategy DEFAULT_SESSION_FIXATION_STRATEGY = createDefaultSessionFixationProtectionStrategy();
 
 	private SessionAuthenticationStrategy sessionFixationAuthenticationStrategy = this.DEFAULT_SESSION_FIXATION_STRATEGY;
