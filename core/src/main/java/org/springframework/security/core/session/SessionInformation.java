@@ -43,6 +43,9 @@ public class SessionInformation implements Serializable {
 
 	private Date lastRequest;
 
+	/**
+	 * 认证体系中的 principal
+	 */
 	private final Object principal;
 
 	private final String sessionId;

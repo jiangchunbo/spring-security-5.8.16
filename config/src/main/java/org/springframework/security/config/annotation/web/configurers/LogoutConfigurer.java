@@ -328,7 +328,7 @@ public final class LogoutConfigurer<H extends HttpSecurityBuilder<H>>
 
 	@Override
 	public void configure(H http) throws Exception {
-		// 创建 logout
+		// 创建 LogoutFilter 添加到 FilterChain
 		LogoutFilter logoutFilter = createLogoutFilter(http);
 		http.addFilter(logoutFilter);
 	}

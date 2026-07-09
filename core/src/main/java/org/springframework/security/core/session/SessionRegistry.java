@@ -29,6 +29,8 @@ public interface SessionRegistry {
 
 	/**
 	 * Obtains all the known principals in the <code>SessionRegistry</code>.
+	 * <p>
+	 * 获取所有已知的 Principal。这个方法估计很少用吧，因为压力估计比较大。
 	 *
 	 * @return each of the unique principals, which can then be presented to
 	 * {@link #getAllSessions(Object, boolean)}.
@@ -39,6 +41,8 @@ public interface SessionRegistry {
 	 * Obtains all the known sessions for the specified principal. Sessions that have been
 	 * destroyed are not returned. Sessions that have expired may be returned, depending
 	 * on the passed argument.
+	 * <p>
+	 * 指定 Principal 获取会话信息
 	 *
 	 * @param principal              to locate sessions for (should never be <code>null</code>)
 	 * @param includeExpiredSessions if <code>true</code>, the returned sessions will also
@@ -50,6 +54,8 @@ public interface SessionRegistry {
 	/**
 	 * Obtains the session information for the specified <code>sessionId</code>. Even
 	 * expired sessions are returned (although destroyed sessions are never returned).
+	 * <p>
+	 * 通过 sessionId 获取 Session 信息
 	 *
 	 * @param sessionId to lookup (should never be <code>null</code>)
 	 * @return the session information, or <code>null</code> if not found

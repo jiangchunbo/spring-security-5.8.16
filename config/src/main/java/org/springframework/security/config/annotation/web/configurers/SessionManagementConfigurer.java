@@ -127,6 +127,9 @@ public final class SessionManagementConfigurer<H extends HttpSecurityBuilder<H>>
 
 	private SessionRegistry sessionRegistry;
 
+	/**
+	 * 最大会话数
+	 */
 	private Integer maximumSessions;
 
 	private String expiredUrl;
@@ -563,10 +566,10 @@ public final class SessionManagementConfigurer<H extends HttpSecurityBuilder<H>>
 			return this.sessionAuthenticationStrategy;
 		}
 
-		//
+		// 1. 初始化此策略
 		List<SessionAuthenticationStrategy> delegateStrategies = this.sessionAuthenticationStrategies;
 
-		// 默认的 Session 认证策略，总之就 1 个，如果用户没有指定，那么默认就是 ChangeSessionIdAuthenticationStrategy -> 认证之后修改 sessionId
+		// 2. sessionFixationAuthenticationStrategy -> 认证之后修改 sessionId (或者使用用户提供的策略)
 		SessionAuthenticationStrategy defaultSessionAuthenticationStrategy;
 		if (this.providedSessionAuthenticationStrategy == null) {
 			// If the user did not provide a SessionAuthenticationStrategy
@@ -576,7 +579,7 @@ public final class SessionManagementConfigurer<H extends HttpSecurityBuilder<H>>
 			defaultSessionAuthenticationStrategy = this.providedSessionAuthenticationStrategy;
 		}
 
-		// 并发会话控制
+		// 3. 并发会话控制
 		if (isConcurrentSessionControlEnabled()) {
 			SessionRegistry sessionRegistry = getSessionRegistry(http);
 			ConcurrentSessionControlAuthenticationStrategy concurrentSessionControlStrategy = new ConcurrentSessionControlAuthenticationStrategy(
@@ -594,6 +597,9 @@ public final class SessionManagementConfigurer<H extends HttpSecurityBuilder<H>>
 		} else {
 			delegateStrategies.add(defaultSessionAuthenticationStrategy);
 		}
+
+
+		// 总之 SessionAuthenticationStrategy 就是一个 Composite 类型，组合了 N 个策略
 		this.sessionAuthenticationStrategy = postProcess(
 				new CompositeSessionAuthenticationStrategy(delegateStrategies));
 		return this.sessionAuthenticationStrategy;

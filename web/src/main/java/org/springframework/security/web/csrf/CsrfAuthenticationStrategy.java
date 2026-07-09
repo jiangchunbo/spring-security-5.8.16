@@ -70,10 +70,9 @@ public final class CsrfAuthenticationStrategy implements SessionAuthenticationSt
 		boolean containsToken = this.tokenRepository.loadToken(request) != null;
 
 		if (containsToken) {
-			// 清空 token ，注意看 save token 参数是 null
+			// 清空 token，然后获取一个新的 token
 			this.tokenRepository.saveToken(null, request, response);
 
-			// 加载延迟的 token
 			DeferredCsrfToken deferredCsrfToken = this.tokenRepository.loadDeferredToken(request, response);
 			this.requestHandler.handle(request, response, deferredCsrfToken::get);
 			this.logger.debug("Replaced CSRF Token");

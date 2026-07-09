@@ -16,13 +16,13 @@
 
 package org.springframework.security.web.authentication.session;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.util.Assert;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * Strategy used to register a user with the {@link SessionRegistry} after successful
@@ -41,8 +41,8 @@ import org.springframework.util.Assert;
  *
  * @author Luke Taylor
  * @author Rob Winch
- * @since 3.2
  * @see CompositeSessionAuthenticationStrategy
+ * @since 3.2
  */
 public class RegisterSessionAuthenticationStrategy implements SessionAuthenticationStrategy {
 
@@ -50,7 +50,7 @@ public class RegisterSessionAuthenticationStrategy implements SessionAuthenticat
 
 	/**
 	 * @param sessionRegistry the session registry which should be updated when the
-	 * authenticated session is changed.
+	 *                        authenticated session is changed.
 	 */
 	public RegisterSessionAuthenticationStrategy(SessionRegistry sessionRegistry) {
 		Assert.notNull(sessionRegistry, "The sessionRegistry cannot be null");
@@ -64,6 +64,7 @@ public class RegisterSessionAuthenticationStrategy implements SessionAuthenticat
 	@Override
 	public void onAuthentication(Authentication authentication, HttpServletRequest request,
 			HttpServletResponse response) {
+		// 当认证成功，需要注册 sessionId -> principal 的索引关系
 		this.sessionRegistry.registerNewSession(request.getSession().getId(), authentication.getPrincipal());
 	}
 
