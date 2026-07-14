@@ -416,7 +416,10 @@ public final class SessionManagementConfigurer<H extends HttpSecurityBuilder<H>>
 		if (!this.enableSessionUrlRewriting) {
 			http.addFilter(new DisableEncodeUrlFilter());
 		}
+
+		// 如果用户希望总是创建 Session，那么就会主动添加 ForceEagerSessionCreationFilter
 		if (this.sessionPolicy == SessionCreationPolicy.ALWAYS) {
+			// order 很小，只有 200，能够非常早期地执行
 			http.addFilter(new ForceEagerSessionCreationFilter());
 		}
 	}

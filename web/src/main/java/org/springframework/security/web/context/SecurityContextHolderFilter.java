@@ -71,11 +71,15 @@ public class SecurityContextHolderFilter extends GenericFilterBean {
 
 	private void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
 			throws ServletException, IOException {
+		// 安全地可重入、幂等
 		if (request.getAttribute(FILTER_APPLIED) != null) {
 			chain.doFilter(request, response);
 			return;
 		}
+
 		request.setAttribute(FILTER_APPLIED, Boolean.TRUE);
+
+		// 加载 SecurityContext 存储到 ThreadLocal 中
 		Supplier<SecurityContext> deferredContext = this.securityContextRepository.loadDeferredContext(request);
 		try {
 			this.securityContextHolderStrategy.setDeferredContext(deferredContext);

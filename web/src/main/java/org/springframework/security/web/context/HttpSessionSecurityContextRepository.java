@@ -121,14 +121,21 @@ public class HttpSessionSecurityContextRepository implements SecurityContextRepo
 	public SecurityContext loadContext(HttpRequestResponseHolder requestResponseHolder) {
 		HttpServletRequest request = requestResponseHolder.getRequest();
 		HttpServletResponse response = requestResponseHolder.getResponse();
+
+		// 尝试获得一个 session (有可能没有)
 		HttpSession httpSession = request.getSession(false);
+
+		// 从 session 获取属性 SecurityContext
 		SecurityContext context = readSecurityContextFromSession(httpSession);
+
+		// 就算没开启 session，也会生成一个 empty context
 		if (context == null) {
 			context = generateNewContext();
 			if (this.logger.isTraceEnabled()) {
 				this.logger.trace(LogMessage.format("Created %s", context));
 			}
 		}
+
 		if (response != null) {
 			SaveToSessionResponseWrapper wrappedResponse = new SaveToSessionResponseWrapper(response, request,
 					httpSession != null, context);

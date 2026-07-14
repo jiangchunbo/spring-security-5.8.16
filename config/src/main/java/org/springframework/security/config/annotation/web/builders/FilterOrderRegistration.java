@@ -68,13 +68,19 @@ final class FilterOrderRegistration {
 
 	private final Map<String, Integer> filterToOrder = new HashMap<>();
 
+	/**
+	 * 注册各种类型 Filter 的 order 值
+	 */
 	FilterOrderRegistration() {
 		// 初始值 100 步长 100
 		Step order = new Step(INITIAL_ORDER, ORDER_STEP);
 
 		// 设置各种 Filter 的 order 值
+
 		put(DisableEncodeUrlFilter.class, order.next()); // 100
-		put(ForceEagerSessionCreationFilter.class, order.next()); // 200
+
+		put(ForceEagerSessionCreationFilter.class, order.next()); // 200: 非常早期的 Filter，也就是如果启用了，那么后面的 Filter 都能享受到 Session
+
 		put(ChannelProcessingFilter.class, order.next()); // 300
 
 		order.next(); // gh-8105  400

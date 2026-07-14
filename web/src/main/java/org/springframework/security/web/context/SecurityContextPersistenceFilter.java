@@ -93,7 +93,7 @@ public class SecurityContextPersistenceFilter extends GenericFilterBean {
 	private void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
 			throws IOException, ServletException {
 		// ensure that filter is only applied once per request
-		// 只是确保每个请求只执行一次
+		// 安全地可重入，幂等
 		if (request.getAttribute(FILTER_APPLIED) != null) {
 			chain.doFilter(request, response);
 			return;
@@ -111,7 +111,7 @@ public class SecurityContextPersistenceFilter extends GenericFilterBean {
 		// 过时的东西，将 request 和 response 包装在一起
 		HttpRequestResponseHolder holder = new HttpRequestResponseHolder(request, response);
 
-		// 其实就是通过 request 和 response 从仓库获取 SecurityContext
+		// 获取 SecurityContext 放到上下文，临走的时候清理 clear
 		SecurityContext contextBeforeChainExecution = this.repo.loadContext(holder);
 		try {
 			this.securityContextHolderStrategy.setContext(contextBeforeChainExecution);
@@ -128,8 +128,11 @@ public class SecurityContextPersistenceFilter extends GenericFilterBean {
 		}
 		finally {
 			SecurityContext contextAfterChainExecution = this.securityContextHolderStrategy.getContext();
+
 			// Crucial removal of SecurityContextHolder contents before anything else.
 			this.securityContextHolderStrategy.clearContext();
+
+			// 这里就是隐式保存的地方
 			this.repo.saveContext(contextAfterChainExecution, holder.getRequest(), holder.getResponse());
 			request.removeAttribute(FILTER_APPLIED);
 			this.logger.debug("Cleared SecurityContextHolder to complete request");

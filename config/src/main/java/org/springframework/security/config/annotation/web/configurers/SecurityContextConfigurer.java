@@ -108,9 +108,10 @@ public final class SecurityContextConfigurer<H extends HttpSecurityBuilder<H>>
 	@SuppressWarnings("unchecked")
 	public void configure(H http) {
 
-		// 获取存储 SecurityContext 的仓库
+		// 获取存储 SecurityContext 的仓库 (默认就是存储到 Session 里)
 		SecurityContextRepository securityContextRepository = getSecurityContextRepository();
 
+		// 显式保存，那么就不使用隐式保存的 Filter 了
 		if (this.requireExplicitSave) {
 			SecurityContextHolderFilter securityContextHolderFilter = postProcess(
 					new SecurityContextHolderFilter(securityContextRepository));
@@ -120,10 +121,10 @@ public final class SecurityContextConfigurer<H extends HttpSecurityBuilder<H>>
 
 		// 下面就是默认情况，隐式保存 SecurityContext
 		else {
-			// 将仓库传给 Filter
+			// SecurityContext 持久化 Filter
 			SecurityContextPersistenceFilter securityContextFilter = new SecurityContextPersistenceFilter(
 					securityContextRepository);
-			// 设置 SecurityContextHolderStrategy 跟上面一样
+
 			securityContextFilter.setSecurityContextHolderStrategy(getSecurityContextHolderStrategy());
 
 			// 关注这里 --> 获取了其他的 SessionManagementConfigurer

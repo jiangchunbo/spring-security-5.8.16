@@ -29,6 +29,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 /**
  * Eagerly creates {@link HttpSession} if it does not already exist.
+ * <p>
+ * 注意了，这个类竟然是从 5.7 开始的，还是蛮新的类
  *
  * @author Rob Winch
  * @since 5.7
@@ -38,10 +40,12 @@ public class ForceEagerSessionCreationFilter extends OncePerRequestFilter {
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws ServletException, IOException {
+		// 通过调用 request.getSession() 可以强制确保 session 存在
 		HttpSession session = request.getSession();
 		if (this.logger.isDebugEnabled() && session.isNew()) {
 			this.logger.debug(LogMessage.format("Created session eagerly"));
 		}
+
 		filterChain.doFilter(request, response);
 	}
 
