@@ -78,12 +78,14 @@ public class HeaderWriterFilter extends OncePerRequestFilter {
 
 	private void doHeadersBefore(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws IOException, ServletException {
+		// 先写 response header 再执行逻辑
 		writeHeaders(request, response);
 		filterChain.doFilter(request, response);
 	}
 
 	private void doHeadersAfter(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws IOException, ServletException {
+		// 先执行业务逻辑，再写入 response header
 		HeaderWriterResponse headerWriterResponse = new HeaderWriterResponse(request, response);
 		HeaderWriterRequest headerWriterRequest = new HeaderWriterRequest(request, headerWriterResponse);
 		try {

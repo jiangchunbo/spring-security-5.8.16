@@ -27,6 +27,8 @@ import org.springframework.util.Assert;
 /**
  * A {@link CsrfTokenRepository} that stores the {@link CsrfToken} in the
  * {@link HttpSession}.
+ * <p>
+ * CsrfTokenRepository 这是一个用于将 CsrfToken 存储在 HttpSession 里的组件
  *
  * @author Rob Winch
  * @since 3.2
@@ -38,7 +40,7 @@ public final class HttpSessionCsrfTokenRepository implements CsrfTokenRepository
 	private static final String DEFAULT_CSRF_HEADER_NAME = "X-CSRF-TOKEN";
 
 	private static final String DEFAULT_CSRF_TOKEN_ATTR_NAME = HttpSessionCsrfTokenRepository.class.getName()
-		.concat(".CSRF_TOKEN");
+			.concat(".CSRF_TOKEN");
 
 	private String parameterName = DEFAULT_CSRF_PARAMETER_NAME;
 
@@ -53,8 +55,7 @@ public final class HttpSessionCsrfTokenRepository implements CsrfTokenRepository
 			if (session != null) {
 				session.removeAttribute(this.sessionAttributeName);
 			}
-		}
-		else {
+		} else {
 			HttpSession session = request.getSession();
 			session.setAttribute(this.sessionAttributeName, token);
 		}
@@ -77,6 +78,7 @@ public final class HttpSessionCsrfTokenRepository implements CsrfTokenRepository
 	/**
 	 * Sets the {@link HttpServletRequest} parameter name that the {@link CsrfToken} is
 	 * expected to appear on
+	 *
 	 * @param parameterName the new parameter name to use
 	 */
 	public void setParameterName(String parameterName) {
@@ -87,6 +89,7 @@ public final class HttpSessionCsrfTokenRepository implements CsrfTokenRepository
 	/**
 	 * Sets the header name that the {@link CsrfToken} is expected to appear on and the
 	 * header that the response will contain the {@link CsrfToken}.
+	 *
 	 * @param headerName the new header name to use
 	 */
 	public void setHeaderName(String headerName) {
@@ -96,6 +99,7 @@ public final class HttpSessionCsrfTokenRepository implements CsrfTokenRepository
 
 	/**
 	 * Sets the {@link HttpSession} attribute name that the {@link CsrfToken} is stored in
+	 *
 	 * @param sessionAttributeName the new attribute name to use
 	 */
 	public void setSessionAttributeName(String sessionAttributeName) {

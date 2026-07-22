@@ -28,18 +28,21 @@ import org.springframework.util.Assert;
  * {@link CsrfTokenRepository} available as a request attribute. Implementations of this
  * interface may choose to perform additional tasks or customize how the token is made
  * available to the application through request attributes.
+ * <p>
+ * 这个接口负责处理请求等，然后再解析
  *
  * @author Steve Riesenberg
- * @since 5.8
  * @see CsrfTokenRequestAttributeHandler
+ * @since 5.8
  */
 @FunctionalInterface
 public interface CsrfTokenRequestHandler extends CsrfTokenRequestResolver {
 
 	/**
 	 * Handles a request using a {@link CsrfToken}.
-	 * @param request the {@code HttpServletRequest} being handled
-	 * @param response the {@code HttpServletResponse} being handled
+	 *
+	 * @param request   the {@code HttpServletRequest} being handled
+	 * @param response  the {@code HttpServletResponse} being handled
 	 * @param csrfToken the {@link CsrfToken} created by the {@link CsrfTokenRepository}
 	 */
 	void handle(HttpServletRequest request, HttpServletResponse response, Supplier<CsrfToken> csrfToken);
@@ -48,6 +51,8 @@ public interface CsrfTokenRequestHandler extends CsrfTokenRequestResolver {
 	default String resolveCsrfTokenValue(HttpServletRequest request, CsrfToken csrfToken) {
 		Assert.notNull(request, "request cannot be null");
 		Assert.notNull(csrfToken, "csrfToken cannot be null");
+
+		// 先从 header 再从 parameter 获取 token
 		String actualToken = request.getHeader(csrfToken.getHeaderName());
 		if (actualToken == null) {
 			actualToken = request.getParameter(csrfToken.getParameterName());

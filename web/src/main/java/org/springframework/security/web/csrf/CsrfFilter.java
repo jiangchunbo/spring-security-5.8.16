@@ -67,13 +67,15 @@ public final class CsrfFilter extends OncePerRequestFilter {
 	 * The default {@link RequestMatcher} that indicates if CSRF protection is required or
 	 * not. The default is to ignore GET, HEAD, TRACE, OPTIONS and process all other
 	 * requests.
+	 * <p>
+	 * 默认忽略 GET HEAD TRACE OPTIONS 这些接口不需要 Csrf 保护
 	 */
 	public static final RequestMatcher DEFAULT_CSRF_MATCHER = new DefaultRequiresCsrfMatcher();
 
 	/**
 	 * The attribute name to use when marking a given request as one that should not be
 	 * filtered.
-	 *
+	 * <p>
 	 * To use, set the attribute on your {@link HttpServletRequest}: <pre>
 	 * 	CsrfFilter.skipRequest(request);
 	 * </pre>
@@ -92,6 +94,7 @@ public final class CsrfFilter extends OncePerRequestFilter {
 
 	/**
 	 * Creates a new instance.
+	 *
 	 * @param tokenRepository the {@link CsrfTokenRepository} to use
 	 */
 	public CsrfFilter(CsrfTokenRepository tokenRepository) {
@@ -107,9 +110,15 @@ public final class CsrfFilter extends OncePerRequestFilter {
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws ServletException, IOException {
+		// 类似 Supplier<CsrfToken> 获取 Token，然后存储到 request 中 (从 session 里面提取出来，然后放到本次 request 中)
+		// 比较解耦吧，这样可以不一定存储到 session 中
 		DeferredCsrfToken deferredCsrfToken = this.tokenRepository.loadDeferredToken(request, response);
+
 		request.setAttribute(DeferredCsrfToken.class.getName(), deferredCsrfToken);
+
 		this.requestHandler.handle(request, response, deferredCsrfToken::get);
+
+		// 如果不需要 Csrf 保护，则继续
 		if (!this.requireCsrfProtectionMatcher.matches(request)) {
 			if (this.logger.isTraceEnabled()) {
 				this.logger.trace("Did not protect against CSRF since request did not match "
@@ -118,12 +127,17 @@ public final class CsrfFilter extends OncePerRequestFilter {
 			filterChain.doFilter(request, response);
 			return;
 		}
+
+
+		// 从 request 中获取或创建 token
 		CsrfToken csrfToken = deferredCsrfToken.get();
 		String actualToken = this.requestHandler.resolveCsrfTokenValue(request, csrfToken);
+
+		// 比较 token
 		if (!equalsConstantTime(csrfToken.getToken(), actualToken)) {
 			boolean missingToken = deferredCsrfToken.isGenerated();
 			this.logger
-				.debug(LogMessage.of(() -> "Invalid CSRF token found for " + UrlUtils.buildFullRequestUrl(request)));
+					.debug(LogMessage.of(() -> "Invalid CSRF token found for " + UrlUtils.buildFullRequestUrl(request)));
 			AccessDeniedException exception = (!missingToken) ? new InvalidCsrfTokenException(csrfToken, actualToken)
 					: new MissingCsrfTokenException(actualToken);
 			this.accessDeniedHandler.handle(request, response, exception);
@@ -145,8 +159,9 @@ public final class CsrfFilter extends OncePerRequestFilter {
 	 * The default is to apply CSRF protection for any HTTP method other than GET, HEAD,
 	 * TRACE, OPTIONS.
 	 * </p>
+	 *
 	 * @param requireCsrfProtectionMatcher the {@link RequestMatcher} used to determine if
-	 * CSRF protection should be applied.
+	 *                                     CSRF protection should be applied.
 	 */
 	public void setRequireCsrfProtectionMatcher(RequestMatcher requireCsrfProtectionMatcher) {
 		Assert.notNull(requireCsrfProtectionMatcher, "requireCsrfProtectionMatcher cannot be null");
@@ -160,6 +175,7 @@ public final class CsrfFilter extends OncePerRequestFilter {
 	 * <p>
 	 * The default is to use AccessDeniedHandlerImpl with no arguments.
 	 * </p>
+	 *
 	 * @param accessDeniedHandler the {@link AccessDeniedHandler} to use
 	 */
 	public void setAccessDeniedHandler(AccessDeniedHandler accessDeniedHandler) {
@@ -174,6 +190,7 @@ public final class CsrfFilter extends OncePerRequestFilter {
 	 * <p>
 	 * The default is {@link CsrfTokenRequestAttributeHandler}.
 	 * </p>
+	 *
 	 * @param requestHandler the {@link CsrfTokenRequestHandler} to use
 	 * @since 5.8
 	 */
@@ -184,6 +201,9 @@ public final class CsrfFilter extends OncePerRequestFilter {
 
 	/**
 	 * Constant time comparison to prevent against timing attacks.
+	 * <p>
+	 * 比较两个字符串，常量时间
+	 *
 	 * @param expected
 	 * @param actual
 	 * @return

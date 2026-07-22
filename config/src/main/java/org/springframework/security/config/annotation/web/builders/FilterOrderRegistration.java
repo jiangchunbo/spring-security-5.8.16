@@ -75,22 +75,36 @@ final class FilterOrderRegistration {
 		// 初始值 100 步长 100
 		Step order = new Step(INITIAL_ORDER, ORDER_STEP);
 
-		// 设置各种 Filter 的 order 值
+		/* 注册设置各种 Filter 的 order 值 */
 
+		// 1. 禁用自动追加 ;jsessionid=
 		put(DisableEncodeUrlFilter.class, order.next()); // 100
 
-		put(ForceEagerSessionCreationFilter.class, order.next()); // 200: 非常早期的 Filter，也就是如果启用了，那么后面的 Filter 都能享受到 Session
+		// 2. 执行较早，能够主动创建一个会话
+		put(ForceEagerSessionCreationFilter.class, order.next()); // 200:
 
+		// 3.
 		put(ChannelProcessingFilter.class, order.next()); // 300
 
 		order.next(); // gh-8105  400
 
+		// 4. 异步
 		put(WebAsyncManagerIntegrationFilter.class, order.next());
+
+		// 5. 持久化 SecurityContext 策略 (显式 还是 隐式) 环绕 SecurityContext
 		put(SecurityContextHolderFilter.class, order.next());
 		put(SecurityContextPersistenceFilter.class, order.next());
+
+		// 6. 写入 Header
 		put(HeaderWriterFilter.class, order.next());
+
+		// 7. 执行 CORS 过滤器
 		put(CorsFilter.class, order.next());
+
+		// 8. 执行 CSRF 过滤器
 		put(CsrfFilter.class, order.next());
+
+		// 9. logout 端点
 		put(LogoutFilter.class, order.next());
 		this.filterToOrder.put(
 				"org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter",
@@ -107,7 +121,7 @@ final class FilterOrderRegistration {
 				"org.springframework.security.saml2.provider.service.web.authentication.Saml2WebSsoAuthenticationFilter",
 				order.next());
 
-		// 账密登录
+		// 10. 账密登录
 		put(UsernamePasswordAuthenticationFilter.class, order.next());
 
 		order.next(); // gh-8105
@@ -115,6 +129,8 @@ final class FilterOrderRegistration {
 		this.filterToOrder.put("org.springframework.security.openid.OpenIDAuthenticationFilter", order.next());
 		put(DefaultLoginPageGeneratingFilter.class, order.next());
 		put(DefaultLogoutPageGeneratingFilter.class, order.next());
+
+		// 并发控制会话
 		put(ConcurrentSessionFilter.class, order.next());
 		put(DigestAuthenticationFilter.class, order.next());
 		this.filterToOrder.put(

@@ -149,6 +149,7 @@ public final class LazyCsrfTokenRepository implements CsrfTokenRepository {
 
 		@Override
 		public String getToken() {
+			// delegate 模式: 自己本身是一个 CsrfToken，但是又委托给另一个 CsrfToken
 			return getDelegate().getToken();
 		}
 

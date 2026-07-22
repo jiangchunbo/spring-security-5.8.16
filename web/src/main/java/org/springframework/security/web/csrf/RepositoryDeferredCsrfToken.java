@@ -20,6 +20,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
+ * 这个实现类需要理解它的作用: 提取 CSRF Token，如果没有提取到就创建一个，
+ * 并且这个 CSRF Token 能够与 request 产生关联
+ *
  * @author Rob Winch
  * @author Steve Riesenberg
  * @since 5.8
