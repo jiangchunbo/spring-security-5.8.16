@@ -26,7 +26,7 @@ import org.springframework.security.core.Authentication;
  * An Authorization manager which can determine if an {@link Authentication} has access to
  * a specific object.
  * <p>
- * 授权管理器，用于决定是否一个 Authentication 可以访问指定的对象
+ * 授权管理器，用于决定是否一个 Authentication 可以访问指定的对象(资源)
  *
  * @param <T> the type of object that the authorization check is being done one.
  *            <p>可能是一个 ServletRequest，也可能是一个方法调用

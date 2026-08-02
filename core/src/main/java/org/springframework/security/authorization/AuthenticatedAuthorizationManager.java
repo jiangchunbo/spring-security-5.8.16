@@ -25,6 +25,8 @@ import org.springframework.util.Assert;
 
 /**
  * An {@link AuthorizationManager} that determines if the current user is authenticated.
+ * <p>
+ * 这也是一种授权管理器，它用于确定当前用户是否是认证过的。
  *
  * @param <T> the type of object authorization is being performed against. This does not.
  * @author Evgeniy Cheban
@@ -38,11 +40,11 @@ public final class AuthenticatedAuthorizationManager<T> implements Authorization
 	 * Creates an instance that determines if the current user is authenticated, this is
 	 * the same as calling {@link #authenticated()} factory method.
 	 *
-	 * @since 5.8
 	 * @see #authenticated()
 	 * @see #fullyAuthenticated()
 	 * @see #rememberMe()
 	 * @see #anonymous()
+	 * @since 5.8
 	 */
 	public AuthenticatedAuthorizationManager() {
 		this(new AuthenticatedAuthorizationStrategy());
@@ -55,6 +57,7 @@ public final class AuthenticatedAuthorizationManager<T> implements Authorization
 	/**
 	 * Sets the {@link AuthenticationTrustResolver} to be used. Default is
 	 * {@link AuthenticationTrustResolverImpl}. Cannot be null.
+	 *
 	 * @param trustResolver the {@link AuthenticationTrustResolver} to use
 	 * @since 5.8
 	 */
@@ -64,6 +67,7 @@ public final class AuthenticatedAuthorizationManager<T> implements Authorization
 
 	/**
 	 * Creates an instance of {@link AuthenticatedAuthorizationManager}.
+	 *
 	 * @param <T> the type of object being authorized
 	 * @return the new instance
 	 */
@@ -74,6 +78,7 @@ public final class AuthenticatedAuthorizationManager<T> implements Authorization
 	/**
 	 * Creates an instance of {@link AuthenticatedAuthorizationManager} that determines if
 	 * the {@link Authentication} is authenticated without using remember me.
+	 *
 	 * @param <T> the type of object being authorized
 	 * @return the new instance
 	 * @since 5.8
@@ -85,6 +90,7 @@ public final class AuthenticatedAuthorizationManager<T> implements Authorization
 	/**
 	 * Creates an instance of {@link AuthenticatedAuthorizationManager} that determines if
 	 * the {@link Authentication} is authenticated using remember me.
+	 *
 	 * @param <T> the type of object being authorized
 	 * @return the new instance
 	 * @since 5.8
@@ -96,6 +102,7 @@ public final class AuthenticatedAuthorizationManager<T> implements Authorization
 	/**
 	 * Creates an instance of {@link AuthenticatedAuthorizationManager} that determines if
 	 * the {@link Authentication} is anonymous.
+	 *
 	 * @param <T> the type of object being authorized
 	 * @return the new instance
 	 * @since 5.8
@@ -106,13 +113,16 @@ public final class AuthenticatedAuthorizationManager<T> implements Authorization
 
 	/**
 	 * Determines if the current user is authorized according to the given strategy.
+	 *
 	 * @param authentication the {@link Supplier} of the {@link Authentication} to check
-	 * @param object the {@link T} object to check
+	 * @param object         the {@link T} object to check
 	 * @return an {@link AuthorizationDecision}
 	 */
 	@Override
 	public AuthorizationDecision check(Supplier<Authentication> authentication, T object) {
+		// 调用一个策略，判断是否被授予了权限
 		boolean granted = this.authorizationStrategy.isGranted(authentication.get());
+
 		return new AuthorizationDecision(granted);
 	}
 
@@ -133,6 +143,7 @@ public final class AuthenticatedAuthorizationManager<T> implements Authorization
 
 		@Override
 		boolean isGranted(Authentication authentication) {
+			// 最基础的策略，也就是用户被认证，并且不是匿名
 			return authentication != null && !this.trustResolver.isAnonymous(authentication)
 					&& authentication.isAuthenticated();
 		}
@@ -143,6 +154,7 @@ public final class AuthenticatedAuthorizationManager<T> implements Authorization
 
 		@Override
 		boolean isGranted(Authentication authentication) {
+			// 并不是通过这个 remember me 策略认证的
 			return super.isGranted(authentication) && !this.trustResolver.isRememberMe(authentication);
 		}
 
@@ -152,6 +164,7 @@ public final class AuthenticatedAuthorizationManager<T> implements Authorization
 
 		@Override
 		boolean isGranted(Authentication authentication) {
+			// 只有匿名用户才能访问
 			return this.trustResolver.isAnonymous(authentication);
 		}
 

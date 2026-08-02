@@ -53,6 +53,9 @@ public class AuthorizationFilter extends GenericFilterBean {
 	private SecurityContextHolderStrategy securityContextHolderStrategy = SecurityContextHolder
 		.getContextHolderStrategy();
 
+	/**
+	 * 通常是 RequestMatcherDelegatingAuthorizationManager
+	 */
 	private final AuthorizationManager<HttpServletRequest> authorizationManager;
 
 	private AuthorizationEventPublisher eventPublisher = AuthorizationFilter::noPublish;
@@ -85,6 +88,7 @@ public class AuthorizationFilter extends GenericFilterBean {
 			return;
 		}
 
+		// 是否要跳过 Servlet 的 Dispatch
 		if (skipDispatch(request)) {
 			chain.doFilter(request, response);
 			return;

@@ -58,14 +58,14 @@ public final class AuthorizeHttpRequestsConfigurer<H extends HttpSecurityBuilder
 
 	/**
 	 * Creates an instance.
+	 *
 	 * @param context the {@link ApplicationContext} to use
 	 */
 	public AuthorizeHttpRequestsConfigurer(ApplicationContext context) {
 		this.registry = new AuthorizationManagerRequestMatcherRegistry(context);
 		if (context.getBeanNamesForType(AuthorizationEventPublisher.class).length > 0) {
 			this.publisher = context.getBean(AuthorizationEventPublisher.class);
-		}
-		else {
+		} else {
 			this.publisher = new SpringAuthorizationEventPublisher(context);
 		}
 	}
@@ -73,6 +73,7 @@ public final class AuthorizeHttpRequestsConfigurer<H extends HttpSecurityBuilder
 	/**
 	 * The {@link AuthorizationManagerRequestMatcherRegistry} is what users will interact
 	 * with after applying the {@link AuthorizeHttpRequestsConfigurer}.
+	 *
 	 * @return the {@link AuthorizationManagerRequestMatcherRegistry} for further
 	 * customizations
 	 */
@@ -82,7 +83,10 @@ public final class AuthorizeHttpRequestsConfigurer<H extends HttpSecurityBuilder
 
 	@Override
 	public void configure(H http) {
+		// 创建类型是 RequestMatcherDelegatingAuthorizationManager 的统一入口
 		AuthorizationManager<HttpServletRequest> authorizationManager = this.registry.createAuthorizationManager();
+
+		// 创建过滤器
 		AuthorizationFilter authorizationFilter = new AuthorizationFilter(authorizationManager);
 		authorizationFilter.setAuthorizationEventPublisher(this.publisher);
 		authorizationFilter.setShouldFilterAllDispatcherTypes(this.registry.shouldFilterAllDispatcherTypes);
@@ -113,7 +117,7 @@ public final class AuthorizeHttpRequestsConfigurer<H extends HttpSecurityBuilder
 			extends AbstractRequestMatcherRegistry<AuthorizedUrl> {
 
 		private final RequestMatcherDelegatingAuthorizationManager.Builder managerBuilder = RequestMatcherDelegatingAuthorizationManager
-			.builder();
+				.builder();
 
 		/**
 		 * 暂存一下 RequestMatcher
@@ -130,6 +134,8 @@ public final class AuthorizeHttpRequestsConfigurer<H extends HttpSecurityBuilder
 
 		private void addMapping(RequestMatcher matcher, AuthorizationManager<RequestAuthorizationContext> manager) {
 			this.unmappedMatchers = null;
+
+			// 组装授权管理器的 builder，告诉它哪些请求可以使用这个 manager
 			this.managerBuilder.add(matcher, manager);
 			this.mappingCount++;
 		}
@@ -175,6 +181,7 @@ public final class AuthorizeHttpRequestsConfigurer<H extends HttpSecurityBuilder
 
 		/**
 		 * Adds an {@link ObjectPostProcessor} for this class.
+		 *
 		 * @param objectPostProcessor the {@link ObjectPostProcessor} to use
 		 * @return the {@link AuthorizationManagerRequestMatcherRegistry} for further
 		 * customizations
@@ -187,8 +194,9 @@ public final class AuthorizeHttpRequestsConfigurer<H extends HttpSecurityBuilder
 
 		/**
 		 * Sets whether all dispatcher types should be filtered.
+		 *
 		 * @param shouldFilter should filter all dispatcher types. Default is
-		 * {@code false}
+		 *                     {@code false}
 		 * @return the {@link AuthorizationManagerRequestMatcherRegistry} for further
 		 * customizations
 		 * @since 5.7
@@ -201,6 +209,7 @@ public final class AuthorizeHttpRequestsConfigurer<H extends HttpSecurityBuilder
 		/**
 		 * Return the {@link HttpSecurityBuilder} when done using the
 		 * {@link AuthorizeHttpRequestsConfigurer}. This is useful for method chaining.
+		 *
 		 * @return the {@link HttpSecurityBuilder} for further customizations
 		 */
 		public H and() {
@@ -225,6 +234,7 @@ public final class AuthorizeHttpRequestsConfigurer<H extends HttpSecurityBuilder
 
 		/**
 		 * Configures <code>servletPath</code> to {@link MvcRequestMatcher}s.
+		 *
 		 * @param servletPath the servlet path
 		 * @return the {@link MvcMatchersAuthorizedUrl} for further customizations
 		 */
@@ -246,10 +256,14 @@ public final class AuthorizeHttpRequestsConfigurer<H extends HttpSecurityBuilder
 	 */
 	public class AuthorizedUrl {
 
+		/**
+		 * 若干个请求匹配器。final 表示构造该对象时已经储备了一些 matchers。
+		 */
 		private final List<? extends RequestMatcher> matchers;
 
 		/**
 		 * Creates an instance.
+		 *
 		 * @param matchers the {@link RequestMatcher} instances to map
 		 */
 		AuthorizedUrl(List<? extends RequestMatcher> matchers) {
@@ -262,6 +276,7 @@ public final class AuthorizeHttpRequestsConfigurer<H extends HttpSecurityBuilder
 
 		/**
 		 * Specify that URLs are allowed by anyone.
+		 *
 		 * @return the {@link AuthorizationManagerRequestMatcherRegistry} for further
 		 * customizations
 		 */
@@ -271,6 +286,7 @@ public final class AuthorizeHttpRequestsConfigurer<H extends HttpSecurityBuilder
 
 		/**
 		 * Specify that URLs are not allowed by anyone.
+		 *
 		 * @return the {@link AuthorizationManagerRequestMatcherRegistry} for further
 		 * customizations
 		 */
@@ -280,8 +296,9 @@ public final class AuthorizeHttpRequestsConfigurer<H extends HttpSecurityBuilder
 
 		/**
 		 * Specifies a user requires a role.
+		 *
 		 * @param role the role that should be required which is prepended with ROLE_
-		 * automatically (i.e. USER, ADMIN, etc). It should not start with ROLE_
+		 *             automatically (i.e. USER, ADMIN, etc). It should not start with ROLE_
 		 * @return {@link AuthorizationManagerRequestMatcherRegistry} for further
 		 * customizations
 		 */
@@ -291,9 +308,10 @@ public final class AuthorizeHttpRequestsConfigurer<H extends HttpSecurityBuilder
 
 		/**
 		 * Specifies that a user requires one of many roles.
+		 *
 		 * @param roles the roles that the user should have at least one of (i.e. ADMIN,
-		 * USER, etc). Each role should not start with ROLE_ since it is automatically
-		 * prepended already
+		 *              USER, etc). Each role should not start with ROLE_ since it is automatically
+		 *              prepended already
 		 * @return the {@link AuthorizationManagerRequestMatcherRegistry} for further
 		 * customizations
 		 */
@@ -303,6 +321,7 @@ public final class AuthorizeHttpRequestsConfigurer<H extends HttpSecurityBuilder
 
 		/**
 		 * Specifies a user requires an authority.
+		 *
 		 * @param authority the authority that should be required
 		 * @return the {@link AuthorizationManagerRequestMatcherRegistry} for further
 		 * customizations
@@ -313,8 +332,9 @@ public final class AuthorizeHttpRequestsConfigurer<H extends HttpSecurityBuilder
 
 		/**
 		 * Specifies that a user requires one of many authorities.
+		 *
 		 * @param authorities the authorities that the user should have at least one of
-		 * (i.e. ROLE_USER, ROLE_ADMIN, etc)
+		 *                    (i.e. ROLE_USER, ROLE_ADMIN, etc)
 		 * @return the {@link AuthorizationManagerRequestMatcherRegistry} for further
 		 * customizations
 		 */
@@ -324,6 +344,7 @@ public final class AuthorizeHttpRequestsConfigurer<H extends HttpSecurityBuilder
 
 		/**
 		 * Specify that URLs are allowed by any authenticated user.
+		 *
 		 * @return the {@link AuthorizationManagerRequestMatcherRegistry} for further
 		 * customizations
 		 */
@@ -334,10 +355,11 @@ public final class AuthorizeHttpRequestsConfigurer<H extends HttpSecurityBuilder
 		/**
 		 * Specify that URLs are allowed by users who have authenticated and were not
 		 * "remembered".
+		 *
 		 * @return the {@link AuthorizationManagerRequestMatcherRegistry} for further
 		 * customization
-		 * @since 5.8
 		 * @see RememberMeConfigurer
+		 * @since 5.8
 		 */
 		public AuthorizationManagerRequestMatcherRegistry fullyAuthenticated() {
 			return access(AuthenticatedAuthorizationManager.fullyAuthenticated());
@@ -345,10 +367,11 @@ public final class AuthorizeHttpRequestsConfigurer<H extends HttpSecurityBuilder
 
 		/**
 		 * Specify that URLs are allowed by users that have been remembered.
+		 *
 		 * @return the {@link AuthorizationManagerRequestMatcherRegistry} for further
 		 * customization
-		 * @since 5.8
 		 * @see RememberMeConfigurer
+		 * @since 5.8
 		 */
 		public AuthorizationManagerRequestMatcherRegistry rememberMe() {
 			return access(AuthenticatedAuthorizationManager.rememberMe());
@@ -356,6 +379,7 @@ public final class AuthorizeHttpRequestsConfigurer<H extends HttpSecurityBuilder
 
 		/**
 		 * Specify that URLs are allowed by anonymous users.
+		 *
 		 * @return the {@link AuthorizationManagerRequestMatcherRegistry} for further
 		 * customization
 		 * @since 5.8
@@ -366,6 +390,7 @@ public final class AuthorizeHttpRequestsConfigurer<H extends HttpSecurityBuilder
 
 		/**
 		 * Allows specifying a custom {@link AuthorizationManager}.
+		 *
 		 * @param manager the {@link AuthorizationManager} to use
 		 * @return the {@link AuthorizationManagerRequestMatcherRegistry} for further
 		 * customizations
@@ -373,6 +398,7 @@ public final class AuthorizeHttpRequestsConfigurer<H extends HttpSecurityBuilder
 		public AuthorizationManagerRequestMatcherRegistry access(
 				AuthorizationManager<RequestAuthorizationContext> manager) {
 			Assert.notNull(manager, "manager cannot be null");
+			// 给这些 matchers 使用某一个 manager
 			return AuthorizeHttpRequestsConfigurer.this.addMapping(this.matchers, manager);
 		}
 

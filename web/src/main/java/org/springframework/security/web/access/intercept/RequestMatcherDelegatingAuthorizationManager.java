@@ -48,6 +48,9 @@ public final class RequestMatcherDelegatingAuthorizationManager implements Autho
 
 	private final Log logger = LogFactory.getLog(getClass());
 
+	/**
+	 * Entry 封装了单个的 RequestMatcher 到底使用哪个 AuthorizationManager
+	 */
 	private final List<RequestMatcherEntry<AuthorizationManager<RequestAuthorizationContext>>> mappings;
 
 	private RequestMatcherDelegatingAuthorizationManager(
@@ -74,7 +77,7 @@ public final class RequestMatcherDelegatingAuthorizationManager implements Autho
 
 			RequestMatcher matcher = mapping.getRequestMatcher();
 			MatchResult matchResult = matcher.matcher(request);
-			if (matchResult.isMatch()) {
+			if (matchResult.isMatch()) { // 请求可以使用这个 manager
 				AuthorizationManager<RequestAuthorizationContext> manager = mapping.getEntry();
 				if (this.logger.isTraceEnabled()) {
 					this.logger.trace(
@@ -116,6 +119,8 @@ public final class RequestMatcherDelegatingAuthorizationManager implements Autho
 		public Builder add(RequestMatcher matcher, AuthorizationManager<RequestAuthorizationContext> manager) {
 			Assert.notNull(matcher, "matcher cannot be null");
 			Assert.notNull(manager, "manager cannot be null");
+
+			// RequestMatcher -> AuthorizationManager 可以理解为某一些请求使用某个授权管理器去 check
 			this.mappings.add(new RequestMatcherEntry<>(matcher, manager));
 			return this;
 		}
