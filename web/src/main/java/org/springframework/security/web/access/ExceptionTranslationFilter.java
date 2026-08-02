@@ -132,17 +132,17 @@ public class ExceptionTranslationFilter extends GenericFilterBean implements Mes
 			// Try to extract a SpringSecurityException from the stacktrace
 			Throwable[] causeChain = this.throwableAnalyzer.determineCauseChain(ex);
 
-			// 获得第一个 Throwable AuthenticationException
+			// 获得第一个 AuthenticationException
 			RuntimeException securityException = (AuthenticationException) this.throwableAnalyzer
 					.getFirstThrowableOfType(AuthenticationException.class, causeChain);
 
-			// 获得第一个 Throwable AccessDeniedException
+			// 获得第一个 AccessDeniedException
 			if (securityException == null) {
 				securityException = (AccessDeniedException) this.throwableAnalyzer
 						.getFirstThrowableOfType(AccessDeniedException.class, causeChain);
 			}
 
-			// 如果还是没有异常，那么就直接抛出
+			// 如果不是认证异常，也不是授权异常，那么就不处理
 			if (securityException == null) {
 				rethrow(ex);
 			}
@@ -151,6 +151,8 @@ public class ExceptionTranslationFilter extends GenericFilterBean implements Mes
 				throw new ServletException("Unable to handle the Spring Security Exception "
 						+ "because the response is already committed.", ex);
 			}
+
+			// 处理异常
 			handleSpringSecurityException(request, response, chain, securityException);
 		}
 	}
@@ -270,6 +272,7 @@ public class ExceptionTranslationFilter extends GenericFilterBean implements Mes
 		 */
 		@Override
 		protected void initExtractorMap() {
+			// 注册了 3 个异常大类的分析器: InvocationTargetException、Throwable、ServletException
 			super.initExtractorMap();
 			registerExtractor(ServletException.class, (throwable) -> {
 				ThrowableAnalyzer.verifyThrowableHierarchy(throwable, ServletException.class);

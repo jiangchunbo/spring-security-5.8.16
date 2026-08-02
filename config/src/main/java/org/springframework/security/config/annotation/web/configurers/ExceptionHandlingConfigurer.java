@@ -66,8 +66,16 @@ import org.springframework.security.web.util.matcher.RequestMatcher;
 public final class ExceptionHandlingConfigurer<H extends HttpSecurityBuilder<H>>
 		extends AbstractHttpConfigurer<ExceptionHandlingConfigurer<H>, H> {
 
+	/* 从这个配置器包含的两个属性就知道主要就是依靠 AuthenticationEntryPoint 和 AccessDeniedHandler */
+
+	/**
+	 * 用于认证异常处理
+	 */
 	private AuthenticationEntryPoint authenticationEntryPoint;
 
+	/**
+	 * 用于授权异常处理
+	 */
 	private AccessDeniedHandler accessDeniedHandler;
 
 	private LinkedHashMap<RequestMatcher, AuthenticationEntryPoint> defaultEntryPointMappings = new LinkedHashMap<>();
@@ -90,6 +98,7 @@ public final class ExceptionHandlingConfigurer<H extends HttpSecurityBuilder<H>>
 	 * @see #accessDeniedHandler(org.springframework.security.web.access.AccessDeniedHandler)
 	 */
 	public ExceptionHandlingConfigurer<H> accessDeniedPage(String accessDeniedUrl) {
+		// 一种以页面的方式进行处理的 AccessDeniedHandler
 		AccessDeniedHandlerImpl accessDeniedHandler = new AccessDeniedHandlerImpl();
 		accessDeniedHandler.setErrorPage(accessDeniedUrl);
 		return accessDeniedHandler(accessDeniedHandler);
@@ -182,7 +191,9 @@ public final class ExceptionHandlingConfigurer<H extends HttpSecurityBuilder<H>>
 
 	@Override
 	public void configure(H http) {
+		// 获取已经配置的，或者默认的认证异常处理
 		AuthenticationEntryPoint entryPoint = getAuthenticationEntryPoint(http);
+
 		ExceptionTranslationFilter exceptionTranslationFilter = new ExceptionTranslationFilter(entryPoint,
 				getRequestCache(http));
 		AccessDeniedHandler deniedHandler = getAccessDeniedHandler(http);

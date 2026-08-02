@@ -28,7 +28,9 @@ import org.springframework.util.Assert;
 
 /**
  * Handler for analyzing {@link Throwable} instances.
- *
+ * <p>
+ * 用于分析 Throwable 实例的处理器
+ * <p>
  * Can be subclassed to customize its behavior.
  *
  * @author Andreas Senft
@@ -38,6 +40,8 @@ public class ThrowableAnalyzer {
 
 	/**
 	 * Default extractor for {@link Throwable} instances.
+	 * <p>
+	 * 默认抓取 cause 的抓取器
 	 *
 	 * @see Throwable#getCause()
 	 */
@@ -45,6 +49,8 @@ public class ThrowableAnalyzer {
 
 	/**
 	 * Default extractor for {@link InvocationTargetException} instances.
+	 * <p>
+	 * 反射调用方法会包装成 InvocationTargetException
 	 *
 	 * @see InvocationTargetException#getTargetException()
 	 */
@@ -60,6 +66,7 @@ public class ThrowableAnalyzer {
 	 * For hierarchically unrelated classes their fully qualified name will be compared.
 	 */
 	private static final Comparator<Class<? extends Throwable>> CLASS_HIERARCHY_COMPARATOR = (class1, class2) -> {
+		// class1.isAssignableFrom(class2) 这句话表示，父类排在后面
 		if (class1.isAssignableFrom(class2)) {
 			return 1;
 		}
@@ -86,9 +93,10 @@ public class ThrowableAnalyzer {
 	/**
 	 * Registers a <code>ThrowableCauseExtractor</code> for the specified type. <i>Can be
 	 * used in subclasses overriding {@link #initExtractorMap()}.</i>
+	 *
 	 * @param throwableType the type (has to be a subclass of <code>Throwable</code>)
-	 * @param extractor the associated <code>ThrowableCauseExtractor</code> (not
-	 * <code>null</code>)
+	 * @param extractor     the associated <code>ThrowableCauseExtractor</code> (not
+	 *                      <code>null</code>)
 	 * @throws IllegalArgumentException if one of the arguments is invalid
 	 */
 	protected final void registerExtractor(Class<? extends Throwable> throwableType,
@@ -127,6 +135,7 @@ public class ThrowableAnalyzer {
 	 * Returns an array containing the classes for which extractors are registered. The
 	 * order of the classes is the order in which comparisons will occur for resolving a
 	 * matching extractor.
+	 *
 	 * @return the types for which extractors are registered
 	 */
 	@SuppressWarnings("unchecked")
@@ -144,14 +153,16 @@ public class ThrowableAnalyzer {
 	 * <p>
 	 * Note: If no {@link ThrowableCauseExtractor} is registered for this instance then
 	 * the returned array will always only contain the passed in throwable.
+	 *
 	 * @param throwable the <code>Throwable</code> to analyze
 	 * @return an array of all determined throwables from the stacktrace
 	 * @throws IllegalArgumentException if the throwable is <code>null</code>
-	 *
 	 * @see #initExtractorMap()
 	 */
 	public final Throwable[] determineCauseChain(Throwable throwable) {
 		Assert.notNull(throwable, "Invalid throwable: null");
+		// 构造一个异常链，不断探索异常的原因
+
 		List<Throwable> chain = new ArrayList<>();
 		Throwable currentThrowable = throwable;
 		while (currentThrowable != null) {
@@ -163,6 +174,9 @@ public class ThrowableAnalyzer {
 
 	/**
 	 * Extracts the cause of the given throwable using an appropriate extractor.
+	 * <p>
+	 * 抓取 throwable 其中的原因
+	 *
 	 * @param throwable the <code>Throwable</code> (not <code>null</code>
 	 * @return the cause, may be <code>null</code> if none could be resolved
 	 */
@@ -182,11 +196,12 @@ public class ThrowableAnalyzer {
 	 * provided type. A returned instance is safe to be cast to the specified type.
 	 * <p>
 	 * If the passed in array is null or empty this method returns <code>null</code>.
+	 *
 	 * @param throwableType the type to look for
-	 * @param chain the array (will be processed in element order)
+	 * @param chain         the array (will be processed in element order)
 	 * @return the found <code>Throwable</code>, <code>null</code> if not found
 	 * @throws IllegalArgumentException if the provided type is <code>null</code> or no
-	 * subclass of <code>Throwable</code>
+	 *                                  subclass of <code>Throwable</code>
 	 */
 	public final Throwable getFirstThrowableOfType(Class<? extends Throwable> throwableType, Throwable[] chain) {
 		if (chain != null) {
@@ -206,10 +221,11 @@ public class ThrowableAnalyzer {
 	 * <p>
 	 * Can be used for verification purposes in implementations of
 	 * {@link ThrowableCauseExtractor extractors}.
-	 * @param throwable the <code>Throwable</code> to check
+	 *
+	 * @param throwable        the <code>Throwable</code> to check
 	 * @param expectedBaseType the type to check against
 	 * @throws IllegalArgumentException if <code>throwable</code> is either
-	 * <code>null</code> or its type is not assignable to <code>expectedBaseType</code>
+	 *                                  <code>null</code> or its type is not assignable to <code>expectedBaseType</code>
 	 */
 	public static void verifyThrowableHierarchy(Throwable throwable, Class<? extends Throwable> expectedBaseType) {
 		if (expectedBaseType == null) {

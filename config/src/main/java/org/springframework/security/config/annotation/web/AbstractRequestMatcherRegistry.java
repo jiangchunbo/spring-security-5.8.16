@@ -57,7 +57,7 @@ import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
  * A base class for registering {@link RequestMatcher}'s. For example, it might allow for
  * specifying which {@link RequestMatcher} require a certain level of authorization.
  *
- * @param <C> The object that is returned or Chained after creating the RequestMatcher
+ * @param <C> The object that is returned or Chained after creating the RequestMatcher 创建 RequestMatcher 后返回或继续链式调用的对象
  * @author Rob Winch
  * @author Ankur Pathak
  * @since 3.2
@@ -362,7 +362,7 @@ public abstract class AbstractRequestMatcherRegistry<C> {
 	private Map<String, ? extends ServletRegistration> mappableServletRegistrations(ServletContext servletContext) {
 		Map<String, ServletRegistration> mappable = new LinkedHashMap<>();
 		for (Map.Entry<String, ? extends ServletRegistration> entry : servletContext.getServletRegistrations()
-			.entrySet()) {
+				.entrySet()) {
 			if (!entry.getValue().getMappings().isEmpty()) {
 				mappable.put(entry.getKey(), entry.getValue());
 			}
@@ -428,8 +428,7 @@ public abstract class AbstractRequestMatcherRegistry<C> {
 		try {
 			Class<?> clazz = Class.forName(registration.getClassName());
 			return dispatcherServlet.isAssignableFrom(clazz);
-		}
-		catch (ClassNotFoundException ex) {
+		} catch (ClassNotFoundException ex) {
 			return false;
 		}
 	}
@@ -466,6 +465,7 @@ public abstract class AbstractRequestMatcherRegistry<C> {
 	 * @since 5.8
 	 */
 	public C requestMatchers(String... patterns) {
+		// 不关心 method 的 url
 		return requestMatchers(null, patterns);
 	}
 
@@ -494,6 +494,9 @@ public abstract class AbstractRequestMatcherRegistry<C> {
 	/**
 	 * Subclasses should implement this method for returning the object that is chained to
 	 * the creation of the {@link RequestMatcher} instances.
+	 *
+	 * 留给子类实现这个方法，这个方法可以返回一个在 RequestMatchers 创建之后应该链式的对象
+	 *
 	 * @param requestMatchers the {@link RequestMatcher} instances that were created
 	 * @return the chained Object for the subclass which allows association of something
 	 * else to the {@link RequestMatcher}
@@ -633,8 +636,7 @@ public abstract class AbstractRequestMatcherRegistry<C> {
 			try {
 				Class<?> clazz = Class.forName(registration.getClassName());
 				return DispatcherServlet.class.isAssignableFrom(clazz);
-			}
-			catch (ClassNotFoundException ex) {
+			} catch (ClassNotFoundException ex) {
 				return false;
 			}
 		}

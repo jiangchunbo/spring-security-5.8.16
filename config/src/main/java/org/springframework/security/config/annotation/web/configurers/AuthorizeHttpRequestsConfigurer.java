@@ -115,6 +115,9 @@ public final class AuthorizeHttpRequestsConfigurer<H extends HttpSecurityBuilder
 		private final RequestMatcherDelegatingAuthorizationManager.Builder managerBuilder = RequestMatcherDelegatingAuthorizationManager
 			.builder();
 
+		/**
+		 * 暂存一下 RequestMatcher
+		 */
 		private List<RequestMatcher> unmappedMatchers;
 
 		private int mappingCount;
